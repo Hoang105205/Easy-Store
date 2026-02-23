@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="Core/Core.csproj" />
+  <Project Path="Shared/Shared.csproj" />
+  <Project Path="UI/UI.csproj">
+    <Platform Project="x64" />
+    <Deploy />
+  </Project>
+</Solution>

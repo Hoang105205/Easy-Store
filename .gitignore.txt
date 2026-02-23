@@ -1,0 +1,29 @@
+# Bỏ qua thư mục cấu hình cá nhân của Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# Bỏ qua thư mục chứa file Build (File nặng và sinh ra liên tục khi code)
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+
+# Bỏ qua các file log, cache
+*.log
+*.cache
+*.ilx
+*.pidb
+*.boop
+*.pdb
+
+# Bỏ qua thư mục của Windows App (WinUI 3 / UWP)
+AppPackages/
+BundleArtifacts/
+*_TemporaryKey.pfx
+
+# Bỏ qua file môi trường cá nhân (nếu sau này có dùng)
+.env
+.env.local
+appsettings.Development.json
