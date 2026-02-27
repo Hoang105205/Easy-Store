@@ -26,6 +26,7 @@ namespace UI
         public MainWindow()
         {
             InitializeComponent();
+            ContentFrame.Navigate(typeof(Views.SettingsPage)); // just for test showing page, will delete later when we have more pages
         }
     }
 }
