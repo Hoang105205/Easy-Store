@@ -17,8 +17,9 @@ public partial class App : Application
     {
         InitializeComponent();
 
+        // SWITCH TO MyShop.Api
         // Khởi động ServiceProvider ngay khi app vừa bật
-        Services = ConfigureServices();
+        // Services = ConfigureServices();
     }
 
     /// <summary>
@@ -29,25 +30,6 @@ public partial class App : Application
     {
         _window = new MainWindow();
         _window.Activate();
-    }
-
-    // --- HÀM CẤU HÌNH DEPENDENCY INJECTION ---
-    private static IServiceProvider ConfigureServices()
-    {
-        var services = new ServiceCollection();
-
-        // 1. Khai báo chuỗi kết nối (Connection String) tới PostgreSQL (Đang Hard code)
-        var connectionString = "Host=localhost;Database=EasyStoreDb;Username=postgres;Password=123456";
-
-        // 2. Tiêm AppDbContext vào hệ thống
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
-
-        // (Tuần 2) Member B sẽ vào đây để đăng ký các ViewModels:
-        // services.AddTransient<MainViewModel>();
-        // services.AddTransient<MainWindow>();
-
-        return services.BuildServiceProvider();
     }
 
     public static new App Current => (App)Application.Current;
