@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/db/">
+    <File Path="seed_data.sql" />
+  </Folder>
   <Project Path="Core/Core.csproj" />
   <Project Path="Shared/Shared.csproj" />
   <Project Path="UI/UI.csproj">

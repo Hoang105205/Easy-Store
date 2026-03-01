@@ -15,6 +15,11 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\easystoreicon.png" />
+    <None Remove="Assets\Images\chocopie.jpg" />
+    <None Remove="Assets\Images\coca.jpg" />
+    <None Remove="Assets\Images\heineken.jpg" />
+    <None Remove="Assets\Images\indomie.jpg" />
+    <None Remove="Assets\Images\muoi.jpg" />
     <None Remove="Views\SettingsPage.xaml" />
   </ItemGroup>
 
@@ -52,6 +57,21 @@
   </ItemGroup>
   <ItemGroup>
     <Content Update="Assets\EasyStoreIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Images\chocopie.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Images\coca.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Images\heineken.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Images\indomie.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Images\muoi.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
