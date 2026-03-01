@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     // 2. KHAI BÁO CÁC BẢNG (DbSet)
     public DbSet<User> Users { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<ProductImage> ProductImages { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
@@ -32,6 +33,10 @@ public class AppDbContext : DbContext
             .HasDefaultValueSql("gen_random_uuid()");
 
         modelBuilder.Entity<Product>()
+            .Property(e => e.Id)
+            .HasDefaultValueSql("gen_random_uuid()");
+
+        modelBuilder.Entity<ProductImage>()
             .Property(e => e.Id)
             .HasDefaultValueSql("gen_random_uuid()");
 

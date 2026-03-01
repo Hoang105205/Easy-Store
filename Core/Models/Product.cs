@@ -34,4 +34,6 @@ public class Product
 
     // Navigation properties (Liên kết khóa ngoại)
     public ICollection<ImportLog> ImportLogs { get; set; } = new List<ImportLog>();
+
+    public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
 }
