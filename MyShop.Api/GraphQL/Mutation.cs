@@ -2,7 +2,7 @@
 using Core.Models;
 using HotChocolate;
 
-namespace MyShop.Api.GraphQL;
+namespace Api.GraphQL;
 
 public class Mutation
 {

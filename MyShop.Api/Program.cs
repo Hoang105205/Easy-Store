@@ -1,6 +1,7 @@
 using Core.Data;
 using Microsoft.EntityFrameworkCore;
-using MyShop.Api.GraphQL;
+using Api.GraphQL;
+using Api.GraphQL.Queries;
 
 // Vo bang https://localhost:7052/graphql/
 
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<Query>()
+    .AddTypeExtension<UserQueries>()
     .AddMutationType<Mutation>();
 
 var app = builder.Build();

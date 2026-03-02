@@ -3,7 +3,7 @@
     <File Path="seed_data.sql" />
   </Folder>
   <Project Path="Core/Core.csproj" />
-  <Project Path="MyShop.Api/MyShop.Api.csproj" Id="e411af42-1f29-46c3-a576-79033f6e1884" />
+  <Project Path="MyShop.Api/Api.csproj" Id="e411af42-1f29-46c3-a576-79033f6e1884" />
   <Project Path="Shared/Shared.csproj" />
   <Project Path="UI/UI.csproj">
     <Platform Project="x64" />
