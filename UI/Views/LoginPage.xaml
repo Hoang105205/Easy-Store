@@ -1,0 +1,93 @@
+<Page
+    x:Class="UI.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid x:Name="RootGrid">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="AdaptiveStates">
+                <VisualState x:Name="WideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="900" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="IllustrationColumn.Width" Value="*" />
+                        <Setter Target="IllustrationPanel.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="NarrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="IllustrationColumn.Width" Value="0" />
+                        <Setter Target="IllustrationPanel.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="IllustrationColumn" Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid x:Name="IllustrationPanel" Grid.Column="0" Background="{ThemeResource SystemControlPageBackgroundChromeLowBrush}">
+            <Image Source="ms-appx:///Assets/LoginIllustration.jpg" 
+                   Stretch="UniformToFill" />
+            <Rectangle Fill="Black" Opacity="0.1"/>
+        </Grid>
+
+        <Grid Grid.Column="1" Padding="40">
+            <StackPanel x:Name="LoginPanel" 
+                        MaxWidth="400" 
+                        VerticalAlignment="Center" 
+                        Spacing="20">
+
+                <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Center" Margin="0,0,0,20">
+                    <BitmapIcon UriSource="ms-appx:///Assets/EasyStoreLogo.png" 
+                Foreground="{ThemeResource BrandPurpleBrush}" 
+                ShowAsMonochrome="True" 
+                Width="30" Height="30"/>
+                    <TextBlock Text="EasyStore" FontSize="36" FontWeight="Bold" Foreground="{ThemeResource BrandPurpleBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock Text="Đăng nhập hệ thống" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                <TextBlock Text="Vui lòng nhập thông tin tài khoản quản trị" Foreground="Gray" HorizontalAlignment="Center" Margin="0,-15,0,20"/>
+
+                <TextBox x:Name="UsernameTextBox" Header="Tên đăng nhập" PlaceholderText="Nhập username" Height="65" BorderBrush="{ThemeResource BrandPurpleBrush}"/>
+
+                <PasswordBox x:Name="PasswordBox" Header="Mật khẩu" PlaceholderText="Nhập mật khẩu" PasswordRevealMode="Peek" Height="65" BorderBrush="{ThemeResource BrandPurpleBrush}"/>
+
+                <Button x:Name="SignInButton" 
+                        Content="Đăng nhập" 
+                        Style="{StaticResource AccentButtonStyle}"
+                        Background="{ThemeResource BrandPurpleBrush}"
+                        HorizontalAlignment="Stretch" 
+                        Height="45" 
+                        Margin="0,10,0,0"
+                        Click="SignInButton_Click"/>
+
+                <Grid Margin="0,50,0,0">
+                    <TextBlock x:Name="VersionTextBlock" 
+                               VerticalAlignment="Center" 
+                               Foreground="Gray" FontSize="14"/>
+
+                    <Button x:Name="ServerConfigButton" 
+                            HorizontalAlignment="Right" 
+                            Style="{StaticResource TextBlockButtonStyle}"
+                            Click="ServerConfigButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <FontIcon Glyph="&#xEDA6;" FontSize="24" FontFamily="Segoe MDL2 Assets"/>
+                            <TextBlock Text="Cấu hình cơ sở dữ liệu" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

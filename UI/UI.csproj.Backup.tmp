@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
@@ -20,10 +20,10 @@
     <None Remove="Assets\Images\heineken.jpg" />
     <None Remove="Assets\Images\indomie.jpg" />
     <None Remove="Assets\Images\muoi.jpg" />
-    <None Remove="Assets\LoginIllustration.jpg" />
-    <None Remove="Views\ConfigDialog.xaml" />
-    <None Remove="Views\LoginPage.xaml" />
-    <None Remove="Views\ShellPage.xaml" />
+    <None Remove="Views\SettingsPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Remove="Views\LoginPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,7 +56,6 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup>
-	  <ProjectReference Include="..\Api\Api.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -80,17 +79,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\ConfigDialog.xaml">
+    <None Update="Views\LoginPage.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\ShellPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\LoginPage.xaml">
+    <Page Update="Views\SettingsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -111,7 +105,4 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
   </PropertyGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /y /s &quot;$(SolutionDir)Api\bin\$(Configuration)\net10.0\win-x64\*&quot; &quot;$(TargetDir)AppX\&quot;" />
-  </Target>
 </Project>

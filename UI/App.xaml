@@ -11,6 +11,17 @@
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush x:Key="BrandPurpleBrush" Color="#5C2D91"/>
+                    <Color x:Key="SystemAccentColor">#5C2D91</Color>
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="BrandPurpleBrush" Color="#A760EB"/>
+                    <Color x:Key="SystemAccentColor">#A760EB</Color>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

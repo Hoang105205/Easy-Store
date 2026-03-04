@@ -1,25 +1,24 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Core.Data;
 using Microsoft.EntityFrameworkCore;
-using Core.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Diagnostics;
+using System.IO;
+using UI.Views;
 
 namespace UI;
 
 public partial class App : Application
 {
-    // Cung cấp ServiceProvider để toàn bộ app có thể lấy service ra xài
-    public IServiceProvider Services { get; }
+    private MainWindow? _window;
 
-    private Window? _window;
+    public Process? ApiProcess { get; private set; }
 
     public App()
     {
         InitializeComponent();
-
-        // SWITCH TO MyShop.Api
-        // Khởi động ServiceProvider ngay khi app vừa bật
-        // Services = ConfigureServices();
     }
 
     /// <summary>
@@ -29,7 +28,82 @@ public partial class App : Application
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         _window = new MainWindow();
+
+        // Tìm cái RootFrame mà chúng ta vừa định nghĩa ở MainWindow
+        Frame rootFrame = _window.RootFrame;
+
+        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+        string? dbUrl = localSettings.Values["DbConnectionString"] as string;
+
+        if (!string.IsNullOrEmpty(dbUrl))
+        {
+            // 2. Nếu đã có URL -> Khởi động API ngầm
+            Debug.WriteLine("tìm thấy dbUrl trong LocalSettings");
+            StartBackendApi(dbUrl);
+        }
+        else
+        {
+            // Thêm dòng này để xác nhận nếu chưa có URL
+            Debug.WriteLine("=== CẢNH BÁO: Không tìm thấy dbUrl trong LocalSettings, API sẽ không chạy! ===");
+        }
+
+        // Luôn đi tới LoginPage trước (theo plan của bạn là làm Login sau)
+        rootFrame.Navigate(typeof(LoginPage));
+
+        _window.Closed += OnWindowClosed;
         _window.Activate();
+    }
+
+    private void StartBackendApi(string connectionString)
+    {
+        try
+        {
+            // 1. Kiểm tra nếu API đang chạy thì không bật thêm cái nữa
+            var existingProcesses = Process.GetProcessesByName("Api");
+            if (existingProcesses.Length > 0) return;
+
+            ApiProcess = new Process();
+
+            // 2. Xác định đường dẫn file EXE
+            String apiPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Api.exe");
+
+            ApiProcess.StartInfo.FileName = apiPath;
+
+            // 3. Truyền ConnectionString qua Command Line Arguments
+            ApiProcess.StartInfo.Arguments = $"--ConnectionStrings:DefaultConnection=\"{connectionString}\"";
+
+            // CỰC KỲ QUAN TRỌNG: Đặt thư mục làm việc là nơi chứa Api.exe
+            // Điều này giúp Api.exe tìm thấy Api.dll và các file appsettings.json
+            ApiProcess.StartInfo.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            // 4. Cấu hình chạy ngầm (Silent Mode)
+            ApiProcess.StartInfo.CreateNoWindow = true;
+            ApiProcess.StartInfo.UseShellExecute = false;
+            ApiProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            ApiProcess.StartInfo.RedirectStandardOutput = true;
+            ApiProcess.StartInfo.RedirectStandardError = true;
+
+            ApiProcess.OutputDataReceived += (s, args) => Debug.WriteLine($"[API_LOG]: {args.Data}");
+            ApiProcess.ErrorDataReceived += (s, args) => Debug.WriteLine($"[API_ERROR]: {args.Data}");
+
+            ApiProcess.Start();
+            ApiProcess.BeginOutputReadLine();
+            ApiProcess.BeginErrorReadLine();
+            Debug.WriteLine("=== Backend API đã khởi chạy thành công ===");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ERROR] Không thể khởi chạy API: {ex.Message}");
+        }
+    }
+
+    private void OnWindowClosed(object sender, WindowEventArgs args)
+    {
+        // TIÊU DIỆT API khi tắt App để tránh ngốn RAM ngầm
+        if (ApiProcess != null && !ApiProcess.HasExited)
+        {
+            ApiProcess.Kill();
+        }
     }
 
     public static new App Current => (App)Application.Current;

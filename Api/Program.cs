@@ -7,19 +7,42 @@ using Api.GraphQL.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = "Host=ep-jolly-dream-a1fadbch-pooler.ap-southeast-1.aws.neon.tech;Database=easy_store_db;Username=neondb_owner;Password=npg_ih3sOck4JfwZ;SslMode=Require;";
+// 1. LẤY CẤU HÌNH: Ưu tiên lấy từ Command Line (UI truyền xuống)
+// .NET sẽ tự động map tham số --ConnectionStrings:DefaultConnection vào đây
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+// Kiểm tra nếu không có chuỗi kết nối thì báo lỗi rõ ràng
+if (string.IsNullOrEmpty(connectionString))
+{
+    Console.WriteLine("[ERROR] ConnectionString is missing! Please provide it from UI.");
+}
+
+// 2. ĐĂNG KÝ SERVICES
+builder.Services.AddDbContextPool<AppDbContext>(options =>
+{
+    if (!string.IsNullOrEmpty(connectionString))
+    {
+        options.UseNpgsql(connectionString, npgsqlOptions =>
+        {
+            // Tự động thử lại nếu Neon bị lag (thời gian chờ 30s)
+            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
+        });
+    }
+});
 
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<Query>()
     .AddTypeExtension<UserQueries>()
-    .AddMutationType<Mutation>();
+    .AddMutationType<Mutation>()
+    // Giúp debug lỗi GraphQL chi tiết hơn trong cửa sổ Output của UI
+    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = builder.Environment.IsDevelopment());
 
 var app = builder.Build();
 
+// 3. CẤU HÌNH HTTP PIPELINE
 app.MapGraphQL();
-app.Run();
+
+// Ép API chạy đúng cổng 5000 để UI biết đường mà gọi
+app.Run("http://localhost:5000");
 
