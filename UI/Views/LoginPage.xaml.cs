@@ -98,23 +98,20 @@ public sealed partial class LoginPage : Page
         // 3. Nếu bấm "Lưu" (PrimaryButton), thực hiện lưu vào máy
         if (result == ContentDialogResult.Primary)
         {
-            settings.Values["DbConnectionString"] = dialog.DbConnectionString;
-            Debug.WriteLine("Đã lưu URL Database mới vào LocalSettings.");
+            string newUrl = dialog.DbConnectionString?.Trim() ?? "";
+
+            if (!string.IsNullOrEmpty(newUrl) && newUrl != savedUrl)
+            {
+                settings.Values["DbConnectionString"] = newUrl;
+
+                // 3. RESTART LOGIC: Dừng cái cũ, bật cái mới
+                App.Current.StopBackendApi(); // Dọn dẹp bản cũ
+                App.Current.StartBackendApi(newUrl); // Khởi chạy bản mới với tham số mới
+
+                Debug.WriteLine("=== Restart API thành công với URL mới ===");
+            }
 
             // Gợi ý: Hiển thị một thông báo nhỏ (InfoBar) báo thành công
         }
-    }
-
-    private async System.Threading.Tasks.Task ShowMessageDialog(string title, string message)
-    {
-        ContentDialog dialog = new ContentDialog
-        {
-            Title = title,
-            Content = message,
-            CloseButtonText = "OK",
-            XamlRoot = this.XamlRoot
-        };
-
-        await dialog.ShowAsync();
     }
 }
