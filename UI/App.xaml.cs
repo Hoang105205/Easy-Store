@@ -54,7 +54,7 @@ public partial class App : Application
         _window.Activate();
     }
 
-    private void StartBackendApi(string connectionString)
+    public void StartBackendApi(string connectionString)
     {
         try
         {
@@ -94,6 +94,32 @@ public partial class App : Application
         catch (Exception ex)
         {
             Debug.WriteLine($"[ERROR] Không thể khởi chạy API: {ex.Message}");
+        }
+    }
+
+    public void StopBackendApi()
+    {
+        try
+        {
+            // 1. Tiêu diệt tiến trình mà App đang theo dõi
+            if (ApiProcess is { HasExited: false })
+            {
+                ApiProcess.Kill();
+                ApiProcess.WaitForExit(2000); // Đợi tối đa 2 giây để nó đóng hoàn toàn
+                Debug.WriteLine("=== Đã đóng tiến trình API hiện tại ===");
+            }
+
+            // 2. Quét thêm một lần nữa để chắc chắn không còn "Api" nào chạy ngầm (Ghost Process)
+            var ghostProcesses = Process.GetProcessesByName("Api");
+            foreach (var p in ghostProcesses)
+            {
+                p.Kill();
+                p.WaitForExit(2000);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ERROR] Lỗi khi dừng API: {ex.Message}");
         }
     }
 
