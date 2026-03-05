@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
@@ -39,8 +40,9 @@ public sealed partial class LoginPage : Page
         }
 
         var button = sender as Button;
-        
-        if (button != null) button.IsEnabled = false; 
+
+        // Bật trạng thái loading
+        SetLoadingState(true);
 
         try
         {
@@ -63,10 +65,8 @@ public sealed partial class LoginPage : Page
             {
                 Debug.WriteLine("Đăng nhập thành công!");
 
-                this.Frame.Navigate(typeof(ShellPage));
-
-                // Xóa lịch sử để không quay lại trang Login bằng nút Back
-                this.Frame.BackStack.Clear();
+                // Hiển thị thông báo thành công với animation
+                await ShowSuccessAndNavigate();
             }
             else
             {
@@ -81,9 +81,49 @@ public sealed partial class LoginPage : Page
         }
         finally
         {
-            // Bật lại nút bấm
-            if (button != null) button.IsEnabled = true;
+            // Tắt trạng thái loading
+            SetLoadingState(false);
         }
+    }
+
+    private void SetLoadingState(bool isLoading)
+    {
+        SignInButton.IsEnabled = !isLoading;
+        UsernameTextBox.IsEnabled = !isLoading;
+        PasswordBox.IsEnabled = !isLoading;
+        ServerConfigButton.IsEnabled = !isLoading;
+
+        if (isLoading)
+        {
+            SignInButtonText.Text = "Đang đăng nhập...";
+            LoginProgressRing.Visibility = Visibility.Visible;
+            LoginProgressRing.IsActive = true;
+        }
+        else
+        {
+            SignInButtonText.Text = "Đăng nhập";
+            LoginProgressRing.Visibility = Visibility.Collapsed;
+            LoginProgressRing.IsActive = false;
+        }
+    }
+
+    private async Task ShowSuccessAndNavigate()
+    {
+        // Hiển thị trạng thái thành công
+        SignInButtonText.Text = "✓ Thành công!";
+        LoginProgressRing.Visibility = Visibility.Collapsed;
+        LoginProgressRing.IsActive = false;
+
+        // Đợi một chút để người dùng thấy thông báo thành công
+        await Task.Delay(500);
+
+        await PlayFadeOutAnimation();
+
+        // Navigate đến ShellPage
+        this.Frame.Navigate(typeof(ShellPage));
+
+        // Xóa lịch sử để không quay lại trang Login bằng nút Back
+        this.Frame.BackStack.Clear();
     }
 
     // Hàm hỗ trợ hiển thị thông báo trong WinUI 3
@@ -137,5 +177,30 @@ public sealed partial class LoginPage : Page
 
             // Gợi ý: Hiển thị một thông báo nhỏ (InfoBar) báo thành công
         }
+    }
+
+    private async Task PlayFadeOutAnimation()
+    {
+        var fadeOut = new Storyboard();
+        var fadeOutAnimation = new DoubleAnimation
+        {
+            From = 1.0,
+            To = 0.0,
+            Duration = new Duration(TimeSpan.FromMilliseconds(300))
+        };
+
+        // Lưu ý: Đảm bảo trong XAML bạn đã đặt x:Name="LoginPanel" cho Container chứa form login
+        Storyboard.SetTarget(fadeOutAnimation, LoginPanel);
+        Storyboard.SetTargetProperty(fadeOutAnimation, "Opacity");
+
+        fadeOut.Children.Add(fadeOutAnimation);
+
+        // Tạo một TaskCompletionSource để đợi animation chạy xong mới chạy tiếp code phía sau
+        var tcs = new TaskCompletionSource<object>();
+        fadeOut.Completed += (s, e) => tcs.SetResult(null);
+
+        fadeOut.Begin();
+
+        await tcs.Task; // Đợi 300ms cho đến khi mờ hẳn
     }
 }

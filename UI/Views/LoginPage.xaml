@@ -64,13 +64,24 @@
                 <PasswordBox x:Name="PasswordBox" Header="Mật khẩu" PlaceholderText="Nhập mật khẩu" PasswordRevealMode="Peek" Height="65" BorderBrush="{ThemeResource BrandPurpleBrush}"/>
 
                 <Button x:Name="SignInButton" 
-                        Content="Đăng nhập" 
                         Style="{StaticResource AccentButtonStyle}"
                         Background="{ThemeResource BrandPurpleBrush}"
                         HorizontalAlignment="Stretch" 
                         Height="45" 
                         Margin="0,10,0,0"
-                        Click="SignInButton_Click"/>
+                        Click="SignInButton_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                        <ProgressRing x:Name="LoginProgressRing" 
+                                      Width="20" 
+                                      Height="20" 
+                                      Foreground="White"
+                                      Visibility="Collapsed"
+                                      IsActive="False"/>
+                        <TextBlock x:Name="SignInButtonText" 
+                                   Text="Đăng nhập" 
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
 
                 <Grid Margin="0,50,0,0">
                     <TextBlock x:Name="VersionTextBlock" 
