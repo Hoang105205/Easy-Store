@@ -2,6 +2,7 @@ using Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Api.GraphQL;
 using Api.GraphQL.Queries;
+using Api.GraphQL.Mutations;
 
 // Vo bang https://localhost:7052/graphql/
 
@@ -35,8 +36,10 @@ builder.Services
     .AddQueryType<Query>()
     .AddTypeExtension<UserQueries>()
     .AddMutationType<Mutation>()
+    .AddTypeExtension<AuthMutation>()
     // Giúp debug lỗi GraphQL chi tiết hơn trong cửa sổ Output của UI
-    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = builder.Environment.IsDevelopment());
+    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
+    .DisableIntrospection(false);
 
 var app = builder.Build();
 

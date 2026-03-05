@@ -1,11 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Diagnostics;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -13,13 +6,20 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 
 namespace UI.Views;
 
 public sealed partial class LoginPage : Page
 {
-    private bool _isPasswordVisible = false;
-
     public LoginPage()
     {
         InitializeComponent();
@@ -28,51 +28,75 @@ public sealed partial class LoginPage : Page
         VersionTextBlock.Text = $"Phiên bản {version.Major}.{version.Minor}.{version.Build}";
     }
 
-    //private void EmailTextBox_TextChanged(object sender, TextChangedEventArgs e)
-    //{
-    //    Debug.WriteLine($"Email changed: {EmailTextBox.Text}");
-    //}
-
-    //private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
-    //{
-    //    Debug.WriteLine($"Password changed (length: {PasswordBox.Password.Length})");
-    //}
-
-    //private void TogglePasswordButton_Click(object sender, RoutedEventArgs e)
-    //{
-    //    _isPasswordVisible = !_isPasswordVisible;
-
-    //    if (_isPasswordVisible)
-    //    {
-    //        PasswordIcon.Glyph = "\uF78D";
-    //        Debug.WriteLine("Password visibility: Visible");
-    //    }
-    //    else
-    //    {
-    //        PasswordIcon.Glyph = "\uED1A";
-    //        Debug.WriteLine("Password visibility: Hidden");
-    //    }
-    //}
-
     private async void SignInButton_Click(object sender, RoutedEventArgs e)
     {
         Debug.WriteLine("=== Sign In Button Clicked ===");
-        //Debug.WriteLine($"Email: {EmailTextBox.Text}");
-        //Debug.WriteLine($"Password length: {PasswordBox.Password.Length}");
+        // 1. Kiểm tra đầu vào cơ bản
+        if (string.IsNullOrWhiteSpace(UsernameTextBox.Text) || string.IsNullOrWhiteSpace(PasswordBox.Password))
+        {
+            await ShowMessageDialog("Lỗi", "Vui lòng nhập đầy đủ email và mật khẩu.");
+            return;
+        }
 
-        //if (string.IsNullOrWhiteSpace(EmailTextBox.Text))
-        //{
-        //    await ShowMessageDialog("Lỗi", "Vui lòng nhập địa chỉ email");
-        //    return;
-        //}
+        var button = sender as Button;
+        
+        if (button != null) button.IsEnabled = false; 
 
-        //if (string.IsNullOrWhiteSpace(PasswordBox.Password))
-        //{
-        //    await ShowMessageDialog("Lỗi", "Vui lòng nhập mật khẩu");
-        //    return;
-        //}
+        try
+        {
+            var client = App.Current.Services.GetRequiredService<IEasyStoreClient>();
 
-        //await ShowMessageDialog("Thông báo", "Chức năng đăng nhập sẽ được triển khai sau");
+            // 4. Gọi hàm Login (Tham số u và p khớp với file Auth.graphql của bạn)
+            // Tôi giả định bạn dùng Email làm Username
+            var result = await client.Login.ExecuteAsync(UsernameTextBox.Text, PasswordBox.Password);
+
+            // 5. Kiểm tra lỗi hệ thống (Lỗi mạng, lỗi cú pháp GraphQL...)
+            if (result.Errors.Count > 0)
+            {
+                await ShowMessageDialog("Lỗi hệ thống", result.Errors[0].Message);
+                return;
+            }
+
+            // 6. Kiểm tra kết quả nghiệp vụ từ API
+            var loginInfo = result.Data?.Login;
+            if (loginInfo != null && loginInfo.Success == true)
+            {
+                Debug.WriteLine("Đăng nhập thành công!");
+
+                this.Frame.Navigate(typeof(ShellPage));
+
+                // Xóa lịch sử để không quay lại trang Login bằng nút Back
+                this.Frame.BackStack.Clear();
+            }
+            else
+            {
+                // Thất bại (Sai pass, user không tồn tại...)
+                await ShowMessageDialog("Đăng nhập thất bại", loginInfo?.Message ?? "Thông tin không chính xác.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error: {ex.Message}");
+            await ShowMessageDialog("Lỗi kết nối", "Không thể kết nối tới Server. Hãy chắc chắn API đang chạy ở cổng 5000.");
+        }
+        finally
+        {
+            // Bật lại nút bấm
+            if (button != null) button.IsEnabled = true;
+        }
+    }
+
+    // Hàm hỗ trợ hiển thị thông báo trong WinUI 3
+    private async Task ShowMessageDialog(string title, string content)
+    {
+        ContentDialog dialog = new ContentDialog
+        {
+            Title = title,
+            Content = content,
+            CloseButtonText = "Đóng",
+            XamlRoot = this.XamlRoot // Bắt buộc phải có XamlRoot trong WinUI 3
+        };
+        await dialog.ShowAsync();
     }
 
     private async void ServerConfigButton_Click(object sender, RoutedEventArgs e)

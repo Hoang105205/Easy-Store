@@ -21,6 +21,7 @@
     <None Remove="Assets\Images\indomie.jpg" />
     <None Remove="Assets\Images\muoi.jpg" />
     <None Remove="Assets\LoginIllustration.jpg" />
+    <None Remove="GraphQL\Auth.graphql" />
     <None Remove="Views\ConfigDialog.xaml" />
     <None Remove="Views\LoginPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
@@ -51,9 +52,13 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageReference Include="StrawberryShake" Version="15.1.12" />
+    <PackageReference Include="StrawberryShake.Server" Version="15.1.12" />
+    <PackageReference Include="StrawberryShake.Transport.Http" Version="15.1.12" />
   </ItemGroup>
   <ItemGroup>
 	  <ProjectReference Include="..\Api\Api.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
