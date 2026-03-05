@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using UI.Services.AuthService;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -64,6 +65,12 @@ public sealed partial class LoginPage : Page
             if (loginInfo != null && loginInfo.Success == true)
             {
                 Debug.WriteLine("Đăng nhập thành công!");
+
+                var authService = App.Current.Services.GetRequiredService<AuthService>();
+
+                // 2. Lưu thông tin (Ở đây tạm lưu Username, nếu API trả về Token thì lưu Token)
+                authService.SaveSession(UsernameTextBox.Text);
+                // ------------------------------------
 
                 // Hiển thị thông báo thành công với animation
                 await ShowSuccessAndNavigate();
