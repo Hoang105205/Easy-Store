@@ -16,10 +16,34 @@ public partial class App : Application
 
     public Process? ApiProcess { get; private set; }
 
+    public IServiceProvider Services { get; private set; }
+
     public App()
     {
         InitializeComponent();
+
+        // 2. Tạo một "giỏ hàng" chứa các dịch vụ (Services)
+        var serviceCollection = new ServiceCollection();
+
+        // 3. Cấu hình các dịch vụ cho App
+        ConfigureServices(serviceCollection);
+
+        // 4. "Đóng gói" các dịch vụ lại để sẵn sàng sử dụng
+        Services = serviceCollection.BuildServiceProvider();
     }
+
+    private void ConfigureServices(IServiceCollection services)
+    {
+        services.AddEasyStoreClient()
+            .ConfigureHttpClient(client =>
+            {
+                // Sử dụng cổng 5000 mà API của bạn đang lắng nghe
+                client.BaseAddress = new Uri(Core.AppConstants.BaseApiUrl);
+            });
+
+        // Bạn có thể đăng ký thêm các Service khác tại đây (ví dụ: NavigationService, DialogService)
+    }
+
 
     /// <summary>
     /// Invoked when the application is launched.

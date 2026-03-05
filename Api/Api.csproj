@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="15.1.12" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.12" />
   </ItemGroup>

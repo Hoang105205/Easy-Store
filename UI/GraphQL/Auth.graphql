@@ -1,0 +1,6 @@
+﻿mutation Login($u: String!, $p: String!) {
+  login(username: $u, password: $p) {
+    success
+    message
+  }
+}
