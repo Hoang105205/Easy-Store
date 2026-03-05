@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Diagnostics;
 using System.IO;
+using UI.Services.AuthService;
 using UI.Views;
 
 namespace UI;
@@ -34,6 +35,8 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
+        services.AddSingleton<AuthService>();
+
         services.AddEasyStoreClient()
             .ConfigureHttpClient(client =>
             {
@@ -65,14 +68,17 @@ public partial class App : Application
             Debug.WriteLine("tìm thấy dbUrl trong LocalSettings");
             StartBackendApi(dbUrl);
         }
+
+        var authService = Services.GetRequiredService<AuthService>();
+
+        if (string.IsNullOrEmpty(dbUrl) || !authService.IsLoggedIn())
+        {
+            rootFrame.Navigate(typeof(LoginPage));
+        }
         else
         {
-            // Thêm dòng này để xác nhận nếu chưa có URL
-            Debug.WriteLine("=== CẢNH BÁO: Không tìm thấy dbUrl trong LocalSettings, API sẽ không chạy! ===");
+            rootFrame.Navigate(typeof(ShellPage));
         }
-
-        // Luôn đi tới LoginPage trước (theo plan của bạn là làm Login sau)
-        rootFrame.Navigate(typeof(LoginPage));
 
         _window.Closed += OnWindowClosed;
         _window.Activate();
@@ -149,11 +155,7 @@ public partial class App : Application
 
     private void OnWindowClosed(object sender, WindowEventArgs args)
     {
-        // TIÊU DIỆT API khi tắt App để tránh ngốn RAM ngầm
-        if (ApiProcess != null && !ApiProcess.HasExited)
-        {
-            ApiProcess.Kill();
-        }
+        StopBackendApi();
     }
 
     public static new App Current => (App)Application.Current;

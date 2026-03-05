@@ -32,7 +32,8 @@
 
         <NavigationView x:Name="NavView"
                 IsSettingsVisible="False"
-                IsBackButtonVisible="Collapsed">
+                IsBackButtonVisible="Collapsed"
+                ItemInvoked="NavView_ItemInvoked">
 
             <NavigationView.PaneHeader>
                 <StackPanel Margin="12,8,0,8">
