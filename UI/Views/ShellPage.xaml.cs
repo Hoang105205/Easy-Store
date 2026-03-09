@@ -29,6 +29,14 @@ public sealed partial class ShellPage : Page
     public ShellPage()
     {
         InitializeComponent();
+
+        // Khi thanh điều hướng load xong thì tự động chọn một menu mặc định
+        NavView.Loaded += (s, e) =>
+        {
+            // MenuItems[1] chính là "Sản phẩm" (Index 0 là Trang chủ)
+            NavView.SelectedItem = NavView.MenuItems[1];
+            ContentFrame.Navigate(typeof(ProductsPage));
+        };
     }
 
 
@@ -45,6 +53,20 @@ public sealed partial class ShellPage : Page
         {
             // Xử lý điều hướng cho các menu khác (Dashboard, Products...)
             // NavigationService.NavigateTo(tag);
+            switch (tag)
+            {
+                case "Products":
+                    ContentFrame.Navigate(typeof(ProductsPage));
+                    break;
+                case "Dashboard":
+                case "Orders":
+                case "Reports":
+                case "Profile":
+                case "Settings":
+                    // Tạm thời làm trắng màn hình khi bấm vào các menu chưa code xong
+                    ContentFrame.Content = null;
+                    break;
+            }
         }
     }
 

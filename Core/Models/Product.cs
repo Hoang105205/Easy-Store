@@ -33,6 +33,9 @@ public class Product
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties (Liên kết khóa ngoại)
+    [ForeignKey(nameof(CategoryId))]
+    public Category Category { get; set; }
+
     public ICollection<ImportLog> ImportLogs { get; set; } = new List<ImportLog>();
 
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
