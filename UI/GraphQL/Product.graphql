@@ -1,0 +1,23 @@
+﻿query GetProducts($first: Int!, $after: String) {
+  products(first: $first, after: $after) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    nodes {
+      id
+      name
+      salePrice
+      stockQuantity
+      category {
+        name
+      }
+      images {
+        imagePath
+        isPrimary
+      }
+    }
+  }
+}

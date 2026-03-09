@@ -1,8 +1,10 @@
+using Api.GraphQL;
+using Api.GraphQL.Mutations;
+using Api.GraphQL.Queries;
 using Core.Data;
 using Microsoft.EntityFrameworkCore;
-using Api.GraphQL;
-using Api.GraphQL.Queries;
-using Api.GraphQL.Mutations;
+using Microsoft.Extensions.DependencyInjection;
+using HotChocolate.Data;
 
 // Vo bang https://localhost:7052/graphql/
 
@@ -19,7 +21,7 @@ if (string.IsNullOrEmpty(connectionString))
 }
 
 // 2. ĐĂNG KÝ SERVICES
-builder.Services.AddDbContextPool<AppDbContext>(options =>
+builder.Services.AddPooledDbContextFactory<AppDbContext>(options =>
 {
     if (!string.IsNullOrEmpty(connectionString))
     {
@@ -35,9 +37,11 @@ builder.Services
     .AddGraphQLServer()
     .AddQueryType<Query>()
     .AddTypeExtension<UserQueries>()
+    .AddTypeExtension<ProductQueries>()
     .AddMutationType<Mutation>()
     .AddTypeExtension<AuthMutation>()
-    // Giúp debug lỗi GraphQL chi tiết hơn trong cửa sổ Output của UI
+    .AddProjections() // Kích hoạt tính năng Projection để tự động ánh xạ các trường con khi truy vấn
+                      // Giúp debug lỗi GraphQL chi tiết hơn trong cửa sổ Output của UI
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
     .DisableIntrospection(false);
 
