@@ -26,6 +26,7 @@
     <None Remove="Assets\LoginIllustration.jpg" />
     <None Remove="GraphQL\Auth.graphql" />
     <None Remove="Views\ConfigDialog.xaml" />
+    <None Remove="Views\Dashboard\DashboardPage.xaml" />
     <None Remove="Views\LoginPage.xaml" />
     <None Remove="Views\Settings\SettingsPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
@@ -112,6 +113,11 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Settings\SettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Dashboard\DashboardPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
