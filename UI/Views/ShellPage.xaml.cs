@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using UI.Services.AuthService;
+using UI.Views.Settings;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -59,12 +60,19 @@ public sealed partial class ShellPage : Page
                     ContentFrame.Navigate(typeof(ProductsPage));
                     break;
                 case "Dashboard":
-                case "Orders":
-                case "Reports":
-                case "Profile":
-                case "Settings":
-                    // Tạm thời làm trắng màn hình khi bấm vào các menu chưa code xong
                     ContentFrame.Content = null;
+                    break;
+                case "Orders":
+                    ContentFrame.Content = null;
+                    break;
+                case "Reports":
+                    ContentFrame.Content = null;
+                    break;
+                case "Profile":
+                    ContentFrame.Content = null;
+                    break;
+                case "Settings":
+                    ContentFrame.Navigate(typeof(SettingsPage));
                     break;
             }
         }

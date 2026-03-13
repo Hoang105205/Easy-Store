@@ -6,8 +6,8 @@
     xmlns:local="using:UI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
-
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Grid x:Name="RootGrid">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="WindowStates">
@@ -38,9 +38,13 @@
             <NavigationView.PaneHeader>
                 <StackPanel Margin="12,8,0,8">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Image Source="ms-appx:///Assets/EasyStoreLogo.png"
-                   Width="26"
-                   Height="26"/>
+                        <BitmapIcon UriSource="ms-appx:///Assets/EasyStoreLogo.png" 
+                        Foreground="{ThemeResource BrandPurpleBrush}" 
+                        ShowAsMonochrome="True" 
+                        Width="26" 
+                        Height="26"
+                        VerticalAlignment="Center"/>
+
                         <TextBlock Text="EasyStore"
                        FontSize="20"
                        FontWeight="SemiBold"
@@ -49,7 +53,6 @@
                 </StackPanel>
             </NavigationView.PaneHeader>
 
-            <!-- MENU -->
             <NavigationView.MenuItems>
 
                 <NavigationViewItem Content="Trang chủ" Tag="Dashboard">
@@ -78,7 +81,6 @@
 
             </NavigationView.MenuItems>
 
-            <!-- FOOTER -->
             <NavigationView.FooterMenuItems>
 
                 <NavigationViewItem Content="Hồ sơ" Tag="Profile">

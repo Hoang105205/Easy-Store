@@ -59,29 +59,56 @@ public partial class App : Application
         // Tìm cái RootFrame mà chúng ta vừa định nghĩa ở MainWindow
         Frame rootFrame = _window.RootFrame;
 
+        ConfigTheme();
+
+        CheckAndStartBackendApi();
+
+        CheckIsLogedIn();
+
+        _window.Closed += OnWindowClosed;
+        _window.Activate();
+    }
+
+    private void CheckAndStartBackendApi()
+    {
         var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
         string? dbUrl = localSettings.Values["DbConnectionString"] as string;
-
         if (!string.IsNullOrEmpty(dbUrl))
         {
-            // 2. Nếu đã có URL -> Khởi động API ngầm
             Debug.WriteLine("tìm thấy dbUrl trong LocalSettings");
             StartBackendApi(dbUrl);
         }
+    }
+
+    private void CheckIsLogedIn()
+    {
+        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+        string? dbUrl = localSettings.Values["DbConnectionString"] as string;
 
         var authService = Services.GetRequiredService<AuthService>();
 
         if (string.IsNullOrEmpty(dbUrl) || !authService.IsLoggedIn())
         {
-            rootFrame.Navigate(typeof(LoginPage));
+            Debug.WriteLine("Người dùng chưa đăng nhập, điều hướng về LoginPage");
+            _window?.RootFrame.Navigate(typeof(LoginPage));
         }
         else
         {
-            rootFrame.Navigate(typeof(ShellPage));
+            Debug.WriteLine("Người dùng đã đăng nhập, điều hướng về ShellPage");
+            _window?.RootFrame.Navigate(typeof(ShellPage));
         }
+    }
 
-        _window.Closed += OnWindowClosed;
-        _window.Activate();
+    private void ConfigTheme()
+    {
+        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+        if (localSettings.Values["IsDarkMode"] is bool isDark)
+        {
+            if (_window?.Content is FrameworkElement rootElement)
+            {
+                rootElement.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
+            }
+        }
     }
 
     public void StartBackendApi(string connectionString)
@@ -159,4 +186,6 @@ public partial class App : Application
     }
 
     public static new App Current => (App)Application.Current;
+
+    public MainWindow? AppMainWindow => _window;
 }
