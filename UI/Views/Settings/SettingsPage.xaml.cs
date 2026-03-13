@@ -33,18 +33,20 @@ namespace UI.Views.Settings
 
         private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
         {
+            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+
             // Pagination
             ItemsPerPageComboBox.SelectedIndex = 0;
 
             // Theme
-            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
             if (localSettings.Values["IsDarkMode"] is bool isDark)
             {
                 DarkThemeToggle.IsOn = isDark;
             }
 
             // Session
-            RestoreSessionToggle.IsOn = true;
+            bool isRestoreEnabled = localSettings.Values["RestoreSession"] as bool? ?? false;
+            RestoreSessionToggle.IsOn = isRestoreEnabled;
 
             // Database
             DatabaseUrlTextBox.Text = "http://localhost:5000";
@@ -78,7 +80,20 @@ namespace UI.Views.Settings
 
         private void RestoreSessionToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"[Settings] Restore previous session toggled: {RestoreSessionToggle.IsOn}");
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                bool isEnabled = toggleSwitch.IsOn;
+                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+
+                // 1. Lưu thiết lập Bật/Tắt mới nhất
+                localSettings.Values["RestoreSession"] = isEnabled;
+
+                // 2. Dọn dẹp: Nếu người dùng TẮT, xóa luôn vết tích của trang cũ
+                if (!isEnabled)
+                {
+                    localSettings.Values.Remove("LastVisitedPage");
+                }
+            }
         }
 
         private void SaveDbUrlButton_Click(object sender, RoutedEventArgs e)

@@ -1,3 +1,4 @@
+using HotChocolate.Data.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -13,6 +14,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using UI.Services.AuthService;
+using UI.Utils;
 using UI.Views.Settings;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -31,49 +33,61 @@ public sealed partial class ShellPage : Page
     {
         InitializeComponent();
 
-        // Khi thanh điều hướng load xong thì tự động chọn một menu mặc định
-        NavView.Loaded += (s, e) =>
-        {
-            // MenuItems[1] chính là "Sản phẩm" (Index 0 là Trang chủ)
-            NavView.SelectedItem = NavView.MenuItems[1];
-            ContentFrame.Navigate(typeof(ProductsPage));
-        };
+        this.Loaded += ShellPage_Loaded;
     }
 
+    private void ShellPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        NavigateInitialPage();
+    }
+
+    private void NavigateInitialPage()
+    {
+        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+
+        string pageToLoad = "Dashboard"; // Trang mặc định nếu không có gì
+        bool isRestoreEnabled = localSettings.Values["RestoreSession"] as bool? ?? false;
+
+        // Nếu tính năng BẬT và có lưu Tag cũ
+        if (isRestoreEnabled && localSettings.Values["LastVisitedPage"] != null)
+        {
+            pageToLoad = localSettings.Values["LastVisitedPage"].ToString();
+        }
+
+        // 1. Chuyển Frame tới trang đó
+        Type pageType = PageHelper.GetPageTypeByTag(pageToLoad);
+        ContentFrame.Navigate(pageType);
+
+        // 2. Highlight (Làm sáng) đúng nút trên thanh Menu
+        var allMenuItems = NavView.MenuItems.OfType<NavigationViewItem>()
+                     .Concat(NavView.FooterMenuItems.OfType<NavigationViewItem>());
+
+        NavView.SelectedItem = allMenuItems.FirstOrDefault(m => m.Tag.ToString() == pageToLoad);
+    }
 
     private async void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        // Kiểm tra Tag của item được chọn
-        var tag = args.InvokedItemContainer?.Tag?.ToString();
+        if (args.InvokedItemContainer != null && args.InvokedItemContainer.Tag != null)
+        {
+            string targetTag = args.InvokedItemContainer.Tag.ToString() ?? "Dashboard";
 
-        if (tag == "Logout")
-        {
-            await HandleLogoutAsync();
-        }
-        else
-        {
-            // Xử lý điều hướng cho các menu khác (Dashboard, Products...)
-            // NavigationService.NavigateTo(tag);
-            switch (tag)
+            if (targetTag == "Logout")
             {
-                case "Products":
-                    ContentFrame.Navigate(typeof(ProductsPage));
-                    break;
-                case "Dashboard":
-                    ContentFrame.Content = null;
-                    break;
-                case "Orders":
-                    ContentFrame.Content = null;
-                    break;
-                case "Reports":
-                    ContentFrame.Content = null;
-                    break;
-                case "Profile":
-                    ContentFrame.Content = null;
-                    break;
-                case "Settings":
-                    ContentFrame.Navigate(typeof(SettingsPage));
-                    break;
+                await HandleLogoutAsync();
+                return; // Dừng xử lý tiếp để không chuyển trang sau khi logout
+            }
+
+            // 1. Chuyển trang
+            Type pageType = PageHelper.GetPageTypeByTag(targetTag);
+            ContentFrame.Navigate(pageType);
+
+            // 2. Logic "Lưu nháp" phiên làm việc
+            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            bool isRestoreEnabled = localSettings.Values["RestoreSession"] as bool? ?? false;
+
+            if (isRestoreEnabled)
+            {
+                localSettings.Values["LastVisitedPage"] = targetTag;
             }
         }
     }
