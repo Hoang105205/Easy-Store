@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="UI.Views.Settings.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UI.Views.Settings"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="20" Padding="24,12,24,24">
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,0,0,24">
+                <FontIcon Glyph="&#xE713;" FontSize="30" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                <TextBlock Text="Cài đặt chung" FontSize="36" FontWeight="SemiBold"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4" HorizontalAlignment="Stretch" MaxWidth="1200">
+
+                <controls:SettingsCard Header="Số lượng mỗi trang" 
+                           Description="Chọn số lượng sản phẩm mặc định hiển thị trên mỗi trang.">
+                    <controls:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE946;" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                    </controls:SettingsCard.HeaderIcon>
+
+                    <ComboBox x:Name="ItemsPerPageComboBox" 
+                  Width="150" 
+                  PlaceholderText="Chọn số lượng" 
+                  SelectionChanged="ItemsPerPageComboBox_SelectionChanged">
+                        <x:String>5</x:String>
+                        <x:String>10</x:String>
+                        <x:String>15</x:String>
+                        <x:String>20</x:String>
+                    </ComboBox>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard Header="Chủ đề tối" 
+                           Description="Chuyển đổi giữa chế độ giao diện sáng và tối.">
+                    <controls:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE706;" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                    </controls:SettingsCard.HeaderIcon>
+
+                    <ToggleSwitch x:Name="DarkThemeToggle" 
+                      Toggled="DarkThemeToggle_Toggled"/>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard Header="Lưu trang lần cuối hoạt động" 
+                           Description="Tự động mở lại màn hình cuối cùng ở lần đăng nhập trước.">
+                    <controls:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE81C;" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                    </controls:SettingsCard.HeaderIcon>
+
+                    <ToggleSwitch x:Name="RestoreSessionToggle" 
+                      Toggled="RestoreSessionToggle_Toggled"/>
+                </controls:SettingsCard>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,20,0,0">
+                <FontIcon Glyph="&#xE968;" FontSize="30" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                <TextBlock Text="Kết nối Server" FontSize="42" FontWeight="SemiBold"/>
+            </StackPanel>
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="420"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Database URL" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <TextBox x:Name="DatabaseUrlTextBox" Grid.Column="1" PlaceholderText="http://localhost:5000"/>
+            </Grid>
+
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+                <Button x:Name="SaveDbUrlButton" Content="Lưu" Click="SaveDbUrlButton_Click" Style="{StaticResource AccentButtonStyle}" Background="{ThemeResource BrandPurpleBrush}"/>
+                <Button x:Name="TestDbUrlButton" Content="Kiểm tra" Click="TestDbUrlButton_Click"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,32,0,16">
+                <FontIcon Glyph="&#xE946;" FontSize="30" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                <TextBlock Text="Về chúng tôi" FontSize="36" FontWeight="SemiBold"/>
+            </StackPanel>
+
+            <controls:SettingsExpander Header="EasyStore v1.0" 
+                           Description="Phần mềm quản lý bán hàng và tồn kho."
+                           IsExpanded="False"
+                           HorizontalAlignment="Stretch" 
+                           MaxWidth="1200">
+                <controls:SettingsExpander.HeaderIcon>
+                    <FontIcon Glyph="&#xE946;" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                </controls:SettingsExpander.HeaderIcon>
+
+                <controls:SettingsExpander.Items>
+
+                    <controls:SettingsCard Header="Dự án được thiết kế và phát triển bởi team:">
+                        <Grid/>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard Header="Lưu Huy Hoàng" Description="MSSV: 23127047">
+                        <controls:SettingsCard.HeaderIcon>
+                            <FontIcon Glyph="&#xE77B;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </controls:SettingsCard.HeaderIcon>
+                        <Grid/>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard Header="Dương Gia Huy" Description="MSSV: 23127052">
+                        <controls:SettingsCard.HeaderIcon>
+                            <FontIcon Glyph="&#xE77B;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </controls:SettingsCard.HeaderIcon>
+                        <Grid/>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard Header="Nguyễn Hiếu Thuận" Description="MSSV: 23127125">
+                        <controls:SettingsCard.HeaderIcon>
+                            <FontIcon Glyph="&#xE77B;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </controls:SettingsCard.HeaderIcon>
+                        <Grid/>
+                    </controls:SettingsCard>
+
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
