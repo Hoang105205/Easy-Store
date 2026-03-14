@@ -36,7 +36,8 @@ namespace UI.Views.Settings
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
 
             // Pagination
-            ItemsPerPageComboBox.SelectedIndex = 0;
+            int savedItemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
+            ItemsPerPageComboBox.SelectedItem = savedItemsPerPage.ToString();
 
             // Theme
             if (localSettings.Values["IsDarkMode"] is bool isDark)
@@ -55,9 +56,10 @@ namespace UI.Views.Settings
 
         private void ItemsPerPageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ItemsPerPageComboBox.SelectedItem is string value)
+            if (ItemsPerPageComboBox.SelectedItem is string selectedValue && int.TryParse(selectedValue, out int itemsPerPage))
             {
-                Debug.WriteLine($"[Settings] Items per page changed: {value}");
+                // Ghi đè số mới vào LocalSettings
+                Windows.Storage.ApplicationData.Current.LocalSettings.Values["ItemsPerPage"] = itemsPerPage;
             }
         }
 
@@ -104,11 +106,6 @@ namespace UI.Views.Settings
         private void TestDbUrlButton_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine($"[Settings] Test DB URL clicked: {DatabaseUrlTextBox.Text}");
-        }
-
-        private void AboutButton_Click(object sender, RoutedEventArgs e)
-        {
-            Debug.WriteLine("[Settings] About button clicked.");
         }
     }
 }
