@@ -40,6 +40,7 @@ builder.Services
     .AddTypeExtension<ProductQueries>()
     .AddMutationType<Mutation>()
     .AddTypeExtension<AuthMutation>()
+    .AddTypeExtension<ProductMutation>()
     .AddProjections() // Kích hoạt tính năng Projection để tự động ánh xạ các trường con khi truy vấn
                       // Giúp debug lỗi GraphQL chi tiết hơn trong cửa sổ Output của UI
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())

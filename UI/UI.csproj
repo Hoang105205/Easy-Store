@@ -28,6 +28,7 @@
     <None Remove="Views\ConfigDialog.xaml" />
     <None Remove="Views\Dashboard\DashboardPage.xaml" />
     <None Remove="Views\LoginPage.xaml" />
+    <None Remove="Views\Products\CreateProductPage.xaml" />
     <None Remove="Views\Settings\SettingsPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
@@ -92,6 +93,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Views\Products\CreateProductPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Views\ProductsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -120,9 +126,6 @@
     <Page Update="Views\Dashboard\DashboardPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Products\" />
   </ItemGroup>
 
   <!--
