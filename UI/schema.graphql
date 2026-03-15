@@ -10,6 +10,7 @@ type Query {
 
 type Mutation {
   login(username: String! password: String!): LoginResultDTO!
+  createProduct(input: CreateProductInput!): Product!
 }
 
 "A connection to a list of items."
@@ -40,6 +41,16 @@ type ProductsEdge {
   cursor: String!
   "The item at the end of the edge."
   node: Product!
+}
+
+input CreateProductInput {
+  sku: String!
+  name: String!
+  categoryId: UUID!
+  importPrice: Long!
+  salePrice: Long!
+  stockQuantity: Int!
+  imagePaths: [String!]!
 }
 
 type Product {
@@ -74,14 +85,6 @@ type User {
   lastVisitedPage: String
 }
 
-type ProductImage {
-  id: UUID!
-  productId: UUID!
-  product: Product
-  imagePath: String!
-  isPrimary: Boolean!
-}
-
 type ImportLog {
   id: UUID!
   productId: UUID!
@@ -104,6 +107,14 @@ scalar DateTime
 scalar Long
 
 scalar UUID
+
+type ProductImage {
+  id: UUID!
+  productId: UUID!
+  product: Product
+  imagePath: String!
+  isPrimary: Boolean!
+}
 
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
 directive @cost("The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc." weight: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION

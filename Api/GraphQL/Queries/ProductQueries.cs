@@ -15,6 +15,6 @@ public class ProductQueries
     [UseProjection]
     public IQueryable<Product> GetProducts([Service] AppDbContext dbContext)
     {
-        return dbContext.Products;
+        return dbContext.Products.OrderByDescending(p => p.CreatedAt);
     }
 }

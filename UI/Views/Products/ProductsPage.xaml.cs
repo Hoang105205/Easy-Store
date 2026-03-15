@@ -12,9 +12,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using UI.ViewModels;
+using UI.Views.Products;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using UI.ViewModels;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -49,6 +50,11 @@ namespace UI.Views
         private async void BtnPreviousPage_Click(object sender, RoutedEventArgs e)
         {
             await ViewModel.PreviousPageAsync();
+        }
+        
+        private void BtnAddProduct_Click(object sender, RoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(CreateProductPage));
         }
     }
 }

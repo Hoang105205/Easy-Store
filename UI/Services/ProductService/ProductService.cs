@@ -42,5 +42,28 @@ namespace UI.Services.ProductService
 
             return (mappedData, pageInfo?.EndCursor, pageInfo?.HasNextPage ?? false);
         }
+
+        public async Task<bool> CreateProductAsync(string sku, string name, Guid categoryId, long importPrice, long salePrice, int stockQty, List<string> images)
+        {
+            var input = new CreateProductInput
+            {
+                Sku = sku,
+                Name = name,
+                CategoryId = categoryId,
+                ImportPrice = importPrice,
+                SalePrice = salePrice,
+                StockQuantity = stockQty,
+                ImagePaths = images
+            };
+
+            var result = await _client.CreateProduct.ExecuteAsync(input);
+
+            if (result.Errors.Count > 0)
+            {
+                throw new Exception(result.Errors[0].Message);
+            }
+
+            return result.Data?.CreateProduct != null;
+        }
     }
 }
