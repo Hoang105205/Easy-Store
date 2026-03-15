@@ -15,6 +15,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using UI.Services.AuthService;
+using UI.Utils;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -148,42 +149,7 @@ public sealed partial class LoginPage : Page
 
     private async void ServerConfigButton_Click(object sender, RoutedEventArgs e)
     {
-        // 1. Lấy URL cũ từ bộ nhớ máy (LocalSettings)
-        var settings = Windows.Storage.ApplicationData.Current.LocalSettings;
-        string savedUrl = settings.Values["DbConnectionString"]?.ToString() ?? "";
-
-        // 2. Khởi tạo và hiển thị Dialog
-        var dialog = new ConfigDialog(savedUrl)
-        {
-            XamlRoot = this.XamlRoot
-        };
-
-        // Đăng ký sự kiện nút Test ngay trong lúc Dialog đang mở
-        dialog.SecondaryButtonClick += async (s, args) => {
-            args.Cancel = true; // Chặn không cho Dialog đóng lại
-            await dialog.RunTestAsync();
-        };
-
-        var result = await dialog.ShowAsync();
-
-        // 3. Nếu bấm "Lưu" (PrimaryButton), thực hiện lưu vào máy
-        if (result == ContentDialogResult.Primary)
-        {
-            string newUrl = dialog.DbConnectionString?.Trim() ?? "";
-
-            if (!string.IsNullOrEmpty(newUrl) && newUrl != savedUrl)
-            {
-                settings.Values["DbConnectionString"] = newUrl;
-
-                // 3. RESTART LOGIC: Dừng cái cũ, bật cái mới
-                App.Current.StopBackendApi(); // Dọn dẹp bản cũ
-                App.Current.StartBackendApi(newUrl); // Khởi chạy bản mới với tham số mới
-
-                Debug.WriteLine("=== Restart API thành công với URL mới ===");
-            }
-
-            // Gợi ý: Hiển thị một thông báo nhỏ (InfoBar) báo thành công
-        }
+        await DbConfigManager.ShowConfigDialogAsync(this.XamlRoot);
     }
 
     private async Task PlayFadeOutAnimation()

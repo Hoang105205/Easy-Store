@@ -29,14 +29,20 @@ public sealed partial class ConfigDialog : ContentDialog
         InitializeComponent();
         UrlInput.Text = currentUrl;
 
+        IsPrimaryButtonEnabled = false;
+
         UrlInput.TextChanged += (s, e) => {
-            IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(UrlInput.Text);
+            IsPrimaryButtonEnabled = false;
+            DefaultButton = ContentDialogButton.None;
+            StatusTextBlock.Visibility = Visibility.Collapsed;
         };
     }
 
     // Logic cho nút "Kiểm tra" (SecondaryButton)
     public async Task<bool> RunTestAsync()
     {
+        IsPrimaryButtonEnabled = false;
+
         StatusTextBlock.Visibility = Visibility.Visible;
         StatusTextBlock.Text = "Đang kiểm tra kết nối...";
         StatusTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Orange);
@@ -48,12 +54,22 @@ public sealed partial class ConfigDialog : ContentDialog
 
             StatusTextBlock.Text = "Kết nối thành công! Bạn có thể lưu cấu hình.";
             StatusTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
+
+            IsPrimaryButtonEnabled = true;
+
+            // Thêm 2 dòng này để sửa lỗi UX:
+            DefaultButton = ContentDialogButton.Primary;
+            this.UpdateLayout();
+
             return true;
         }
         catch (Exception ex)
         {
             StatusTextBlock.Text = $"Lỗi: {ex.Message}";
             StatusTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red);
+
+            IsPrimaryButtonEnabled = false;
+
             return false;
         }
     }
