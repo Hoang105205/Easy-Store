@@ -85,7 +85,8 @@
                     <TextBlock Grid.Column="4" Text="Giá đơn vị" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right"/>
                 </Grid>
 
-                <ListView x:Name="ProductsListView" ItemsSource="{x:Bind ViewModel.Products, Mode=OneWay}" Grid.Row="1" SelectionMode="None" Margin="0,10,0,10">
+                <ListView x:Name="ProductsListView" ItemsSource="{x:Bind ViewModel.Products, Mode=OneWay}" Grid.Row="1" SelectionMode="None" Margin="0,10,0,10"
+                          IsItemClickEnabled="True" ItemClick="ProductsListView_ItemClick">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid Padding="0,15,0,15" BorderBrush="#F9F9F9" BorderThickness="0,0,0,1">

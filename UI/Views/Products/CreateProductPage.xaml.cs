@@ -119,6 +119,19 @@ namespace UI.Views.Products
             }
         }
 
+        private void RemoveImage_Click(object sender, RoutedEventArgs e)
+        {
+            // Lấy đối tượng Button vừa được click
+            if (sender is Button btn)
+            {
+                // Mặc định DataContext của DataTemplate chính là object item của danh sách (ở đây là đường dẫn string)
+                if (btn.DataContext is string imagePath)
+                {
+                    ViewModel.SelectedImages.Remove(imagePath);
+                }
+            }
+        }
+
         private async Task ShowDialog(string title, string content)
         {
             var dialog = new ContentDialog { Title = title, Content = content, CloseButtonText = "Đóng", XamlRoot = this.XamlRoot, RequestedTheme = this.ActualTheme };

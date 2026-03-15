@@ -23,23 +23,17 @@ public partial class CreateProductViewModel : ObservableObject
     public ObservableCollection<CategoryMock> Categories { get; } = new();
     public ObservableCollection<string> SelectedImages { get; } = new();
 
-    [ObservableProperty]
-    private string sku = string.Empty; // Tự động tạo ra property: public string Sku { get; set; }
+    [ObservableProperty] private string sku = string.Empty; 
 
-    [ObservableProperty]
-    private string productName = string.Empty; // Tự động tạo ra: public string ProductName { get; set; }
+    [ObservableProperty] private string productName = string.Empty;
 
-    [ObservableProperty]
-    private CategoryMock? selectedCategory; // Tự động tạo ra: public CategoryMock? SelectedCategory { get; set; }
+    [ObservableProperty] private CategoryMock? selectedCategory; 
 
-    [ObservableProperty]
-    private long importPrice = 0; // Tự động tạo ra: public long ImportPrice { get; set; }
+    [ObservableProperty] private long importPrice = 0; 
 
-    [ObservableProperty]
-    private int importQuantity = 0; // Tự động tạo ra: public int ImportQuantity { get; set; }
+    [ObservableProperty] private int importQuantity = 0; 
 
-    [ObservableProperty]
-    private long salePrice = 0; // Tự động tạo ra: public long SalePrice { get; set; }
+    [ObservableProperty] private long salePrice = 0; 
 
     public CreateProductViewModel()
     {
@@ -59,7 +53,7 @@ public partial class CreateProductViewModel : ObservableObject
     // Trả về Tuple (IsSuccess, ErrorMessage)
     public (bool, string) ValidateForm()
     {
-        if (string.IsNullOrWhiteSpace(Sku)) return (false, "Vui lòng nhập mã SKU."); // Validate SKU
+        if (string.IsNullOrWhiteSpace(Sku)) return (false, "Vui lòng nhập mã SKU.");
         if (string.IsNullOrWhiteSpace(ProductName)) return (false, "Vui lòng nhập tên sản phẩm.");
         if (SelectedCategory == null) return (false, "Vui lòng chọn danh mục.");
         if (SelectedImages.Count < 1) return (false, "Vui lòng chọn ít nhất 1 ảnh.");
@@ -98,9 +92,5 @@ public partial class CreateProductViewModel : ObservableObject
         ImportQuantity = 0;
         SalePrice = 0;
         SelectedImages.Clear();
-        // Thông báo UI cập nhật (Cần gọi OnPropertyChanged cho các property, ở đây để code ngắn gọn, hãy biến các field trên thành Property đầy đủ giống IsLoading ở bài trước)
     }
-
-    //public event PropertyChangedEventHandler? PropertyChanged;
-    //protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
