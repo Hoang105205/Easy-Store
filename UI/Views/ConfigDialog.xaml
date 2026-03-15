@@ -8,6 +8,14 @@
     CloseButtonText="Hủy"
     DefaultButton="Primary">
 
+    <ContentDialog.PrimaryButtonStyle>
+        <Style TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+            <Setter Property="Background" Value="{ThemeResource BrandPurpleBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource BrandPurpleBrush}"/>
+        </Style>
+    </ContentDialog.PrimaryButtonStyle>
+
     <StackPanel Spacing="15" Width="350">
         <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Text="Database URL" FontWeight="SemiBold" FontSize="14"/>
@@ -18,7 +26,7 @@
                  PlaceholderText="Nhập chuỗi kết nối (vd: Host=...)" 
                  TextWrapping="Wrap" 
                  AcceptsReturn="True" 
-                 Height="80"
+                 Height="200"
                  CornerRadius="4"/>
 
         <TextBlock x:Name="StatusTextBlock" FontSize="12" Visibility="Collapsed"/>

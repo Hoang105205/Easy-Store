@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using UI.Utils;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -48,10 +49,6 @@ namespace UI.Views.Settings
             // Session
             bool isRestoreEnabled = localSettings.Values["RestoreSession"] as bool? ?? false;
             RestoreSessionToggle.IsOn = isRestoreEnabled;
-
-            // Database
-            DatabaseUrlTextBox.Text = "http://localhost:5000";
-            Debug.WriteLine("[Settings] SettingsPage loaded.");
         }
 
         private void ItemsPerPageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -98,14 +95,9 @@ namespace UI.Views.Settings
             }
         }
 
-        private void SaveDbUrlButton_Click(object sender, RoutedEventArgs e)
+        private async void OpenServerConfigButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"[Settings] Save DB URL clicked: {DatabaseUrlTextBox.Text}");
-        }
-
-        private void TestDbUrlButton_Click(object sender, RoutedEventArgs e)
-        {
-            Debug.WriteLine($"[Settings] Test DB URL clicked: {DatabaseUrlTextBox.Text}");
+            await DbConfigManager.ShowConfigDialogAsync(this.XamlRoot);
         }
     }
 }

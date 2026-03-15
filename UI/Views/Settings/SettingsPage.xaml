@@ -58,25 +58,25 @@
 
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,20,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,32,0,16">
                 <FontIcon Glyph="&#xE968;" FontSize="30" Foreground="{ThemeResource BrandPurpleBrush}"/>
-                <TextBlock Text="Kết nối Server" FontSize="42" FontWeight="SemiBold"/>
+                <TextBlock Text="Kết nối Server" FontSize="36" FontWeight="SemiBold"/>
             </StackPanel>
 
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="420"/>
-                </Grid.ColumnDefinitions>
+            <controls:SettingsCard Header="Cấu hình cơ sở dữ liệu (Database URL)" 
+                       Description="Thay đổi đường dẫn kết nối đến Server API và kiểm tra trạng thái."
+                       HorizontalAlignment="Stretch" 
+                       MaxWidth="1200">
+                <controls:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xEDA6;" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                </controls:SettingsCard.HeaderIcon>
 
-                <TextBlock Text="Database URL" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                <TextBox x:Name="DatabaseUrlTextBox" Grid.Column="1" PlaceholderText="http://localhost:5000"/>
-            </Grid>
-
-            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-                <Button x:Name="SaveDbUrlButton" Content="Lưu" Click="SaveDbUrlButton_Click" Style="{StaticResource AccentButtonStyle}" Background="{ThemeResource BrandPurpleBrush}"/>
-                <Button x:Name="TestDbUrlButton" Content="Kiểm tra" Click="TestDbUrlButton_Click"/>
-            </StackPanel>
+                <Button x:Name="OpenServerConfigButton" 
+                Content="Thay đổi cấu hình" 
+                Style="{StaticResource AccentButtonStyle}"
+                Background="{ThemeResource BrandPurpleBrush}"
+                Click="OpenServerConfigButton_Click" />
+            </controls:SettingsCard>
 
             <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,32,0,16">
                 <FontIcon Glyph="&#xE946;" FontSize="30" Foreground="{ThemeResource BrandPurpleBrush}"/>
