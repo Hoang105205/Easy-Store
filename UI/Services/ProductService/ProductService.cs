@@ -31,6 +31,7 @@ namespace UI.Services.ProductService
             // Map dữ liệu GraphQL sang Model của ứng dụng
             var mappedData = result.Data?.Products?.Nodes?.Select(x => new ProductModel
             {
+                Id = x.Id,
                 Name = x.Name,
                 CategoryName = x.Category?.Name ?? "Chưa có danh mục",
                 ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
@@ -64,6 +65,35 @@ namespace UI.Services.ProductService
             }
 
             return result.Data?.CreateProduct != null;
+        }
+
+        public async Task<IGetProductById_ProductById?> GetProductByIdAsync(Guid id)
+        {
+            var result = await _client.GetProductById.ExecuteAsync(id);
+            if (result.Errors.Count > 0) throw new Exception(result.Errors[0].Message);
+            return result.Data?.ProductById;
+        }
+
+        public async Task<bool> UpdateProductAsync(Guid id, string sku, string name, Guid categoryId, long salePrice, List<string> images)
+        {
+            var input = new UpdateProductInput
+            {
+                Id = id,
+                Sku = sku,
+                Name = name,
+                CategoryId = categoryId,
+                SalePrice = salePrice,
+                ImagePaths = images
+            };
+            var result = await _client.UpdateProduct.ExecuteAsync(input);
+            if (result.Errors.Count > 0) throw new Exception(result.Errors[0].Message);
+            return result.Data?.UpdateProduct != null;
+        }
+        public async Task<bool> DeleteProductAsync(Guid id)
+        {
+            var result = await _client.DeleteProduct.ExecuteAsync(id);
+            if (result.Errors.Count > 0) throw new Exception(result.Errors[0].Message);
+            return result.Data?.DeleteProduct ?? false;
         }
     }
 }

@@ -28,3 +28,34 @@ mutation CreateProduct($input: CreateProductInput!) {
     name
   }
 }
+
+query GetProductById($id: UUID!) {
+  productById(id: $id) {
+    id
+    sku
+    name
+    importPrice
+    salePrice
+    stockQuantity
+    createdAt
+    categoryId
+    category {
+      id
+      name
+    }
+    images {
+      imagePath
+      isPrimary
+    }
+  }
+}
+
+mutation UpdateProduct($input: UpdateProductInput!) {
+  updateProduct(input: $input) {
+    id
+  }
+}
+
+mutation DeleteProduct($id: UUID!) {
+  deleteProduct(id: $id)
+}

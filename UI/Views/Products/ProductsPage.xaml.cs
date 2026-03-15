@@ -16,6 +16,7 @@ using UI.ViewModels;
 using UI.Views.Products;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Microsoft.UI.Xaml.Navigation;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -33,12 +34,12 @@ namespace UI.Views
         public ProductsPage()
         {
             InitializeComponent();
-            Loaded += ProductsPage_Loaded;
+            // Đổi từ Loaded thành sự kiện này:
         }
 
-        private async void ProductsPage_Loaded(object sender, RoutedEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            // Tự động load dữ liệu khi trang được mở lên
+            base.OnNavigatedTo(e);
             await ViewModel.LoadProductsAsync();
         }
 
@@ -55,6 +56,14 @@ namespace UI.Views
         private void BtnAddProduct_Click(object sender, RoutedEventArgs e)
         {
             this.Frame.Navigate(typeof(CreateProductPage));
+        }
+
+        private void ProductsListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is ProductModel selectedProduct)
+            {
+                this.Frame.Navigate(typeof(Products.ProductDetailPage), selectedProduct.Id);
+            }
         }
     }
 }
