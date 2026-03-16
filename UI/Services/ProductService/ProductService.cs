@@ -33,6 +33,7 @@ namespace UI.Services.ProductService
             {
                 Id = x.Id,
                 Name = x.Name,
+                Sku = x.Sku,
                 CategoryName = x.Category?.Name ?? "Chưa có danh mục",
                 ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
                 StockQuantity = x.StockQuantity,

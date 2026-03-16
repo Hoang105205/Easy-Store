@@ -9,6 +9,7 @@
     nodes {
       id
       name
+      sku
       salePrice
       stockQuantity
       category {

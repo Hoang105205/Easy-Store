@@ -94,16 +94,18 @@
 
                 <Grid Padding="10,0,10,15" BorderBrush="#EEEEEE" BorderThickness="0,0,0,1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="125"/>
                         <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1.5*"/>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1.5*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="1" Text="Tên sản phẩm" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="2" Text="Danh mục sản phẩm" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="3" Text="Số lượng tồn kho" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Column="4" Text="Giá đơn vị" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Column="2" Text="SKU" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Grid.Column="3" Text="Danh mục sản phẩm" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Grid.Column="4" Text="Số lượng tồn kho" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Column="5" Text="Giá đơn vị" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right"/>
                 </Grid>
 
                 <ListView x:Name="ProductsListView" ItemsSource="{x:Bind ProductVM.Products, Mode=OneWay}" Grid.Row="1" SelectionMode="None" Margin="0,10,0,10"
@@ -112,25 +114,25 @@
                         <DataTemplate>
                             <Grid Padding="0,15,0,15" BorderBrush="#F9F9F9" BorderThickness="0,0,0,1">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="125"/>
                                     <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="1*"/>
                                     <ColumnDefinition Width="1.5*"/>
                                     <ColumnDefinition Width="1*"/>
                                     <ColumnDefinition Width="1.5*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Border Width="50" Height="50" CornerRadius="8" HorizontalAlignment="Left">
+                                <Border Width="80" Height="80" CornerRadius="8" HorizontalAlignment="Left">
                                     <Border.Background>
                                         <ImageBrush ImageSource="{Binding ImagePath}" Stretch="UniformToFill"/>
                                     </Border.Background>
                                 </Border>
 
                                 <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-
-                                <TextBlock Grid.Column="2" Text="{Binding CategoryName}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-
-                                <TextBlock Grid.Column="3" Text="{Binding StockQuantity}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                <TextBlock Grid.Column="4" Text="{Binding SalePrice}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Grid.Column="2" Text="{Binding Sku}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Grid.Column="3" Text="{Binding CategoryName}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Grid.Column="4" Text="{Binding StockQuantity}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Grid.Column="5" Text="{Binding SalePrice}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
