@@ -228,9 +228,6 @@ input CreateProductInput {
   sku: String!
   name: String!
   categoryId: UUID!
-  importPrice: Long!
-  salePrice: Long!
-  stockQuantity: Int!
   imagePaths: [String!]!
 }
 

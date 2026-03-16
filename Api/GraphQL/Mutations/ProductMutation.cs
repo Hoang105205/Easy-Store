@@ -14,9 +14,6 @@ public record CreateProductInput(
     string Sku,
     string Name,
     Guid CategoryId,
-    long ImportPrice,
-    long SalePrice,
-    int StockQuantity,
     List<string> ImagePaths
 );
 
@@ -43,9 +40,9 @@ public class ProductMutation
             SKU = input.Sku,
             Name = input.Name,
             CategoryId = input.CategoryId,
-            ImportPrice = input.ImportPrice,
-            SalePrice = input.SalePrice,
-            StockQuantity = input.StockQuantity,
+            ImportPrice = 0,
+            SalePrice = 0,
+            StockQuantity = 0,
             IsDraft = false,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
