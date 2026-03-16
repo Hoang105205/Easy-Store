@@ -7,6 +7,7 @@ type Query {
   users: [User!]!
   products("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): ProductsConnection
   productById(id: UUID!): Product
+  categories(where: CategoryFilterInput order: [CategorySortInput!]): [Category!]!
 }
 
 type Mutation {
@@ -14,6 +15,8 @@ type Mutation {
   createProduct(input: CreateProductInput!): Product!
   updateProduct(input: UpdateProductInput!): Product!
   deleteProduct(id: UUID!): Boolean!
+  createCategory(name: String!): Category!
+  deleteCategory(id: UUID!): Boolean!
 }
 
 "A connection to a list of items."
@@ -24,6 +27,19 @@ type ProductsConnection {
   edges: [ProductsEdge!]
   "A flattened list of the nodes."
   nodes: [Product!]
+}
+
+input CategoryFilterInput {
+  and: [CategoryFilterInput!]
+  or: [CategoryFilterInput!]
+  id: UuidOperationFilterInput
+  name: StringOperationFilterInput
+  products: ListFilterInputTypeOfProductFilterInput
+}
+
+input CategorySortInput {
+  id: SortEnumType
+  name: SortEnumType
 }
 
 "Information about pagination in a connection."
@@ -44,6 +60,159 @@ type ProductsEdge {
   cursor: String!
   "The item at the end of the edge."
   node: Product!
+}
+
+input UuidOperationFilterInput {
+  eq: UUID
+  neq: UUID
+  in: [UUID]
+  nin: [UUID]
+  gt: UUID
+  ngt: UUID
+  gte: UUID
+  ngte: UUID
+  lt: UUID
+  nlt: UUID
+  lte: UUID
+  nlte: UUID
+}
+
+input StringOperationFilterInput {
+  and: [StringOperationFilterInput!]
+  or: [StringOperationFilterInput!]
+  eq: String
+  neq: String
+  contains: String
+  ncontains: String
+  in: [String]
+  nin: [String]
+  startsWith: String
+  nstartsWith: String
+  endsWith: String
+  nendsWith: String
+}
+
+input ListFilterInputTypeOfProductFilterInput {
+  all: ProductFilterInput
+  none: ProductFilterInput
+  some: ProductFilterInput
+  any: Boolean
+}
+
+enum SortEnumType {
+  ASC
+  DESC
+}
+
+scalar UUID
+
+input ProductFilterInput {
+  and: [ProductFilterInput!]
+  or: [ProductFilterInput!]
+  id: UuidOperationFilterInput
+  categoryId: UuidOperationFilterInput
+  sku: StringOperationFilterInput
+  name: StringOperationFilterInput
+  importPrice: LongOperationFilterInput
+  salePrice: LongOperationFilterInput
+  stockQuantity: IntOperationFilterInput
+  isDraft: BooleanOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+  category: CategoryFilterInput
+  importLogs: ListFilterInputTypeOfImportLogFilterInput
+  images: ListFilterInputTypeOfProductImageFilterInput
+}
+
+input LongOperationFilterInput {
+  eq: Long
+  neq: Long
+  in: [Long]
+  nin: [Long]
+  gt: Long
+  ngt: Long
+  gte: Long
+  ngte: Long
+  lt: Long
+  nlt: Long
+  lte: Long
+  nlte: Long
+}
+
+input IntOperationFilterInput {
+  eq: Int
+  neq: Int
+  in: [Int]
+  nin: [Int]
+  gt: Int
+  ngt: Int
+  gte: Int
+  ngte: Int
+  lt: Int
+  nlt: Int
+  lte: Int
+  nlte: Int
+}
+
+input BooleanOperationFilterInput {
+  eq: Boolean
+  neq: Boolean
+}
+
+input DateTimeOperationFilterInput {
+  eq: DateTime
+  neq: DateTime
+  in: [DateTime]
+  nin: [DateTime]
+  gt: DateTime
+  ngt: DateTime
+  gte: DateTime
+  ngte: DateTime
+  lt: DateTime
+  nlt: DateTime
+  lte: DateTime
+  nlte: DateTime
+}
+
+input ListFilterInputTypeOfImportLogFilterInput {
+  all: ImportLogFilterInput
+  none: ImportLogFilterInput
+  some: ImportLogFilterInput
+  any: Boolean
+}
+
+input ListFilterInputTypeOfProductImageFilterInput {
+  all: ProductImageFilterInput
+  none: ProductImageFilterInput
+  some: ProductImageFilterInput
+  any: Boolean
+}
+
+"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
+scalar Long
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
+
+input ImportLogFilterInput {
+  and: [ImportLogFilterInput!]
+  or: [ImportLogFilterInput!]
+  id: UuidOperationFilterInput
+  productId: UuidOperationFilterInput
+  quantityAdded: IntOperationFilterInput
+  actualImportPrice: LongOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  product: ProductFilterInput
+}
+
+input ProductImageFilterInput {
+  and: [ProductImageFilterInput!]
+  or: [ProductImageFilterInput!]
+  id: UuidOperationFilterInput
+  productId: UuidOperationFilterInput
+  product: ProductFilterInput
+  imagePath: StringOperationFilterInput
+  isPrimary: BooleanOperationFilterInput
 }
 
 input UpdateProductInput {
@@ -70,7 +239,11 @@ type LoginResultDTO {
   message: String!
 }
 
-scalar UUID
+type Category {
+  id: UUID!
+  name: String!
+  products: [Product]
+}
 
 type Product {
   id: UUID!
@@ -115,18 +288,6 @@ type ImportLog {
   createdAt: DateTime!
   product: Product
 }
-
-type Category {
-  id: UUID!
-  name: String!
-  products: [Product]
-}
-
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime
-
-"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
-scalar Long
 
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
 directive @cost("The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc." weight: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION
