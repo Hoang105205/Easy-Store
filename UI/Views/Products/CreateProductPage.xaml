@@ -11,33 +11,19 @@
                 <TextBlock Text="Thêm sản phẩm mới" FontSize="32" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
 
                 <Grid ColumnSpacing="24" HorizontalAlignment="Stretch">
+                    <TextBox Header="Tên sản phẩm (*)" Text="{x:Bind ViewModel.ProductName, Mode=TwoWay}" PlaceholderText="Nhập tên sản phẩm" Height="65"/>
+                </Grid>
+
+                <Grid ColumnSpacing="24" HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Header="Tên sản phẩm (*)" Text="{x:Bind ViewModel.ProductName, Mode=TwoWay}" PlaceholderText="Nhập tên sản phẩm" Height="65"/>
+                    <TextBox Header="Mã SKU (*)" Text="{x:Bind ViewModel.Sku, Mode=TwoWay}" PlaceholderText="Ví dụ: SP001" Height="65"/>
                     <ComboBox Grid.Column="1" Header="Danh mục sản phẩm (*)" HorizontalAlignment="Stretch" Height="65"
                               ItemsSource="{x:Bind ViewModel.Categories}" 
                               SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
                               DisplayMemberPath="Name" PlaceholderText="Vui lòng chọn danh mục"/>
-                </Grid>
-
-                <Grid ColumnSpacing="24" HorizontalAlignment="Stretch">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox Header="Giá nhập (VNĐ)" Text="{x:Bind ViewModel.ImportPrice, Mode=TwoWay}" PlaceholderText="0" Height="65"/>
-                    <TextBox Grid.Column="1" Header="Số lượng nhập" Text="{x:Bind ViewModel.ImportQuantity, Mode=TwoWay}" PlaceholderText="0" Height="65"/>
-                </Grid>
-
-                <Grid ColumnSpacing="24" HorizontalAlignment="Stretch">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox Header="Giá bán (VNĐ)" Text="{x:Bind ViewModel.SalePrice, Mode=TwoWay}" PlaceholderText="0" Height="65"/>
-                    <TextBox Grid.Column="1" Header="Mã SKU (*)" Text="{x:Bind ViewModel.Sku, Mode=TwoWay}" PlaceholderText="Ví dụ: SP001" Height="65"/>
                 </Grid>
 
                 <TextBlock Text="Hình ảnh sản phẩm (1-3 ảnh)" FontWeight="SemiBold"/>

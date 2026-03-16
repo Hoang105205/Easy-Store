@@ -28,13 +28,7 @@ public partial class CreateProductViewModel : ObservableObject
 
     [ObservableProperty] private string productName = string.Empty;
 
-    [ObservableProperty] private CategoryModel? selectedCategory; 
-
-    [ObservableProperty] private long importPrice = 0; 
-
-    [ObservableProperty] private int importQuantity = 0; 
-
-    [ObservableProperty] private long salePrice = 0; 
+    [ObservableProperty] private CategoryModel? selectedCategory;  
 
     public CreateProductViewModel()
     {
@@ -66,12 +60,6 @@ public partial class CreateProductViewModel : ObservableObject
         if (SelectedCategory == null) return (false, "Vui lòng chọn danh mục.");
         if (SelectedImages.Count < 1) return (false, "Vui lòng chọn ít nhất 1 ảnh.");
 
-        // Cặp điều kiện Nhập hàng
-        if ((ImportPrice > 0 && ImportQuantity <= 0) || (ImportQuantity > 0 && ImportPrice <= 0))
-        {
-            return (false, "Giá nhập và Số lượng nhập phải được nhập cùng lúc.");
-        }
-
         return (true, string.Empty);
     }
 
@@ -84,9 +72,6 @@ public partial class CreateProductViewModel : ObservableObject
             Sku,
             ProductName,
             SelectedCategory!.Id,
-            ImportPrice,
-            SalePrice,
-            ImportQuantity,
             new List<string>(SelectedImages)
         );
     }
@@ -96,9 +81,6 @@ public partial class CreateProductViewModel : ObservableObject
         ProductName = string.Empty;
         Sku = string.Empty;
         SelectedCategory = null;
-        ImportPrice = 0;
-        ImportQuantity = 0;
-        SalePrice = 0;
         SelectedImages.Clear();
     }
 }
