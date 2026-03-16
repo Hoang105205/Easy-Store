@@ -56,7 +56,15 @@ public sealed partial class ShellPage : Page
 
         // 1. Chuyển Frame tới trang đó
         Type pageType = PageHelper.GetPageTypeByTag(pageToLoad);
-        ContentFrame.Navigate(pageType);
+        if (pageType == null)
+        {
+            ContentFrame.Content = null;
+        }
+        else
+        {
+
+            ContentFrame.Navigate(pageType);
+        }
 
         // 2. Highlight (Làm sáng) đúng nút trên thanh Menu
         var allMenuItems = NavView.MenuItems.OfType<NavigationViewItem>()
@@ -79,7 +87,15 @@ public sealed partial class ShellPage : Page
 
             // 1. Chuyển trang
             Type pageType = PageHelper.GetPageTypeByTag(targetTag);
-            ContentFrame.Navigate(pageType);
+            if (pageType == null)
+            {
+                ContentFrame.Content = null; // Hoặc bạn có thể điều hướng về một trang lỗi chung
+            }
+            else
+            {
+                ContentFrame.Navigate(pageType);
+            }
+
 
             // 2. Logic "Lưu nháp" phiên làm việc
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;

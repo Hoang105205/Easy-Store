@@ -22,8 +22,8 @@ public class Product
     [MaxLength(200)]
     public string Name { get; set; } = string.Empty;
 
-    public long ImportPrice { get; set; } // Giá MAC
-    public long SalePrice { get; set; }
+    public long ?ImportPrice { get; set; } // Giá MAC
+    public long ?SalePrice { get; set; }
     public int StockQuantity { get; set; } = 0;
 
     // Cờ Auto-save
@@ -36,7 +36,7 @@ public class Product
     [ForeignKey(nameof(CategoryId))]
     public Category Category { get; set; }
 
-    public ICollection<ImportLog> ImportLogs { get; set; } = new List<ImportLog>();
+    public ICollection<ImportLogDetail> ImportLogs { get; set; } = new List<ImportLogDetail>();
 
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
 }

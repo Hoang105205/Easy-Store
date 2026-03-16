@@ -19,10 +19,4 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
 
     public bool HasCompletedOnboarding { get; set; } = false;
-    public int ItemsPerPage { get; set; } = 10;
-    public bool IsDarkMode { get; set; } = false;
-
-    // Lưu trạng thái phiên làm việc cuối
-    public bool RememberLastSession { get; set; } = true;
-    public string? LastVisitedPage { get; set; }
 }

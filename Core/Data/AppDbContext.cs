@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<ImportLog> ImportLogs { get; set; }
+    public DbSet<ImportLogDetail> ImportLogDetails { get; set; }
 
     // 3. FLUENT API: Thiết lập luật lệ ngầm cho PostgreSQL
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -53,6 +54,10 @@ public class AppDbContext : DbContext
             .HasDefaultValueSql("gen_random_uuid()");
 
         modelBuilder.Entity<ImportLog>()
+            .Property(e => e.Id)
+            .HasDefaultValueSql("gen_random_uuid()");
+
+        modelBuilder.Entity<ImportLogDetail>()
             .Property(e => e.Id)
             .HasDefaultValueSql("gen_random_uuid()");
 
