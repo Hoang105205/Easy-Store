@@ -4,90 +4,93 @@
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <ScrollViewer Padding="30">
-        <StackPanel Spacing="24" MaxWidth="1000" HorizontalAlignment="Center" Margin="0,20,0,40">
+        <Grid HorizontalAlignment="Stretch">
 
-            <TextBlock Text="Thêm sản phẩm mới" FontSize="32" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+            <StackPanel Spacing="24" HorizontalAlignment="Stretch" Margin="0,20,0,40" MinWidth="400" MaxWidth="1000">
 
-            <Grid ColumnSpacing="24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBox Header="Tên sản phẩm (*)" Text="{x:Bind ViewModel.ProductName, Mode=TwoWay}" PlaceholderText="Nhập tên sản phẩm" Height="65"/>
-                <ComboBox Grid.Column="1" Header="Danh mục sản phẩm (*)" HorizontalAlignment="Stretch" Height="65"
-                          ItemsSource="{x:Bind ViewModel.Categories}" 
-                          SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
-                          DisplayMemberPath="Name" PlaceholderText="Vui lòng chọn danh mục"/>
-            </Grid>
+                <TextBlock Text="Thêm sản phẩm mới" FontSize="32" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
 
-            <Grid ColumnSpacing="24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBox Header="Giá nhập (VNĐ)" Text="{x:Bind ViewModel.ImportPrice, Mode=TwoWay}" PlaceholderText="0" Height="65"/>
-                <TextBox Grid.Column="1" Header="Số lượng nhập" Text="{x:Bind ViewModel.ImportQuantity, Mode=TwoWay}" PlaceholderText="0" Height="65"/>
-            </Grid>
+                <Grid ColumnSpacing="24" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Header="Tên sản phẩm (*)" Text="{x:Bind ViewModel.ProductName, Mode=TwoWay}" PlaceholderText="Nhập tên sản phẩm" Height="65"/>
+                    <ComboBox Grid.Column="1" Header="Danh mục sản phẩm (*)" HorizontalAlignment="Stretch" Height="65"
+                              ItemsSource="{x:Bind ViewModel.Categories}" 
+                              SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
+                              DisplayMemberPath="Name" PlaceholderText="Vui lòng chọn danh mục"/>
+                </Grid>
 
-            <Grid ColumnSpacing="24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBox Header="Giá bán (VNĐ)" Text="{x:Bind ViewModel.SalePrice, Mode=TwoWay}" PlaceholderText="0" Height="65"/>
-                <TextBox Grid.Column="1" Header="Mã SKU (*)" Text="{x:Bind ViewModel.Sku, Mode=TwoWay}" PlaceholderText="Ví dụ: SP001" Height="65"/>
-            </Grid>
+                <Grid ColumnSpacing="24" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Header="Giá nhập (VNĐ)" Text="{x:Bind ViewModel.ImportPrice, Mode=TwoWay}" PlaceholderText="0" Height="65"/>
+                    <TextBox Grid.Column="1" Header="Số lượng nhập" Text="{x:Bind ViewModel.ImportQuantity, Mode=TwoWay}" PlaceholderText="0" Height="65"/>
+                </Grid>
 
-            <TextBlock Text="Hình ảnh sản phẩm (1-3 ảnh)" FontWeight="SemiBold"/>
+                <Grid ColumnSpacing="24" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Header="Giá bán (VNĐ)" Text="{x:Bind ViewModel.SalePrice, Mode=TwoWay}" PlaceholderText="0" Height="65"/>
+                    <TextBox Grid.Column="1" Header="Mã SKU (*)" Text="{x:Bind ViewModel.Sku, Mode=TwoWay}" PlaceholderText="Ví dụ: SP001" Height="65"/>
+                </Grid>
 
-            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="2" CornerRadius="8" 
-                    Background="{ThemeResource LayerFillColorDefaultBrush}" MinHeight="220" Padding="15" HorizontalAlignment="Stretch"
-                    AllowDrop="True" Drop="ImageDrop" DragOver="ImageDragOver">
+                <TextBlock Text="Hình ảnh sản phẩm (1-3 ảnh)" FontWeight="SemiBold"/>
 
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
+                <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="2" CornerRadius="8" 
+                        Background="{ThemeResource LayerFillColorDefaultBrush}" MinHeight="220" Padding="15" HorizontalAlignment="Stretch"
+                        AllowDrop="True" Drop="ImageDrop" DragOver="ImageDragOver">
 
-                    <GridView ItemsSource="{x:Bind ViewModel.SelectedImages, Mode=OneWay}" 
-                              SelectionMode="None" 
-                              HorizontalAlignment="Center"
-                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
-                        <GridView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="15"/>
-                            </ItemsPanelTemplate>
-                        </GridView.ItemsPanel>
-                        <GridView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Width="90" Height="90">
-                                    <Border CornerRadius="8" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                                        <Image Source="{Binding}" Stretch="UniformToFill"/>
-                                    </Border>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
 
-                                    <Button Click="RemoveImage_Click" 
-                                            Background="#99000000" Foreground="White" 
-                                            Width="24" Height="24" Padding="0" 
-                                            CornerRadius="12" BorderThickness="0"
-                                            HorizontalAlignment="Right" VerticalAlignment="Top" 
-                                            Margin="0,4,4,0" ToolTipService.ToolTip="Xóa ảnh này">
-                                        <FontIcon Glyph="&#xE711;" FontSize="10"/>
-                                    </Button>
-                                </Grid>
-                            </DataTemplate>
-                        </GridView.ItemTemplate>
-                    </GridView>
+                        <GridView ItemsSource="{x:Bind ViewModel.SelectedImages, Mode=OneWay}" 
+                                  SelectionMode="None" 
+                                  HorizontalAlignment="Center"
+                                  ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="3" />
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
+                            <GridView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Width="90" Height="90" Margin="0,0,15,0">
+                                        <Border CornerRadius="8" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                            <Image Source="{Binding}" Stretch="UniformToFill"/>
+                                        </Border>
 
-                    <FontIcon x:Name="UploadIcon" Glyph="&#xEB9F;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                                        <Button Click="RemoveImage_Click" 
+                                                Background="#99000000" Foreground="White" 
+                                                Width="24" Height="24" Padding="0" 
+                                                CornerRadius="12" BorderThickness="0"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                                Margin="0,4,4,0" ToolTipService.ToolTip="Xóa ảnh này">
+                                            <FontIcon Glyph="&#xE711;" FontSize="10"/>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                        </GridView>
 
-                    <TextBlock Text="Kéo thả hoặc bấm để chọn ảnh" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="16" HorizontalAlignment="Center"/>
-                    <Button Content="Tải ảnh lên" Click="UploadImages_Click" Style="{StaticResource AccentButtonStyle}" Background="{ThemeResource BrandPurpleBrush}" HorizontalAlignment="Center"/>
+                        <FontIcon x:Name="UploadIcon" Glyph="&#xEB9F;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Kéo thả hoặc bấm để chọn ảnh" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="16" HorizontalAlignment="Center"/>
+                        <Button Content="Tải ảnh lên" Click="UploadImages_Click" Style="{StaticResource AccentButtonStyle}" Background="{ThemeResource BrandPurpleBrush}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center" Margin="0,30,0,0">
+                    <Button Content="Tạo sản phẩm" Background="#2ECC71" Foreground="White" Width="140" Height="45" FontSize="16" FontWeight="SemiBold" Click="SaveBtn_Click"/>
+                    <Button Content="Hủy" Background="#E74C3C" Foreground="White" Width="120" Height="45" FontSize="16" FontWeight="SemiBold" Click="CancelBtn_Click"/>
+                    <Button Content="Nhập lại" Background="#9B59B6" Foreground="White" Width="120" Height="45" FontSize="16" FontWeight="SemiBold" Click="ResetBtn_Click"/>
                 </StackPanel>
-            </Border>
 
-            <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center" Margin="0,30,0,0">
-                <Button Content="Tạo sản phẩm" Background="#2ECC71" Foreground="White" Width="140" Height="45" FontSize="16" FontWeight="SemiBold" Click="SaveBtn_Click"/>
-                <Button Content="Hủy" Background="#E74C3C" Foreground="White" Width="120" Height="45" FontSize="16" FontWeight="SemiBold" Click="CancelBtn_Click"/>
-                <Button Content="Nhập lại" Background="#9B59B6" Foreground="White" Width="120" Height="45" FontSize="16" FontWeight="SemiBold" Click="ResetBtn_Click"/>
             </StackPanel>
-
-        </StackPanel>
+        </Grid>
     </ScrollViewer>
 </Page>
