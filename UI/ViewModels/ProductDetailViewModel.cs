@@ -8,12 +8,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using UI.Services.ProductService;
+using UI.Services.CategoryService;
 
 namespace UI.ViewModels;
 
 public partial class ProductDetailViewModel : ObservableObject
 {
     private readonly ProductService _productService;
+    private readonly CategoryService _categoryService;
 
     // trạng thái giao diện (View Mode hay Edit Mode)
     [ObservableProperty] private string pageTitle = "Chi tiết sản phẩm";
@@ -26,7 +28,7 @@ public partial class ProductDetailViewModel : ObservableObject
     [ObservableProperty] private Guid productId;
     [ObservableProperty] private string sku = string.Empty;
     [ObservableProperty] private string productName = string.Empty;
-    [ObservableProperty] private CategoryMock? selectedCategory;
+    [ObservableProperty] private CategoryModel? selectedCategory;
     [ObservableProperty] private long importPrice = 0;
     [ObservableProperty] private int stockQuantity = 0;
     [ObservableProperty] private long salePrice = 0;
@@ -36,7 +38,7 @@ public partial class ProductDetailViewModel : ObservableObject
     [ObservableProperty] private string? mainImage = "ms-appx:///Assets/StoreLogo.png"; // Vì ảnh load lâu nên tạm thời set ảnh mặc định, sau khi load xong sẽ update lại
     public ObservableCollection<string> DisplayImages { get; } = new(); 
     public ObservableCollection<string> EditImages { get; } = new();    
-    public ObservableCollection<CategoryMock> Categories { get; } = new();
+    public ObservableCollection<CategoryModel> Categories { get; } = new();
 
     // Lưu lại bản nháp để Restore nếu bấm Hủy
     private IGetProductById_ProductById? _originalData;
@@ -45,17 +47,23 @@ public partial class ProductDetailViewModel : ObservableObject
     public ProductDetailViewModel()
     {
         _productService = new ProductService();
+        _categoryService = new CategoryService();
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        LoadMockCategories();
     }
 
-    private void LoadMockCategories()
+    public async Task LoadCategoriesAsync()
     {
-        Categories.Add(new CategoryMock { Id = Guid.Parse("11111111-1111-1111-1111-111111111111"), Name = "Nước ngọt" });
-        Categories.Add(new CategoryMock { Id = Guid.Parse("22222222-2222-2222-2222-222222222222"), Name = "Bia & Đồ có cồn" });
-        Categories.Add(new CategoryMock { Id = Guid.Parse("33333333-3333-3333-3333-333333333333"), Name = "Bánh kẹo" });
-        Categories.Add(new CategoryMock { Id = Guid.Parse("44444444-4444-4444-4444-444444444444"), Name = "Mì ăn liền" });
-        Categories.Add(new CategoryMock { Id = Guid.Parse("55555555-5555-5555-5555-555555555555"), Name = "Gia vị" });
+        var apiCategories = await _categoryService.GetCategoriesAsync();
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            Categories.Clear();
+
+            foreach (var cat in apiCategories)
+            {
+                Categories.Add(cat);
+            }
+        });
     }
 
     public async Task LoadDataAsync(Guid id)
