@@ -7,27 +7,28 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UI.Services.ProductService;
 using CommunityToolkit.Mvvm.ComponentModel;
+using UI.Services.CategoryService;
+using Windows.UI.Notifications;
+using System.Diagnostics;
 
 namespace UI.ViewModels;
-
-public class CategoryMock
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-}
 
 public partial class CreateProductViewModel : ObservableObject
 {
     private readonly ProductService _productService;
 
-    public ObservableCollection<CategoryMock> Categories { get; } = new();
+    private readonly CategoryService _categoryService;
+
+    private readonly DispatcherQueue _dispatcherQueue;
+
+    public ObservableCollection<CategoryModel> Categories { get; } = new();
     public ObservableCollection<string> SelectedImages { get; } = new();
 
     [ObservableProperty] private string sku = string.Empty; 
 
     [ObservableProperty] private string productName = string.Empty;
 
-    [ObservableProperty] private CategoryMock? selectedCategory; 
+    [ObservableProperty] private CategoryModel? selectedCategory; 
 
     [ObservableProperty] private long importPrice = 0; 
 
@@ -38,16 +39,23 @@ public partial class CreateProductViewModel : ObservableObject
     public CreateProductViewModel()
     {
         _productService = new ProductService();
-        LoadMockCategories();
+        _categoryService = new CategoryService();
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
-    private void LoadMockCategories()
+    public async Task LoadCategoriesAsync()
     {
-        Categories.Add(new CategoryMock { Id = Guid.Parse("11111111-1111-1111-1111-111111111111"), Name = "Nước ngọt" });
-        Categories.Add(new CategoryMock { Id = Guid.Parse("22222222-2222-2222-2222-222222222222"), Name = "Bia & Đồ có cồn" });
-        Categories.Add(new CategoryMock { Id = Guid.Parse("33333333-3333-3333-3333-333333333333"), Name = "Bánh kẹo" });
-        Categories.Add(new CategoryMock { Id = Guid.Parse("44444444-4444-4444-4444-444444444444"), Name = "Mì ăn liền" });
-        Categories.Add(new CategoryMock { Id = Guid.Parse("55555555-5555-5555-5555-555555555555"), Name = "Gia vị" });
+        var apiCategories = await _categoryService.GetCategoriesAsync();
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            Categories.Clear();
+
+            foreach (var cat in apiCategories)
+            {
+                Categories.Add(cat);
+            }
+        });
     }
 
     // Trả về Tuple (IsSuccess, ErrorMessage)

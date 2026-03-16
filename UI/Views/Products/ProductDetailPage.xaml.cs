@@ -1,3 +1,4 @@
+using Core.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -23,6 +24,7 @@ namespace UI.Views.Products
             base.OnNavigatedTo(e);
             if (e.Parameter is Guid productId)
             {
+                await ViewModel.LoadCategoriesAsync();
                 await ViewModel.LoadDataAsync(productId);
             }
         }

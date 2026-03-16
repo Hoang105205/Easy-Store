@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Threading.Tasks;
 using UI.ViewModels;
@@ -17,6 +18,13 @@ namespace UI.Views.Products
             // Đăng ký sự kiện: Cứ mỗi khi danh sách ảnh thay đổi (thêm, xóa, reset), hàm bên dưới sẽ chạy
             ViewModel.SelectedImages.CollectionChanged += SelectedImages_CollectionChanged;
         }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            await ViewModel.LoadCategoriesAsync();
+        }
+
         private void SelectedImages_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             // Nếu số lượng ảnh > 0 thì ẩn Icon đi (Collapsed), ngược lại thì hiện ra (Visible)
