@@ -84,18 +84,27 @@ public partial class App : Application
     {
         var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
         string? dbUrl = localSettings.Values["DbConnectionString"] as string;
+        bool isFirstTime = localSettings.Values["IsFirstTime"] as bool? ?? true;
 
         var authService = Services.GetRequiredService<AuthService>();
 
-        if (string.IsNullOrEmpty(dbUrl) || !authService.IsLoggedIn())
+        if (isFirstTime)
         {
-            Debug.WriteLine("Người dùng chưa đăng nhập, điều hướng về LoginPage");
-            _window?.RootFrame.Navigate(typeof(LoginPage));
+            Debug.WriteLine("Người dùng này lần đầu tiên sử dụng ứng dụng, điều hướng về OnboardingPage");
+            _window?.RootFrame.Navigate(typeof(OnboardingPage));
         }
         else
         {
-            Debug.WriteLine("Người dùng đã đăng nhập, điều hướng về ShellPage");
-            _window?.RootFrame.Navigate(typeof(ShellPage));
+            if (string.IsNullOrEmpty(dbUrl) || !authService.IsLoggedIn())
+            {
+                Debug.WriteLine("Người dùng chưa đăng nhập, điều hướng về LoginPage");
+                _window?.RootFrame.Navigate(typeof(LoginPage));
+            }
+            else
+            {
+                Debug.WriteLine("Người dùng đã đăng nhập, điều hướng về ShellPage");
+                _window?.RootFrame.Navigate(typeof(ShellPage));
+            }
         }
     }
 
