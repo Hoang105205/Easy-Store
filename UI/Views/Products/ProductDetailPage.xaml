@@ -144,13 +144,13 @@
 
                     <TextBox Header="Giá bán (VNĐ)" Text="{x:Bind ViewModel.SalePrice, Mode=TwoWay}" IsReadOnly="{x:Bind ViewModel.IsReadOnly, Mode=OneWay}" Height="65"/>
 
-                    <TextBox Header="Giá nhập (VNĐ)" Text="{x:Bind ViewModel.ImportPrice, Mode=OneWay}" IsReadOnly="True" Height="65" Background="{ThemeResource LayerFillColorDefaultBrush}"/>
+                    <TextBox Header="Giá nhập (VNĐ)" Text="{x:Bind ViewModel.ImportPrice, Mode=OneWay}" IsReadOnly="True" IsEnabled="False" Height="65" Background="{ThemeResource LayerFillColorDefaultBrush}"/>
 
-                    <TextBox Header="Số lượng tồn kho" Text="{x:Bind ViewModel.StockQuantity, Mode=OneWay}" IsReadOnly="True" Height="65" Background="{ThemeResource LayerFillColorDefaultBrush}"/>
+                    <TextBox Header="Số lượng tồn kho" Text="{x:Bind ViewModel.StockQuantity, Mode=OneWay}" IsReadOnly="True" IsEnabled="False" Height="65" Background="{ThemeResource LayerFillColorDefaultBrush}"/>
 
-                    <TextBox Header="ID Sản phẩm" Text="{x:Bind ViewModel.ProductId, Mode=OneWay}" IsReadOnly="True" Height="65" Foreground="Gray"/>
+                    <TextBox Header="ID Sản phẩm" Text="{x:Bind ViewModel.ProductId, Mode=OneWay}" IsReadOnly="True" IsEnabled="False" Height="65" Foreground="Gray"/>
 
-                    <TextBox Header="Ngày tạo" Text="{x:Bind ViewModel.CreatedAtText, Mode=OneWay}" IsReadOnly="True" Height="65" Foreground="Gray"/>
+                    <TextBox Header="Ngày tạo" Text="{x:Bind ViewModel.CreatedAtText, Mode=OneWay}" IsReadOnly="True" IsEnabled="False" Height="65" Foreground="Gray"/>
                 </StackPanel>
 
             </Grid>
