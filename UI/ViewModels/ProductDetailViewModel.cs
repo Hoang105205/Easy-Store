@@ -87,8 +87,8 @@ public partial class ProductDetailViewModel : ObservableObject
         ProductId = data.Id;
         Sku = data.Sku ?? string.Empty;
         ProductName = data.Name ?? string.Empty;
-        ImportPrice = data.ImportPrice;
-        SalePrice = data.SalePrice;
+        ImportPrice = data.ImportPrice ?? 0;
+        SalePrice = data.SalePrice ?? 0;
         StockQuantity = data.StockQuantity;
         CreatedAtText = data.CreatedAt.ToString("dd/MM/yyyy HH:mm");
         SelectedCategory = Categories.FirstOrDefault(c => c.Id == data.CategoryId);
