@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UI.Services.ProductService;
@@ -64,9 +65,10 @@ namespace UI.ViewModels
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread(); // Lấy luồng UI để cập nhật giao diện an toàn
         }
 
-        public async Task LoadProductsAsync(string? afterCursor = null)
+        public async Task LoadProductsAsync(string? afterCursor = null, string? searchText = null, Guid? categoryId = null)
         {
             IsLoading = true;
+            Debug.WriteLine($"searchText= {searchText}, categoryId= {categoryId}");
 
             // Lấy cấu hình số lượng mỗi trang
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
@@ -74,12 +76,16 @@ namespace UI.ViewModels
 
             try
             {
-                var result = await _productService.GetProductsAsync(itemsPerPage, afterCursor);
+                var result = await _productService.GetProductsAsync(itemsPerPage, afterCursor, searchText, categoryId);
 
                 // Cập nhật UI trên Thread chính
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    Products.Clear();
+                    if (afterCursor == null)
+                    {
+                        Products.Clear();
+                    }
+
                     foreach (var item in result.Products)
                     {
                         Products.Add(item);
@@ -106,7 +112,7 @@ namespace UI.ViewModels
                 _previousCursors.Push(_currentEndCursor);
             }
             CurrentPageNumber++;
-            await LoadProductsAsync(_currentEndCursor);
+            await LoadProductsAsync(afterCursor: _currentEndCursor);
         }
 
         public async Task PreviousPageAsync()
@@ -116,7 +122,7 @@ namespace UI.ViewModels
                 CurrentPageNumber--;
                 _previousCursors.Pop();
                 string? cursorToLoad = _previousCursors.Count > 0 ? _previousCursors.Peek() : null;
-                await LoadProductsAsync(cursorToLoad);
+                await LoadProductsAsync(afterCursor: cursorToLoad);
             }
         }
 
