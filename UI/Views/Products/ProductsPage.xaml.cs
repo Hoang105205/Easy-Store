@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -34,21 +35,63 @@ namespace UI.Views
 
         private bool _isPageReady = false;
 
+        private DispatcherTimer _debounceTimer;
+
         public ProductsPage()
         {
             InitializeComponent();
             // Đổi từ Loaded thành sự kiện này:
 
             this.Loaded += (s, e) => _isPageReady = true;
+
+            _debounceTimer = new DispatcherTimer();
+            _debounceTimer.Interval = TimeSpan.FromMilliseconds(500); // Đợi 500ms
+            _debounceTimer.Tick += DebounceTimer_Tick;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
-            await Task.WhenAll(
-                ProductVM.LoadProductsAsync(),
-                CategoryVM.LoadCategoriesAsync()
+            await ProductVM.LoadProductsAsync();
+            await CategoryVM.LoadCategoriesAsync();
+        }
+
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                _debounceTimer.Stop();
+                _debounceTimer.Start();
+            }
+        }
+
+        private void DebounceTimer_Tick(object sender, object e)
+        {
+            _debounceTimer.Stop();
+            ExecuteSearchAndFilter();
+        }
+
+        private async void ExecuteSearchAndFilter()
+        {
+            if (!_isPageReady) return;
+
+            string? searchText = SearchBox.Text.Trim();
+            if (string.IsNullOrEmpty(searchText))
+            {
+                searchText = null;
+            }
+
+            Guid? categoryId = null;
+            if (CategoryComboBox.SelectedItem is CategoryModel selectedCategory &&
+                selectedCategory.Id != CategoryViewModel.CREATE_NEW_CATEGORY_ID)
+            {
+                categoryId = selectedCategory.Id;
+            }
+
+            await ProductVM.LoadProductsAsync(
+                searchText: searchText, 
+                categoryId: categoryId
             );
         }
 
@@ -101,7 +144,8 @@ namespace UI.Views
             }
             else
             {
-                // TODO: Gọi hàm lọc sản phẩm theo selectedCategory.Id nếu bạn muốn
+                _debounceTimer.Stop();
+                _debounceTimer.Start();
             }
         }
 

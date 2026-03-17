@@ -10,13 +10,32 @@ namespace Api.GraphQL.Queries;
 [ExtendObjectType(typeof(Query))]
 public class ProductQueries
 {
-    // [UsePaging] kích hoạt Cursor-based pagination mặc định của HotChocolate.
-    // [UseProjection] cho phép tự động ánh xạ các trường con của Product khi truy vấn.
     [UsePaging(DefaultPageSize = 20)]
     [UseProjection]
-    public IQueryable<Product> GetProducts([Service] AppDbContext dbContext)
+    [UseSorting]
+    public IQueryable<Product> GetProducts(
+            [Service] AppDbContext context,
+            string? searchTerm = null,
+            Guid? categoryId = null
+        )
     {
-        return dbContext.Products.OrderByDescending(p => p.CreatedAt);
+        var query = context.Products.AsQueryable();
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            string searchPattern = $"%{searchTerm}%";
+            query = query.Where(p =>
+                EF.Functions.ILike(p.Name, searchPattern) ||
+                EF.Functions.ILike(p.SKU, searchPattern));
+        }
+
+        // Return IQueryable
+        return query;
     }
 
     [UseProjection]

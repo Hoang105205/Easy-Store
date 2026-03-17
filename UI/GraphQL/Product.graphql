@@ -1,5 +1,15 @@
-﻿query GetProducts($first: Int!, $after: String) {
-  products(first: $first, after: $after) {
+﻿query GetProducts(
+  $first: Int!, 
+  $after: String, 
+  $searchTerm: String, 
+  $categoryId: UUID
+) {
+  products(
+    first: $first, 
+    after: $after, 
+    searchTerm: $searchTerm, 
+    categoryId: $categoryId
+  ) {
     pageInfo {
       hasNextPage
       hasPreviousPage
