@@ -7,7 +7,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using UI.Services.AuthService;
+using UI.ViewModels.Import;
 using UI.Views;
+using UI.Views.Import;
 
 namespace UI;
 
@@ -43,6 +45,12 @@ public partial class App : Application
                 // Sử dụng cổng 5000 mà API của bạn đang lắng nghe
                 client.BaseAddress = new Uri(Core.AppConstants.BaseApiUrl);
             });
+
+
+        services.AddTransient<ImportPage>();
+        services.AddTransient<ImportViewModel>();
+        services.AddTransient<ImportEditorPage>();
+        services.AddTransient<ImportEditorViewModel>();
 
         // Bạn có thể đăng ký thêm các Service khác tại đây (ví dụ: NavigationService, DialogService)
     }

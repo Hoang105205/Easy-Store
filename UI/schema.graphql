@@ -4,6 +4,10 @@ schema {
 }
 
 type Query {
+  activeAutoSave: ImportLog
+  importHistory("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): ImportHistoryConnection
+  importById(id: UUID!): ImportLog
+  importSummary: ImportSummary!
   users: [User!]!
   products(searchTerm: String categoryId: UUID "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ProductSortInput!]): ProductsConnection
   productById(id: UUID!): Product
@@ -11,6 +15,7 @@ type Query {
 }
 
 type Mutation {
+  completeImport(input: CompleteImportInput!): ImportLog!
   login(username: String! password: String!): LoginResultDTO!
   createProduct(input: CreateProductInput!): Product!
   updateProduct(input: UpdateProductInput!): Product!
@@ -43,6 +48,18 @@ type ProductsConnection {
   nodes: [Product!]
 }
 
+"A connection to a list of items."
+type ImportHistoryConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [ImportHistoryEdge!]
+  "A flattened list of the nodes."
+  nodes: [ImportLog!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
 enum SortEnumType {
   ASC
   DESC
@@ -73,6 +90,20 @@ type ProductsEdge {
   node: Product!
 }
 
+"An edge in a connection."
+type ImportHistoryEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: ImportLog!
+}
+
+input CompleteImportInput {
+  details: [ImportLogDetailInput!]!
+  isDraft: Boolean!
+  isAutoSave: Boolean!
+}
+
 input UpdateProductInput {
   id: UUID!
   sku: String!
@@ -92,6 +123,21 @@ input CreateProductInput {
 type LoginResultDTO {
   success: Boolean!
   message: String!
+}
+
+type ImportSummary {
+  totalCount: Int!
+  totalAmount: Decimal!
+  draftCount: Int!
+}
+
+type ImportLog {
+  id: UUID!
+  createdAt: DateTime!
+  totalAmount: Long!
+  status: ImportStatus!
+  isAutoSaved: Boolean!
+  details: [ImportLogDetail!]!
 }
 
 type Category {
@@ -143,24 +189,24 @@ type ImportLogDetail {
   product: Product
 }
 
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime
+enum ImportStatus {
+  DRAFT
+  COMPLETED
+}
 
 "The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
 scalar Long
 
-type ImportLog {
-  id: UUID!
-  createdAt: DateTime!
-  totalAmount: Long!
-  status: ImportStatus!
-  isAutoSaved: Boolean!
-  details: [ImportLogDetail!]!
-}
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
 
-enum ImportStatus {
-  DRAFT
-  COMPLETED
+"The `Decimal` scalar type represents a decimal floating-point number."
+scalar Decimal
+
+input ImportLogDetailInput {
+  productId: UUID!
+  quantityAdded: Int!
+  actualImportPrice: Long!
 }
 
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."

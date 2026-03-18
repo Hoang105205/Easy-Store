@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using UI.Views;
 using UI.Views.Dashboard;
+using UI.Views.Import;
 using UI.Views.Settings;
 using Windows.Networking.NetworkOperators;
 
@@ -16,6 +17,7 @@ public class PageHelper
         {
             "Dashboard" => typeof(DashboardPage), // Thay bằng tên Page thật của team bạn
             "Products" => typeof(ProductsPage),
+            "Import" => typeof(ImportPage),
             "Orders" => null,
             "Reports" => null,
             "Profile" => null,

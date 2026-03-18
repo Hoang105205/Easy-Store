@@ -67,6 +67,12 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
+                <NavigationViewItem Content="Nhập hàng" Tag="Import">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7B8;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
                 <NavigationViewItem Content="Đơn hàng" Tag="Orders">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Document"/>
