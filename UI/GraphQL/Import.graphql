@@ -51,6 +51,7 @@ query GetImportHistory($first: Int, $after: String) {
   }
 }
 
+# 4. Query lấy chi tiết 1 lịch sử nhập hàng
 query GetImportById($id: UUID!) {
   importById(id: $id) {
     id
@@ -74,10 +75,26 @@ query GetImportById($id: UUID!) {
   }
 }
 
+# 5. Query lấy thống kê chung về phiếu nhập hàng (Tổng số phiếu, Tổng tiền, Số phiếu đang ở trạng thái Draft)
 query GetImportSummary {
   importSummary {
     totalCount
     totalAmount
     draftCount
   }
+}
+
+# 6. Gọi hàm Chốt phiếu tạm thành Hoàn thành
+mutation MarkImportCompleted($importId: UUID!) {
+  markImportCompleted(importId: $importId) {
+    id
+    status
+    isAutoSaved
+    createdAt
+  }
+}
+
+# 7. Gọi hàm Xóa phiếu tạm (Trả về true/false)
+mutation DeleteImport($importId: UUID!) {
+  deleteImport(importId: $importId)
 }

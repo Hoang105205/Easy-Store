@@ -38,7 +38,7 @@ public sealed partial class ImportPage : Page
 
     private void OnCreateNewImportClicked(object sender, RoutedEventArgs e)
     {
-        // TODO: Implement create new import logic
+        Frame.Navigate(typeof(CreateImportPage));
     }
 
     private void OnDownloadTemplateClicked(object sender, RoutedEventArgs e)

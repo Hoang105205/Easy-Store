@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml.Controls;
 using StrawberryShake;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +34,8 @@ public partial class ImportEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private string statusText = string.Empty;
+
+    public Action? GoBackAction { get; set; }
 
     // Danh sách phẳng hóa để đổ ra DataGrid
     public ObservableCollection<ImportDetailItemDto> Details { get; } = new();
@@ -110,15 +114,98 @@ public partial class ImportEditorViewModel : ObservableObject
     [RelayCommand]
     private async Task CompleteImportAsync()
     {
-        // TODO: Gọi Mutation GraphQL để chốt phiếu. Chốt xong thì chuyển trạng thái và load lại trang
-        System.Diagnostics.Debug.WriteLine("Bấm nút chốt hoàn thành phiếu: " + _currentImportId);
+        // 1. Tạo hộp thoại xác nhận (Tránh người dùng lỡ tay bấm nhầm)
+        var dialog = new ContentDialog
+        {
+            Title = "Xác nhận hoàn thành phiếu",
+            Content = $"Bạn có chắc chắn muốn hoàn thành phiếu nhập này không?\nDữ liệu sẽ không thể thu hồi.",
+            PrimaryButtonText = "Chắc chắn",
+            CloseButtonText = "Hủy",
+            DefaultButton = ContentDialogButton.Close,
+
+            XamlRoot = App.Current!.AppMainWindow!.Content.XamlRoot
+        };
+
+        // 2. Hiện hộp thoại lên và chờ người dùng bấm nút
+        var confirmResult = await dialog.ShowAsync();
+
+        if (confirmResult == ContentDialogResult.Primary)
+        {
+
+            try
+            {
+                IsLoading = true;
+
+                var result = await _client.MarkImportCompleted.ExecuteAsync(_currentImportId);
+
+                if (result.IsSuccessResult())
+                {
+                    StatusText = ImportStatus.Completed.ToString();
+                    IsDraft = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Lỗi chốt phiếu: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
     }
 
     [RelayCommand]
     private async Task DeleteImportAsync()
     {
-        // TODO: Hiện Dialog xác nhận. Nếu OK thì gọi Mutation xóa phiếu trên DB, sau đó quay về trang trước
-        System.Diagnostics.Debug.WriteLine("Bấm nút xóa phiếu tạm: " + _currentImportId);
+        // 1. Tạo hộp thoại xác nhận (Tránh người dùng lỡ tay bấm nhầm)
+        var dialog = new ContentDialog
+        {
+            Title = "Xác nhận xóa phiếu",
+            Content = $"Bạn có chắc chắn muốn xóa phiếu nhập này không?\nDữ liệu sẽ bị xóa vĩnh viễn.",
+            PrimaryButtonText = "Xóa",
+            CloseButtonText = "Hủy",
+            DefaultButton = ContentDialogButton.Close, 
+
+            XamlRoot = App.Current!.AppMainWindow!.Content.XamlRoot
+        };
+
+        // 2. Hiện hộp thoại lên và chờ người dùng bấm nút
+        var confirmResult = await dialog.ShowAsync();
+
+        // 3. Nếu người dùng chọn "Xóa" (PrimaryButton)
+        if (confirmResult == ContentDialogResult.Primary)
+        {
+            try
+            {
+                IsLoading = true;
+
+                // 4. Gọi API Mutation xóa phiếu từ Strawberry Shake
+                var result = await _client.DeleteImport.ExecuteAsync(_currentImportId);
+
+                if (result.IsSuccessResult())
+                {
+                    // 5. Xóa thành công trên DB -> Lùi về trang danh sách
+                    App.Current!.AppMainWindow!.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        GoBackAction?.Invoke();
+                    });
+                }
+                else
+                {
+                    // (Tùy chọn) Hiện Toast thông báo lỗi từ Backend nếu có
+                    Debug.WriteLine("Xóa thất bại do lỗi từ Backend GraphQL.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Lỗi mạng khi xóa phiếu: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
     }
 }
 
