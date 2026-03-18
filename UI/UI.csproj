@@ -26,8 +26,11 @@
     <None Remove="Assets\Images\muoi.jpg" />
     <None Remove="Assets\LoginIllustration.jpg" />
     <None Remove="GraphQL\Auth.graphql" />
+    <None Remove="GraphQL\Import.graphql" />
     <None Remove="Views\ConfigDialog.xaml" />
     <None Remove="Views\Dashboard\DashboardPage.xaml" />
+    <None Remove="Views\Import\ImportEditorPage.xaml" />
+    <None Remove="Views\Import\ImportPage.xaml" />
     <None Remove="Views\LoginPage.xaml" />
     <None Remove="Views\Products\CreateProductPage.xaml" />
     <None Remove="Views\Products\ProductDetailPage.xaml" />
@@ -60,6 +63,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.12" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
@@ -93,6 +97,11 @@
     <Content Update="Assets\Images\muoi.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Import\ImportEditorPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Products\ProductDetailPage.xaml">
@@ -131,6 +140,11 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Dashboard\DashboardPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Import\ImportPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

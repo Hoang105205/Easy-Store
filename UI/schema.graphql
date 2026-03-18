@@ -4,6 +4,10 @@ schema {
 }
 
 type Query {
+  activeAutoSave: ImportLog
+  importHistory("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): ImportHistoryConnection
+  importById(id: UUID!): ImportLog
+  importSummary: ImportSummary!
   users: [User!]!
   products("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): ProductsConnection
   productById(id: UUID!): Product
@@ -11,6 +15,7 @@ type Query {
 }
 
 type Mutation {
+  completeImport(input: CompleteImportInput!): ImportLog!
   login(username: String! password: String!): LoginResultDTO!
   createProduct(input: CreateProductInput!): Product!
   updateProduct(input: UpdateProductInput!): Product!
@@ -40,6 +45,18 @@ input CategoryFilterInput {
 input CategorySortInput {
   id: SortEnumType
   name: SortEnumType
+}
+
+"A connection to a list of items."
+type ImportHistoryConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [ImportHistoryEdge!]
+  "A flattened list of the nodes."
+  nodes: [ImportLog!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
 }
 
 "Information about pagination in a connection."
@@ -104,6 +121,14 @@ enum SortEnumType {
   DESC
 }
 
+"An edge in a connection."
+type ImportHistoryEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: ImportLog!
+}
+
 scalar UUID
 
 input ProductFilterInput {
@@ -120,7 +145,7 @@ input ProductFilterInput {
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
   category: CategoryFilterInput
-  importLogs: ListFilterInputTypeOfImportLogFilterInput
+  importLogs: ListFilterInputTypeOfImportLogDetailFilterInput
   images: ListFilterInputTypeOfProductImageFilterInput
 }
 
@@ -174,10 +199,10 @@ input DateTimeOperationFilterInput {
   nlte: DateTime
 }
 
-input ListFilterInputTypeOfImportLogFilterInput {
-  all: ImportLogFilterInput
-  none: ImportLogFilterInput
-  some: ImportLogFilterInput
+input ListFilterInputTypeOfImportLogDetailFilterInput {
+  all: ImportLogDetailFilterInput
+  none: ImportLogDetailFilterInput
+  some: ImportLogDetailFilterInput
   any: Boolean
 }
 
@@ -194,14 +219,15 @@ scalar Long
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
-input ImportLogFilterInput {
-  and: [ImportLogFilterInput!]
-  or: [ImportLogFilterInput!]
+input ImportLogDetailFilterInput {
+  and: [ImportLogDetailFilterInput!]
+  or: [ImportLogDetailFilterInput!]
   id: UuidOperationFilterInput
+  importLogId: UuidOperationFilterInput
   productId: UuidOperationFilterInput
   quantityAdded: IntOperationFilterInput
   actualImportPrice: LongOperationFilterInput
-  createdAt: DateTimeOperationFilterInput
+  importLog: ImportLogFilterInput
   product: ProductFilterInput
 }
 
@@ -213,6 +239,35 @@ input ProductImageFilterInput {
   product: ProductFilterInput
   imagePath: StringOperationFilterInput
   isPrimary: BooleanOperationFilterInput
+}
+
+input ImportLogFilterInput {
+  and: [ImportLogFilterInput!]
+  or: [ImportLogFilterInput!]
+  id: UuidOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  totalAmount: LongOperationFilterInput
+  status: ImportStatusOperationFilterInput
+  isAutoSaved: BooleanOperationFilterInput
+  details: ListFilterInputTypeOfImportLogDetailFilterInput
+}
+
+input ImportStatusOperationFilterInput {
+  eq: ImportStatus
+  neq: ImportStatus
+  in: [ImportStatus!]
+  nin: [ImportStatus!]
+}
+
+enum ImportStatus {
+  DRAFT
+  COMPLETED
+}
+
+input CompleteImportInput {
+  details: [ImportLogDetailInput!]!
+  isDraft: Boolean!
+  isAutoSave: Boolean!
 }
 
 input UpdateProductInput {
@@ -236,6 +291,21 @@ type LoginResultDTO {
   message: String!
 }
 
+type ImportSummary {
+  totalCount: Int!
+  totalAmount: Decimal!
+  draftCount: Int!
+}
+
+type ImportLog {
+  id: UUID!
+  createdAt: DateTime!
+  totalAmount: Long!
+  status: ImportStatus!
+  isAutoSaved: Boolean!
+  details: [ImportLogDetail!]!
+}
+
 type Category {
   id: UUID!
   name: String!
@@ -247,14 +317,14 @@ type Product {
   categoryId: UUID!
   sku: String!
   name: String!
-  importPrice: Long!
-  salePrice: Long!
+  importPrice: Long
+  salePrice: Long
   stockQuantity: Int!
   isDraft: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
   category: Category!
-  importLogs: [ImportLog!]!
+  importLogs: [ImportLogDetail!]!
   images: [ProductImage!]!
 }
 
@@ -263,10 +333,6 @@ type User {
   username: String!
   passwordHash: String!
   hasCompletedOnboarding: Boolean!
-  itemsPerPage: Int!
-  isDarkMode: Boolean!
-  rememberLastSession: Boolean!
-  lastVisitedPage: String
 }
 
 type ProductImage {
@@ -277,13 +343,23 @@ type ProductImage {
   isPrimary: Boolean!
 }
 
-type ImportLog {
+type ImportLogDetail {
   id: UUID!
+  importLogId: UUID!
   productId: UUID!
   quantityAdded: Int!
   actualImportPrice: Long!
-  createdAt: DateTime!
+  importLog: ImportLog
   product: Product
+}
+
+"The `Decimal` scalar type represents a decimal floating-point number."
+scalar Decimal
+
+input ImportLogDetailInput {
+  productId: UUID!
+  quantityAdded: Int!
+  actualImportPrice: Long!
 }
 
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."

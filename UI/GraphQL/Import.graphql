@@ -1,0 +1,83 @@
+﻿# 1. Mutation lưu phiếu nhập (Dùng chung cho cả Auto-save, Lưu tạm và Hoàn thành)
+mutation CompleteImportLog($input: CompleteImportInput!) {
+  completeImport(input: $input) {
+    id
+    status
+    totalAmount
+    isAutoSaved
+  }
+}
+
+# 2. Query lấy phiếu đang nhập dở (Auto-save) để load lại lúc mở trang
+query GetActiveAutoSave {
+  activeAutoSave {
+    id
+    createdAt
+    status
+    details {
+      productId
+      quantityAdded
+      actualImportPrice
+      product {
+        name
+        sku
+      }
+    }
+  }
+}
+
+# 3. Query lấy danh sách lịch sử nhập hàng
+query GetImportHistory($first: Int, $after: String) {
+  importHistory(first: $first, after: $after) {
+    totalCount # Tổng số lượng phiếu đang có trong DB
+    pageInfo {
+      hasNextPage # Còn trang sau không?
+      endCursor   # Điểm neo để gọi trang tiếp theo
+    }
+    nodes { # Dữ liệu thực sự sẽ nằm trong mảng nodes này
+      id
+      createdAt
+      status
+      totalAmount
+      details {
+        quantityAdded
+        actualImportPrice
+        product {
+          name
+          sku
+        }
+      }
+    }
+  }
+}
+
+query GetImportById($id: UUID!) {
+  importById(id: $id) {
+    id
+    createdAt
+    status
+    totalAmount
+    isAutoSaved
+    details {
+      quantityAdded
+      actualImportPrice
+      product {
+        id
+        name
+        sku
+        images {
+          imagePath
+          isPrimary
+        }
+      }
+    }
+  }
+}
+
+query GetImportSummary {
+  importSummary {
+    totalCount
+    totalAmount
+    draftCount
+  }
+}
