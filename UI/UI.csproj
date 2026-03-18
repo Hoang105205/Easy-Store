@@ -14,6 +14,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="Assets\Images\onboarding1.png" />
+  </ItemGroup>
+  <ItemGroup>
     <GraphQL Remove="graphql\Category.graphql" />
     <GraphQL Remove="GraphQL\Product.graphql" />
   </ItemGroup>
@@ -25,6 +28,7 @@
     <None Remove="Assets\Images\indomie.jpg" />
     <None Remove="Assets\Images\muoi.jpg" />
     <None Remove="Assets\LoginIllustration.jpg" />
+    <None Remove="Assets\onboarding3.png" />
     <None Remove="GraphQL\Auth.graphql" />
     <None Remove="GraphQL\Import.graphql" />
     <None Remove="Views\ConfigDialog.xaml" />
@@ -32,6 +36,7 @@
     <None Remove="Views\Import\ImportEditorPage.xaml" />
     <None Remove="Views\Import\ImportPage.xaml" />
     <None Remove="Views\LoginPage.xaml" />
+    <None Remove="Views\OnboardingPage.xaml" />
     <None Remove="Views\Products\CreateProductPage.xaml" />
     <None Remove="Views\Products\ProductDetailPage.xaml" />
     <None Remove="Views\Settings\SettingsPage.xaml" />
@@ -100,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Import\ImportEditorPage.xaml">
+    <Page Update="Views\OnboardingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

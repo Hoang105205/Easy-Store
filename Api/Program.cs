@@ -2,9 +2,10 @@ using Api.GraphQL;
 using Api.GraphQL.Mutations;
 using Api.GraphQL.Queries;
 using Core.Data;
+using HotChocolate.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using HotChocolate.Data;
+using Microsoft.Extensions.Options;
 
 // Vo bang https://localhost:7052/graphql/
 
@@ -48,9 +49,16 @@ builder.Services
     .AddProjections()
     .AddFiltering()
     .AddSorting()
-    .AddProjections() // Kích hoạt tính năng Projection để tự động ánh xạ các trường con khi truy vấn
-                      // Giúp debug lỗi GraphQL chi tiết hơn trong cửa sổ Output của UI
-    .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
+    .ModifyRequestOptions(opt =>
+    {
+        opt.IncludeExceptionDetails = builder.Environment.IsDevelopment();
+    })
+    //.ModifyCostOptions(opt =>
+    //{
+    //    opt.MaxFieldCost = 5000;
+    //    opt.MaxTypeCost = 5000;
+    //    opt.EnforceCostLimits = false; 
+    //})
     .DisableIntrospection(false);
 
 var app = builder.Build();

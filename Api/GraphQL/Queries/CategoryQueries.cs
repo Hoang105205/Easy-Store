@@ -11,8 +11,6 @@ namespace Api.GraphQL.Queries;
 public class CategoryQueries
 {
     [UseProjection]
-    [UseFiltering]
-    [UseSorting]
     public IQueryable<Category> GetCategories([Service] AppDbContext context)
     {
         return context.Categories;

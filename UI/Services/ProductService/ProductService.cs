@@ -18,11 +18,21 @@ namespace UI.Services.ProductService
         }
 
         // Trả về một Tuple chứa Danh sách sản phẩm, EndCursor và trạng thái HasNextPage
-        public async Task<(List<ProductModel> Products, string? EndCursor, bool HasNextPage)> GetProductsAsync(int itemsPerPage, string? afterCursor)
+        public async Task<(List<ProductModel> Products, string? EndCursor, bool HasNextPage)> GetProductsAsync(
+            int itemsPerPage, 
+            string? afterCursor, 
+            string? searchText = null, 
+            Guid? categoryId = null
+        )
         {
-            var result = await _client.GetProducts.ExecuteAsync(first: itemsPerPage, after: afterCursor);
+            var result = await _client.GetProducts.ExecuteAsync(
+                first: itemsPerPage, 
+                after: afterCursor,
+                searchTerm: searchText,
+                categoryId: categoryId
+            );
 
-            if (result.Errors.Count > 0)
+            if (result.Errors?.Count > 0)
             {
                 // Quăng lỗi để ViewModel bắt và xử lý
                 throw new Exception(result.Errors[0].Message);
