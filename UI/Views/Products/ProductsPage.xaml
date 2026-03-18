@@ -44,6 +44,7 @@
                           Width="150" Height="40" 
                           CornerRadius="8"
                           ItemsSource="{x:Bind CategoryVM.Categories, Mode=OneWay}"
+                          SelectedIndex="0"
                           DisplayMemberPath="Name" 
                           SelectionChanged="CategoryComboBox_SelectionChanged"/>
 

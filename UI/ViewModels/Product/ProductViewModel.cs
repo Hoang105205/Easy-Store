@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using System;
@@ -38,12 +39,12 @@ namespace UI.ViewModels.Product
         [ObservableProperty] private bool isLoading;
         [ObservableProperty] private int currentPageNumber = 1;
         [ObservableProperty] private bool canGoNext;
+        [ObservableProperty] private bool canGoPrevious = false;
 
-        public bool CanGoPrevious => CurrentPageNumber > 1;
 
         // --- Các biến xử lý logic GraphQL Cursor ---
-        [ObservableProperty] private string? currentEndCursor = null;
-        [ObservableProperty] private Stack<string> previousCursors = new();
+        private string? currentEndCursor = null;
+        private Stack<string> previousCursors = new();
 
         public ProductViewModel()
         {
@@ -54,7 +55,6 @@ namespace UI.ViewModels.Product
         public async Task LoadProductsAsync(string? afterCursor = null, string? searchText = null, Guid? categoryId = null)
         {
             IsLoading = true;
-            Debug.WriteLine($"searchText= {searchText}, categoryId= {categoryId}");
 
             // Lấy cấu hình số lượng mỗi trang
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
@@ -67,17 +67,14 @@ namespace UI.ViewModels.Product
                 // Cập nhật UI trên Thread chính
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    if (afterCursor == null)
-                    {
-                        Products.Clear();
-                    }
+                    Products.Clear();
 
                     foreach (var item in result.Products)
                     {
                         Products.Add(item);
                     }
 
-                    CurrentEndCursor = result.EndCursor;
+                    currentEndCursor = result.EndCursor;
                     CanGoNext = result.HasNextPage;
                 });
             }
@@ -91,24 +88,28 @@ namespace UI.ViewModels.Product
             }
         }
 
-        public async Task NextPageAsync()
+        public async Task NextPageAsync(string? searchText = null, Guid? categoryId = null)
         {
-            if (CurrentEndCursor != null)
+            if (currentEndCursor != null)
             {
-                PreviousCursors.Push(CurrentEndCursor);
+                previousCursors.Push(currentEndCursor);
             }
             CurrentPageNumber++;
-            await LoadProductsAsync(afterCursor: CurrentEndCursor);
+            CanGoPrevious = CurrentPageNumber > 1;
+
+            await LoadProductsAsync(afterCursor: currentEndCursor, searchText: searchText, categoryId: categoryId);
         }
 
-        public async Task PreviousPageAsync()
+        public async Task PreviousPageAsync(string? searchText = null, Guid? categoryId = null)
         {
-            if (CurrentPageNumber > 1 && PreviousCursors.Count > 0)
+            if (CurrentPageNumber > 1 && previousCursors.Count > 0)
             {
                 CurrentPageNumber--;
-                PreviousCursors.Pop();
-                string? cursorToLoad = PreviousCursors.Count > 0 ? PreviousCursors.Peek() : null;
-                await LoadProductsAsync(afterCursor: cursorToLoad);
+                CanGoPrevious = CurrentPageNumber > 1;
+
+                previousCursors.Pop();
+                string? cursorToLoad = previousCursors.Count > 0 ? previousCursors.Peek() : null;
+                await LoadProductsAsync(afterCursor: cursorToLoad, searchText: searchText, categoryId: categoryId);
             }
         }
     }

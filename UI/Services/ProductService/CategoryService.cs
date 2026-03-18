@@ -7,6 +7,12 @@ using UI.ViewModels;
 
 namespace UI.Services.CategoryService
 {
+    public class CategoryModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+
     public class CategoryService
     {
         private readonly IEasyStoreClient _client;

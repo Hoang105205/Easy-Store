@@ -44,6 +44,8 @@ public class ProductQueries
             }
         }
 
+        query = query.OrderByDescending(p => p.CreatedAt).ThenBy(p => p.Id);
+
         // Return IQueryable
         return query;
     }

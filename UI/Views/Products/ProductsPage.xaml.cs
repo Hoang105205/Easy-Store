@@ -37,6 +37,9 @@ namespace UI.Views
         private bool _isPageReady = false;
         private int _waitingInterval = 500;
 
+        private Guid? currentCategoryId = null;
+        private string? currentSearchText = null;
+
         private DispatcherTimer _debounceTimer;
 
         public ProductsPage()
@@ -88,22 +91,23 @@ namespace UI.Views
         {
             if (!_isPageReady) return;
 
-            string? searchText = SearchBox.Text.Trim();
-            if (string.IsNullOrEmpty(searchText))
+            currentSearchText = SearchBox.Text.Trim();
+            if (string.IsNullOrEmpty(currentSearchText))
             {
-                searchText = null;
+                currentSearchText = null;
             }
 
-            Guid? categoryId = null;
-            if (CategoryComboBox.SelectedItem is CategoryModel selectedCategory &&
-                selectedCategory.Id != CategoryViewModel.CREATE_NEW_CATEGORY_ID)
+            currentCategoryId = null;
+            if (CategoryComboBox.SelectedItem is CategoryDropdownItem selectedCategory &&
+                selectedCategory.Id != CategoryViewModel.CREATE_NEW_CATEGORY_ID &&
+                selectedCategory != null)
             {
-                categoryId = selectedCategory.Id;
+                currentCategoryId = selectedCategory.Id;
             }
 
             await ProductVM.LoadProductsAsync(
-                searchText: searchText, 
-                categoryId: categoryId
+                searchText: currentSearchText, 
+                categoryId: currentCategoryId
             );
         }
 
@@ -111,7 +115,7 @@ namespace UI.Views
         {
             if (!_isPageReady) return;
 
-            if (CategoryComboBox.SelectedItem is not CategoryModel selectedCategory)
+            if (CategoryComboBox.SelectedItem is not CategoryDropdownItem selectedCategory)
             {
                 BtnDeleteCategory.IsEnabled = false;
                 return;
@@ -119,7 +123,7 @@ namespace UI.Views
 
             if (e.AddedItems.Count == 0) return;
 
-            BtnDeleteCategory.IsEnabled = (selectedCategory.Id != CategoryViewModel.CREATE_NEW_CATEGORY_ID);
+            BtnDeleteCategory.IsEnabled = (selectedCategory.Id != CategoryViewModel.CREATE_NEW_CATEGORY_ID && selectedCategory.Id != null);
 
             if (selectedCategory.Id == CategoryViewModel.CREATE_NEW_CATEGORY_ID)
             {
@@ -163,12 +167,12 @@ namespace UI.Views
 
         private async void BtnNextPage_Click(object sender, RoutedEventArgs e)
         {
-            await ProductVM.NextPageAsync();
+            await ProductVM.NextPageAsync(searchText: currentSearchText, categoryId: currentCategoryId);
         }
 
         private async void BtnPreviousPage_Click(object sender, RoutedEventArgs e)
         {
-            await ProductVM.PreviousPageAsync();
+            await ProductVM.PreviousPageAsync(searchText: currentSearchText, categoryId: currentCategoryId);
         }
         
         private void BtnAddProduct_Click(object sender, RoutedEventArgs e)
@@ -222,7 +226,7 @@ namespace UI.Views
 
         private async void BtnDeleteCategory_Click(object sender, RoutedEventArgs e)
         {
-            if (CategoryComboBox.SelectedItem is not CategoryModel categoryToDelete)
+            if (CategoryComboBox.SelectedItem is not CategoryDropdownItem categoryToDelete)
                 return;
 
             // 1. Hộp thoại xác nhận thao tác nguy hiểm
@@ -241,7 +245,22 @@ namespace UI.Views
             if (confirmResult == ContentDialogResult.Primary)
             {
                 // 2. Gọi ViewModel để xóa (nhận về Tuple)
-                var (isSuccess, errorMessage) = await CategoryVM.DeleteCategoryAsync(categoryToDelete.Id);
+
+                if (categoryToDelete.Id == null)
+                {
+                    ContentDialog errorDialog = new ContentDialog
+                    {
+                        Title = "Lỗi không xác định",
+                        Content = "Danh mục không hợp lệ. Vui lòng thử lại.",
+                        CloseButtonText = "Đóng",
+                        XamlRoot = this.XamlRoot
+                    };
+                    await errorDialog.ShowAsync();
+                    return;
+                }
+
+                var categoryId = (Guid) categoryToDelete.Id;
+                var (isSuccess, errorMessage) = await CategoryVM.DeleteCategoryAsync(categoryId);
 
                 if (isSuccess)
                 {
