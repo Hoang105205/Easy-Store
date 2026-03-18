@@ -34,6 +34,7 @@ namespace UI.Views
         public CategoryViewModel CategoryVM { get; } = new CategoryViewModel();
 
         private bool _isPageReady = false;
+        private int _waitingInterval = 500;
 
         private DispatcherTimer _debounceTimer;
 
@@ -45,7 +46,7 @@ namespace UI.Views
             this.Loaded += (s, e) => _isPageReady = true;
 
             _debounceTimer = new DispatcherTimer();
-            _debounceTimer.Interval = TimeSpan.FromMilliseconds(500); // Đợi 500ms
+            _debounceTimer.Interval = TimeSpan.FromMilliseconds(_waitingInterval);
             _debounceTimer.Tick += DebounceTimer_Tick;
         }
 
@@ -64,6 +65,12 @@ namespace UI.Views
                 _debounceTimer.Stop();
                 _debounceTimer.Start();
             }
+        }
+
+        private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            _debounceTimer.Stop();
+            ExecuteSearchAndFilter();
         }
 
         private void DebounceTimer_Tick(object sender, object e)
@@ -145,7 +152,7 @@ namespace UI.Views
             else
             {
                 _debounceTimer.Stop();
-                _debounceTimer.Start();
+                ExecuteSearchAndFilter();
             }
         }
 

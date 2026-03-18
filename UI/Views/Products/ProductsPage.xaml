@@ -34,7 +34,8 @@
                             Height="40" 
                             CornerRadius="8" 
                             VerticalAlignment="Center"
-                            TextChanged="SearchBox_TextChanged"/>
+                            TextChanged="SearchBox_TextChanged"
+                            QuerySubmitted="SearchBox_QuerySubmitted"/>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="15,0,0,0" VerticalAlignment="Center">
 
