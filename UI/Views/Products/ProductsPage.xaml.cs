@@ -15,6 +15,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using UI.ViewModels;
+using UI.ViewModels.Product;
 using UI.Views.Products;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -30,8 +31,8 @@ namespace UI.Views
     public sealed partial class ProductsPage : Page
     {
         // Khai báo ViewModel để file XAML có thể x:Bind tới
-        public ProductViewModel ProductVM { get; } = new ProductViewModel();
-        public CategoryViewModel CategoryVM { get; } = new CategoryViewModel();
+        public ProductViewModel ProductVM { get; }
+        public CategoryViewModel CategoryVM { get; }
 
         private bool _isPageReady = false;
         private int _waitingInterval = 500;
@@ -44,6 +45,10 @@ namespace UI.Views
             // Đổi từ Loaded thành sự kiện này:
 
             this.Loaded += (s, e) => _isPageReady = true;
+
+            ProductVM = (App.Current as App)!.Services.GetService<ProductViewModel>();
+            CategoryVM = (App.Current as App)!.Services.GetService<CategoryViewModel>();
+
 
             _debounceTimer = new DispatcherTimer();
             _debounceTimer.Interval = TimeSpan.FromMilliseconds(_waitingInterval);

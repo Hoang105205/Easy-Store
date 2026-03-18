@@ -1,15 +1,16 @@
-﻿using Microsoft.UI.Dispatching;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using UI.Services.ProductService;
-using CommunityToolkit.Mvvm.ComponentModel;
 using UI.Services.CategoryService;
+using UI.Services.ProductService;
 using Windows.UI.Notifications;
-using System.Diagnostics;
 
 namespace UI.ViewModels;
 
@@ -32,8 +33,8 @@ public partial class CreateProductViewModel : ObservableObject
 
     public CreateProductViewModel()
     {
-        _productService = new ProductService();
-        _categoryService = new CategoryService();
+        _productService = App.Current.Services.GetRequiredService<ProductService>();
+        _categoryService = App.Current.Services.GetRequiredService<CategoryService>();
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 

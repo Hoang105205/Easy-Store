@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Dispatching;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,10 +8,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using UI.Services.AuthService;
 using UI.Services.ProductService;
 
 
-namespace UI.ViewModels
+namespace UI.ViewModels.Product
 {
     public class ProductModel
     {
@@ -23,7 +26,7 @@ namespace UI.ViewModels
         public long? SalePrice { get; set; }
     }
 
-    public class ProductViewModel : INotifyPropertyChanged
+    public partial class ProductViewModel : ObservableObject
     {
         private readonly ProductService _productService;
         private readonly DispatcherQueue _dispatcherQueue;
@@ -32,36 +35,19 @@ namespace UI.ViewModels
 
         public ObservableCollection<ProductModel> Products { get; } = new();
 
-        private bool _isLoading;
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set { _isLoading = value; OnPropertyChanged(); }
-        }
-
-        private int _currentPageNumber = 1;
-        public int CurrentPageNumber
-        {
-            get => _currentPageNumber;
-            set { _currentPageNumber = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanGoPrevious)); }
-        }
-
-        private bool _hasNextPage;
-        public bool CanGoNext
-        {
-            get => _hasNextPage;
-            set { _hasNextPage = value; OnPropertyChanged(); }
-        }
+        [ObservableProperty] private bool isLoading;
+        [ObservableProperty] private int currentPageNumber = 1;
+        [ObservableProperty] private bool canGoNext;
 
         public bool CanGoPrevious => CurrentPageNumber > 1;
 
         // --- Các biến xử lý logic GraphQL Cursor ---
-        private string? _currentEndCursor = null;
-        private Stack<string> _previousCursors = new();
+        [ObservableProperty] private string? currentEndCursor = null;
+        [ObservableProperty] private Stack<string> previousCursors = new();
 
         public ProductViewModel()
         {
-            _productService = new ProductService();
+            _productService = App.Current.Services.GetRequiredService<ProductService>();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread(); // Lấy luồng UI để cập nhật giao diện an toàn
         }
 
@@ -91,7 +77,7 @@ namespace UI.ViewModels
                         Products.Add(item);
                     }
 
-                    _currentEndCursor = result.EndCursor;
+                    CurrentEndCursor = result.EndCursor;
                     CanGoNext = result.HasNextPage;
                 });
             }
@@ -107,30 +93,23 @@ namespace UI.ViewModels
 
         public async Task NextPageAsync()
         {
-            if (_currentEndCursor != null)
+            if (CurrentEndCursor != null)
             {
-                _previousCursors.Push(_currentEndCursor);
+                PreviousCursors.Push(CurrentEndCursor);
             }
             CurrentPageNumber++;
-            await LoadProductsAsync(afterCursor: _currentEndCursor);
+            await LoadProductsAsync(afterCursor: CurrentEndCursor);
         }
 
         public async Task PreviousPageAsync()
         {
-            if (CurrentPageNumber > 1 && _previousCursors.Count > 0)
+            if (CurrentPageNumber > 1 && PreviousCursors.Count > 0)
             {
                 CurrentPageNumber--;
-                _previousCursors.Pop();
-                string? cursorToLoad = _previousCursors.Count > 0 ? _previousCursors.Peek() : null;
+                PreviousCursors.Pop();
+                string? cursorToLoad = PreviousCursors.Count > 0 ? PreviousCursors.Peek() : null;
                 await LoadProductsAsync(afterCursor: cursorToLoad);
             }
-        }
-
-        // --- Implementation của INotifyPropertyChanged giúp UI tự động cập nhật khi biến thay đổi ---
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

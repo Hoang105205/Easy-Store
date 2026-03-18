@@ -1,14 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Core.Models;
-using Microsoft.UI.Xaml;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using UI.Services.ProductService;
 using UI.Services.CategoryService;
+using UI.Services.ProductService;
 
 namespace UI.ViewModels;
 
@@ -46,8 +47,8 @@ public partial class ProductDetailViewModel : ObservableObject
 
     public ProductDetailViewModel()
     {
-        _productService = new ProductService();
-        _categoryService = new CategoryService();
+        _productService = App.Current.Services.GetRequiredService<ProductService>();
+        _categoryService = App.Current.Services.GetRequiredService<CategoryService>();
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Dispatching;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace UI.ViewModels
 
         public CategoryViewModel()
         {
-            _categoryService = new CategoryService();
+            _categoryService = App.Current.Services.GetRequiredService<CategoryService>();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         }
 

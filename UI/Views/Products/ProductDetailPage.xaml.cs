@@ -1,4 +1,5 @@
 using Core.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -10,11 +11,13 @@ namespace UI.Views.Products
 {
     public sealed partial class ProductDetailPage : Page
     {
-        public ProductDetailViewModel ViewModel { get; } = new ProductDetailViewModel();
+        public ProductDetailViewModel ViewModel { get; }
 
         public ProductDetailPage()
         {
             this.InitializeComponent();
+
+            ViewModel = (App.Current as App)!.Services.GetService<ProductDetailViewModel>();
             ViewModel.EditImages.CollectionChanged += (s, e) => { UploadIcon.Visibility = ViewModel.EditImages.Count > 0 ? Visibility.Collapsed : Visibility.Visible; };
         }
 

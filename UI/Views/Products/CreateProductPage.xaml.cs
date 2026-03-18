@@ -1,19 +1,23 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Threading.Tasks;
 using UI.ViewModels;
+using UI.ViewModels.Import;
 
 namespace UI.Views.Products
 {
     public sealed partial class CreateProductPage : Page
     {
-        public CreateProductViewModel ViewModel { get; } = new CreateProductViewModel();
+        public CreateProductViewModel ViewModel { get; }
 
         public CreateProductPage()
         {
             this.InitializeComponent();
+
+            ViewModel = (App.Current as App)!.Services.GetService<CreateProductViewModel>();
 
             // Đăng ký sự kiện: Cứ mỗi khi danh sách ảnh thay đổi (thêm, xóa, reset), hàm bên dưới sẽ chạy
             ViewModel.SelectedImages.CollectionChanged += SelectedImages_CollectionChanged;
