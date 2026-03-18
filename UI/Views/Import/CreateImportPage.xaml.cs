@@ -23,18 +23,19 @@ namespace UI.Views.Import;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class ImportEditorPage : Page
+public sealed partial class CreateImportPage : Page
 {
-    public ImportEditorViewModel ViewModel { get; }
+    public CreateImportViewModel ViewModel { get; }
 
-    public ImportEditorPage()
+    public CreateImportPage()
     {
         InitializeComponent();
 
-        ViewModel = (App.Current as App)!.Services.GetRequiredService<ImportEditorViewModel>();
+        ViewModel = (App.Current as App)!.Services.GetRequiredService<CreateImportViewModel>();
 
         ViewModel.GoBackAction = () =>
         {
+            // Kiểm tra xem có trang trước đó không rồi mới lùi (tránh lỗi crash app)
             if (this.Frame.CanGoBack)
             {
                 this.Frame.GoBack();
@@ -42,22 +43,16 @@ public sealed partial class ImportEditorPage : Page
         };
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
 
-        if (e.Parameter is Guid importId)
-        {
-            // Truyền ID xuống ViewModel để gọi API lấy chi tiết
-            ViewModel.InitializeAsync(importId);
-        }
+        await ViewModel.LoadExistingAutoSaveAsync();
     }
 
-    private void OnBackButtonClicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void OnInputLostFocus(object sender, RoutedEventArgs e)
     {
-        if (Frame.CanGoBack)
-        {
-            Frame.GoBack();
-        }
+        // Kích hoạt tiến trình lưu ngầm
+        await ViewModel.TriggerAutoSaveAsync();
     }
 }
