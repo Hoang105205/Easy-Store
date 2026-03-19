@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UI.Services.ProductService;
+using UI.ViewModels.Product;
 
 namespace UI.ViewModels.Import;
 
