@@ -53,14 +53,13 @@ public partial class App : Application
             });
 
 
-        services.AddTransient<ImportPage>();
         services.AddTransient<ImportViewModel>();
-        services.AddTransient<ImportEditorPage>();
         services.AddTransient<ImportEditorViewModel>();
         services.AddTransient<ProductViewModel>();
         services.AddTransient<ProductDetailViewModel>();
         services.AddTransient<CreateProductViewModel>();
         services.AddTransient<CategoryViewModel>();
+        services.AddTransient<CreateImportViewModel>();
 
         // Bạn có thể đăng ký thêm các Service khác tại đây (ví dụ: NavigationService, DialogService)
     }

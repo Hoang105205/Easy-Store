@@ -33,6 +33,7 @@
     <None Remove="GraphQL\Import.graphql" />
     <None Remove="Views\ConfigDialog.xaml" />
     <None Remove="Views\Dashboard\DashboardPage.xaml" />
+    <None Remove="Views\Import\CreateImportPage.xaml" />
     <None Remove="Views\Import\ImportEditorPage.xaml" />
     <None Remove="Views\Import\ImportPage.xaml" />
     <None Remove="Views\LoginPage.xaml" />
@@ -102,6 +103,11 @@
     <Content Update="Assets\Images\muoi.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Import\CreateImportPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\OnboardingPage.xaml">

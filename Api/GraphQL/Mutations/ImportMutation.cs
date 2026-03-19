@@ -101,4 +101,79 @@ public class ImportMutation
 
         return importLog;
     }
+
+    public async Task<bool> DeleteImportAsync(
+        Guid importId,
+        [Service] AppDbContext context)
+    {
+        // 1. Tìm phiếu trong DB
+        var importLog = await context.ImportLogs.FindAsync(importId);
+
+        if (importLog == null)
+        {
+            throw new GraphQLException("Không tìm thấy phiếu nhập này!");
+        }
+
+        // 2. Chặn đứng nếu người dùng cố tình xóa phiếu đã Hoàn thành
+        if (importLog.Status == ImportStatus.Completed)
+        {
+            throw new GraphQLException("Không thể xóa phiếu đã hoàn thành vì đã cộng vào tồn kho!");
+        }
+
+        // 3. Xóa an toàn
+        context.ImportLogs.Remove(importLog);
+        await context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<ImportLog> MarkImportCompletedAsync(
+        Guid importId,
+        [Service] AppDbContext context)
+    {
+        // 1. Tìm phiếu kèm theo danh sách sản phẩm bên trong
+        var importLog = await context.ImportLogs
+            .Include(i => i.Details)
+            .FirstOrDefaultAsync(i => i.Id == importId);
+
+        if (importLog == null)
+        {
+            throw new GraphQLException("Không tìm thấy phiếu nhập này!");
+        }
+
+        if (importLog.Status == ImportStatus.Completed)
+        {
+            throw new GraphQLException("Phiếu này đã được chốt hoàn thành từ trước rồi!");
+        }
+
+        // 2. CHỐT SỔ: Duyệt qua từng món hàng để cộng kho và tính MAC
+        foreach (var item in importLog.Details)
+        {
+            var product = await context.Products.FindAsync(item.ProductId);
+            if (product == null) continue;
+
+            // Tính giá MAC (Tái sử dụng lại Helper cực xịn của bạn)
+            long newMacPrice = ImportHelper.CalculateNewMacPrice(
+                currentMacPrice: product.ImportPrice ?? 0,
+                currentStock: product.StockQuantity,
+                quantityAdded: item.QuantityAdded,
+                actualImportPrice: item.ActualImportPrice
+            );
+
+            // Cộng kho & Cập nhật giá
+            product.StockQuantity = product.StockQuantity + item.QuantityAdded;
+            product.ImportPrice = newMacPrice;
+            product.UpdatedAt = DateTime.UtcNow;
+        }
+
+        // 3. Đổi trạng thái phiếu thành Hoàn tất
+        importLog.Status = ImportStatus.Completed;
+
+        // Bỏ cờ AutoSave đi (cho chắc cú, đề phòng data cũ bị dính)
+        importLog.IsAutoSaved = false;
+
+        await context.SaveChangesAsync();
+
+        return importLog;
+    }
 }

@@ -16,6 +16,8 @@ type Query {
 
 type Mutation {
   completeImport(input: CompleteImportInput!): ImportLog!
+  deleteImport(importId: UUID!): Boolean!
+  markImportCompleted(importId: UUID!): ImportLog!
   login(username: String! password: String!): LoginResultDTO!
   createProduct(input: CreateProductInput!): Product!
   updateProduct(input: UpdateProductInput!): Product!
