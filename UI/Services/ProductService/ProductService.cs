@@ -53,14 +53,18 @@ namespace UI.Services.ProductService
             int itemsPerPage,
             string? afterCursor,
             string? searchText = null,
-            Guid? categoryId = null
+            Guid? categoryId = null,
+            long? minPrice = null,
+            long? maxPrice = null
         )
         {
             var result = await _client.GetProductsPagination.ExecuteAsync(
                 first: itemsPerPage,
                 after: afterCursor,
                 searchTerm: searchText,
-                categoryId: categoryId
+                categoryId: categoryId,
+                minPrice: minPrice,
+                maxPrice: maxPrice
             );
 
             if (result.Errors?.Count > 0)

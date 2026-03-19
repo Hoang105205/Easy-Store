@@ -61,16 +61,27 @@
                 </Button>
             </StackPanel>
 
-            <StackPanel Grid.Column="2" Orientation="Vertical" VerticalAlignment="Center" Margin="15,0,15,0">
+            <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="15,0,15,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Text="0đ" IsReadOnly="True" Margin="0,0,5,0" TextAlignment="Center"/>
-                    <TextBox Grid.Column="1" Text="950.000.000đ" IsReadOnly="True" Margin="5,0,0,0" TextAlignment="Center"/>
+
+                    <TextBox x:Name="TxtMinPrice" 
+                             PlaceholderText="Từ (VNĐ)" 
+                             TextAlignment="Center" 
+                             TextChanged="PriceInput_TextChanged"/>
+
+                    <TextBlock Grid.Column="1" Text="-" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                    <TextBox x:Name="TxtMaxPrice" 
+                             Grid.Column="2" 
+                             PlaceholderText="Đến (VNĐ)" 
+                             TextAlignment="Center" 
+                             TextChanged="PriceInput_TextChanged"/>
                 </Grid>
-                <Slider Minimum="0" Maximum="100" Value="100" Margin="0,5,0,0"/>
             </StackPanel>
 
             <Button Grid.Column="3" Height="40" CornerRadius="8" Click="BtnAddProduct_Click" Background="MediumPurple" BorderThickness="1">
