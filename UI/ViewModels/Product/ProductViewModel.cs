@@ -1,4 +1,7 @@
-﻿using Microsoft.UI.Dispatching;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Core.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,10 +9,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using UI.Services.AuthService;
 using UI.Services.ProductService;
 
 
-namespace UI.ViewModels
+namespace UI.ViewModels.Product
 {
     public class ProductModel
     {
@@ -23,7 +27,7 @@ namespace UI.ViewModels
         public long? SalePrice { get; set; }
     }
 
-    public class ProductViewModel : INotifyPropertyChanged
+    public partial class ProductViewModel : ObservableObject
     {
         private readonly ProductService _productService;
         private readonly DispatcherQueue _dispatcherQueue;
@@ -32,43 +36,25 @@ namespace UI.ViewModels
 
         public ObservableCollection<ProductModel> Products { get; } = new();
 
-        private bool _isLoading;
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set { _isLoading = value; OnPropertyChanged(); }
-        }
+        [ObservableProperty] private bool isLoading;
+        [ObservableProperty] private int currentPageNumber = 1;
+        [ObservableProperty] private bool canGoNext;
+        [ObservableProperty] private bool canGoPrevious = false;
 
-        private int _currentPageNumber = 1;
-        public int CurrentPageNumber
-        {
-            get => _currentPageNumber;
-            set { _currentPageNumber = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanGoPrevious)); }
-        }
-
-        private bool _hasNextPage;
-        public bool CanGoNext
-        {
-            get => _hasNextPage;
-            set { _hasNextPage = value; OnPropertyChanged(); }
-        }
-
-        public bool CanGoPrevious => CurrentPageNumber > 1;
 
         // --- Các biến xử lý logic GraphQL Cursor ---
-        private string? _currentEndCursor = null;
-        private Stack<string> _previousCursors = new();
+        private string? currentEndCursor = null;
+        private Stack<string> previousCursors = new();
 
         public ProductViewModel()
         {
-            _productService = new ProductService();
+            _productService = App.Current.Services.GetRequiredService<ProductService>();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread(); // Lấy luồng UI để cập nhật giao diện an toàn
         }
 
         public async Task LoadProductsAsync(string? afterCursor = null, string? searchText = null, Guid? categoryId = null)
         {
             IsLoading = true;
-            Debug.WriteLine($"searchText= {searchText}, categoryId= {categoryId}");
 
             // Lấy cấu hình số lượng mỗi trang
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
@@ -81,17 +67,14 @@ namespace UI.ViewModels
                 // Cập nhật UI trên Thread chính
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    if (afterCursor == null)
-                    {
-                        Products.Clear();
-                    }
+                    Products.Clear();
 
                     foreach (var item in result.Products)
                     {
                         Products.Add(item);
                     }
 
-                    _currentEndCursor = result.EndCursor;
+                    currentEndCursor = result.EndCursor;
                     CanGoNext = result.HasNextPage;
                 });
             }
@@ -105,32 +88,29 @@ namespace UI.ViewModels
             }
         }
 
-        public async Task NextPageAsync()
+        public async Task NextPageAsync(string? searchText = null, Guid? categoryId = null)
         {
-            if (_currentEndCursor != null)
+            if (currentEndCursor != null)
             {
-                _previousCursors.Push(_currentEndCursor);
+                previousCursors.Push(currentEndCursor);
             }
             CurrentPageNumber++;
-            await LoadProductsAsync(afterCursor: _currentEndCursor);
+            CanGoPrevious = CurrentPageNumber > 1;
+
+            await LoadProductsAsync(afterCursor: currentEndCursor, searchText: searchText, categoryId: categoryId);
         }
 
-        public async Task PreviousPageAsync()
+        public async Task PreviousPageAsync(string? searchText = null, Guid? categoryId = null)
         {
-            if (CurrentPageNumber > 1 && _previousCursors.Count > 0)
+            if (CurrentPageNumber > 1 && previousCursors.Count > 0)
             {
                 CurrentPageNumber--;
-                _previousCursors.Pop();
-                string? cursorToLoad = _previousCursors.Count > 0 ? _previousCursors.Peek() : null;
-                await LoadProductsAsync(afterCursor: cursorToLoad);
-            }
-        }
+                CanGoPrevious = CurrentPageNumber > 1;
 
-        // --- Implementation của INotifyPropertyChanged giúp UI tự động cập nhật khi biến thay đổi ---
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                previousCursors.Pop();
+                string? cursorToLoad = previousCursors.Count > 0 ? previousCursors.Peek() : null;
+                await LoadProductsAsync(afterCursor: cursorToLoad, searchText: searchText, categoryId: categoryId);
+            }
         }
     }
 }

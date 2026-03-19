@@ -15,6 +15,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using UI.ViewModels;
+using UI.ViewModels.Product;
 using UI.Views.Products;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -30,10 +31,14 @@ namespace UI.Views
     public sealed partial class ProductsPage : Page
     {
         // Khai báo ViewModel để file XAML có thể x:Bind tới
-        public ProductViewModel ProductVM { get; } = new ProductViewModel();
-        public CategoryViewModel CategoryVM { get; } = new CategoryViewModel();
+        public ProductViewModel ProductVM { get; }
+        public CategoryViewModel CategoryVM { get; }
 
         private bool _isPageReady = false;
+        private int _waitingInterval = 500;
+
+        private Guid? currentCategoryId = null;
+        private string? currentSearchText = null;
 
         private DispatcherTimer _debounceTimer;
 
@@ -44,8 +49,12 @@ namespace UI.Views
 
             this.Loaded += (s, e) => _isPageReady = true;
 
+            ProductVM = (App.Current as App)!.Services.GetService<ProductViewModel>();
+            CategoryVM = (App.Current as App)!.Services.GetService<CategoryViewModel>();
+
+
             _debounceTimer = new DispatcherTimer();
-            _debounceTimer.Interval = TimeSpan.FromMilliseconds(500); // Đợi 500ms
+            _debounceTimer.Interval = TimeSpan.FromMilliseconds(_waitingInterval);
             _debounceTimer.Tick += DebounceTimer_Tick;
         }
 
@@ -66,6 +75,12 @@ namespace UI.Views
             }
         }
 
+        private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            _debounceTimer.Stop();
+            ExecuteSearchAndFilter();
+        }
+
         private void DebounceTimer_Tick(object sender, object e)
         {
             _debounceTimer.Stop();
@@ -76,22 +91,23 @@ namespace UI.Views
         {
             if (!_isPageReady) return;
 
-            string? searchText = SearchBox.Text.Trim();
-            if (string.IsNullOrEmpty(searchText))
+            currentSearchText = SearchBox.Text.Trim();
+            if (string.IsNullOrEmpty(currentSearchText))
             {
-                searchText = null;
+                currentSearchText = null;
             }
 
-            Guid? categoryId = null;
-            if (CategoryComboBox.SelectedItem is CategoryModel selectedCategory &&
-                selectedCategory.Id != CategoryViewModel.CREATE_NEW_CATEGORY_ID)
+            currentCategoryId = null;
+            if (CategoryComboBox.SelectedItem is CategoryDropdownItem selectedCategory &&
+                selectedCategory.Id != CategoryViewModel.CREATE_NEW_CATEGORY_ID &&
+                selectedCategory != null)
             {
-                categoryId = selectedCategory.Id;
+                currentCategoryId = selectedCategory.Id;
             }
 
             await ProductVM.LoadProductsAsync(
-                searchText: searchText, 
-                categoryId: categoryId
+                searchText: currentSearchText, 
+                categoryId: currentCategoryId
             );
         }
 
@@ -99,7 +115,7 @@ namespace UI.Views
         {
             if (!_isPageReady) return;
 
-            if (CategoryComboBox.SelectedItem is not CategoryModel selectedCategory)
+            if (CategoryComboBox.SelectedItem is not CategoryDropdownItem selectedCategory)
             {
                 BtnDeleteCategory.IsEnabled = false;
                 return;
@@ -107,7 +123,7 @@ namespace UI.Views
 
             if (e.AddedItems.Count == 0) return;
 
-            BtnDeleteCategory.IsEnabled = (selectedCategory.Id != CategoryViewModel.CREATE_NEW_CATEGORY_ID);
+            BtnDeleteCategory.IsEnabled = (selectedCategory.Id != CategoryViewModel.CREATE_NEW_CATEGORY_ID && selectedCategory.Id != null);
 
             if (selectedCategory.Id == CategoryViewModel.CREATE_NEW_CATEGORY_ID)
             {
@@ -145,18 +161,18 @@ namespace UI.Views
             else
             {
                 _debounceTimer.Stop();
-                _debounceTimer.Start();
+                ExecuteSearchAndFilter();
             }
         }
 
         private async void BtnNextPage_Click(object sender, RoutedEventArgs e)
         {
-            await ProductVM.NextPageAsync();
+            await ProductVM.NextPageAsync(searchText: currentSearchText, categoryId: currentCategoryId);
         }
 
         private async void BtnPreviousPage_Click(object sender, RoutedEventArgs e)
         {
-            await ProductVM.PreviousPageAsync();
+            await ProductVM.PreviousPageAsync(searchText: currentSearchText, categoryId: currentCategoryId);
         }
         
         private void BtnAddProduct_Click(object sender, RoutedEventArgs e)
@@ -210,7 +226,7 @@ namespace UI.Views
 
         private async void BtnDeleteCategory_Click(object sender, RoutedEventArgs e)
         {
-            if (CategoryComboBox.SelectedItem is not CategoryModel categoryToDelete)
+            if (CategoryComboBox.SelectedItem is not CategoryDropdownItem categoryToDelete)
                 return;
 
             // 1. Hộp thoại xác nhận thao tác nguy hiểm
@@ -229,7 +245,22 @@ namespace UI.Views
             if (confirmResult == ContentDialogResult.Primary)
             {
                 // 2. Gọi ViewModel để xóa (nhận về Tuple)
-                var (isSuccess, errorMessage) = await CategoryVM.DeleteCategoryAsync(categoryToDelete.Id);
+
+                if (categoryToDelete.Id == null)
+                {
+                    ContentDialog errorDialog = new ContentDialog
+                    {
+                        Title = "Lỗi không xác định",
+                        Content = "Danh mục không hợp lệ. Vui lòng thử lại.",
+                        CloseButtonText = "Đóng",
+                        XamlRoot = this.XamlRoot
+                    };
+                    await errorDialog.ShowAsync();
+                    return;
+                }
+
+                var categoryId = (Guid) categoryToDelete.Id;
+                var (isSuccess, errorMessage) = await CategoryVM.DeleteCategoryAsync(categoryId);
 
                 if (isSuccess)
                 {

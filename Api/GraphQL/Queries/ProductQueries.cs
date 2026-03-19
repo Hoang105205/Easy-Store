@@ -4,6 +4,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Api.GraphQL.Queries;
 
@@ -28,19 +29,31 @@ public class ProductQueries
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            string searchPattern = $"%{searchTerm}%";
-            query = query.Where(p =>
-                EF.Functions.ILike(p.Name, searchPattern) ||
-                EF.Functions.ILike(p.SKU, searchPattern));
+            string cleanSearchTerm = Regex.Replace(searchTerm, @"[^\p{L}\p{N}\s]", " ");
+
+            var words = cleanSearchTerm.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (words.Length > 0)
+            {
+                string prefixFtsQuery = string.Join(" & ", words.Select(w => $"{w}:*"));
+
+                query = query.Where(p =>
+                    EF.Functions.ToTsVector("simple", (p.Name ?? "") + " " + (p.SKU ?? ""))
+                        .Matches(EF.Functions.ToTsQuery("simple", prefixFtsQuery))
+                );
+            }
         }
+
+        query = query.OrderByDescending(p => p.CreatedAt).ThenBy(p => p.Id);
 
         // Return IQueryable
         return query;
     }
 
+    [UseSingleOrDefault]
     [UseProjection]
-    public Product? GetProductById(Guid id, [Service] AppDbContext dbContext)
+    public IQueryable<Product> GetProductById(Guid id, [Service] AppDbContext dbContext)
     {
-        return dbContext.Products.Include(p => p.Category).Include(p => p.Images).FirstOrDefault(p => p.Id == id);
+        return dbContext.Products.Where(p => p.Id == id);
     }
 }

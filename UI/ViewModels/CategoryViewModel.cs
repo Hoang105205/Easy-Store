@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Dispatching;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -8,9 +9,9 @@ using UI.Services.ProductService;
 
 namespace UI.ViewModels
 {
-    public class CategoryModel
+    public class CategoryDropdownItem
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public string Name { get; set; }
 
         public bool IsCreateNewAction => Id == Guid.Empty;
@@ -23,13 +24,13 @@ namespace UI.ViewModels
         // Khai báo DispatcherQueue
         private readonly DispatcherQueue _dispatcherQueue;
 
-        public ObservableCollection<CategoryModel> Categories { get; } = new ObservableCollection<CategoryModel>();
+        public ObservableCollection<CategoryDropdownItem> Categories { get; } = new();
 
         public static readonly Guid CREATE_NEW_CATEGORY_ID = Guid.Empty;
 
         public CategoryViewModel()
         {
-            _categoryService = new CategoryService();
+            _categoryService = App.Current.Services.GetRequiredService<CategoryService>();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         }
 
@@ -41,13 +42,23 @@ namespace UI.ViewModels
             {
                 Categories.Clear();
 
+                Categories.Add(new CategoryDropdownItem
+                {
+                    Id = null,
+                    Name = "Danh mục"
+                });
+
                 foreach (var cat in apiCategories)
                 {
-                    Categories.Add(cat);
+                    Categories.Add(new CategoryDropdownItem
+                    {
+                        Id = cat.Id,
+                        Name = cat.Name
+                    });
                 }
 
-                Categories.Add(new CategoryModel
-                {
+                Categories.Add(new CategoryDropdownItem
+                { 
                     Id = CREATE_NEW_CATEGORY_ID,
                     Name = "+ Tạo danh mục mới..."
                 });
@@ -88,7 +99,7 @@ namespace UI.ViewModels
             return result;
         }
 
-        public CategoryModel GetCategoryByName(string name)
+        public CategoryDropdownItem GetCategoryByName(string name)
         {
             return Categories.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }

@@ -7,8 +7,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using UI.Services.AuthService;
+using UI.Services.CategoryService;
 using UI.Services.ProductService;
+using UI.ViewModels;
 using UI.ViewModels.Import;
+using UI.ViewModels.Product;
 using UI.Views;
 using UI.Views.Import;
 
@@ -39,6 +42,7 @@ public partial class App : Application
     private void ConfigureServices(IServiceCollection services)
     {
         services.AddSingleton<AuthService>();
+        services.AddSingleton<CategoryService>();
         services.AddSingleton<ProductService>();
 
         services.AddEasyStoreClient()
@@ -51,6 +55,10 @@ public partial class App : Application
 
         services.AddTransient<ImportViewModel>();
         services.AddTransient<ImportEditorViewModel>();
+        services.AddTransient<ProductViewModel>();
+        services.AddTransient<ProductDetailViewModel>();
+        services.AddTransient<CreateProductViewModel>();
+        services.AddTransient<CategoryViewModel>();
         services.AddTransient<CreateImportViewModel>();
 
         // Bạn có thể đăng ký thêm các Service khác tại đây (ví dụ: NavigationService, DialogService)
