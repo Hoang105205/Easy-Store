@@ -62,7 +62,7 @@ namespace UI.ViewModels.Product
 
             try
             {
-                var result = await _productService.GetProductsAsync(itemsPerPage, afterCursor, searchText, categoryId);
+                var result = await _productService.GetProductsPaginationAsync(itemsPerPage, afterCursor, searchText, categoryId);
 
                 // Cập nhật UI trên Thread chính
                 _dispatcherQueue.TryEnqueue(() =>

@@ -66,12 +66,12 @@ public partial class CreateImportViewModel : ObservableObject
 
         try
         {
-            var result = await _productService.GetProductsAsync(10, null, keyword, null);
+            var result = await _productService.GetProductsAsync(keyword, null);
 
             _dispatcherQueue.TryEnqueue(() =>
             {
                 SearchResults.Clear();
-                foreach (var item in result.Products)
+                foreach (var item in result)
                 {
                     SearchResults.Add(item);
                 }
