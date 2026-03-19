@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Core.Models;
+using HotChocolate.Language;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using System;
@@ -40,7 +41,7 @@ namespace UI.ViewModels.Product
         [ObservableProperty] private int currentPageNumber = 1;
         [ObservableProperty] private bool canGoNext;
         [ObservableProperty] private bool canGoPrevious = false;
-
+        [ObservableProperty] private string displayRangeText = String.Empty;
 
         // --- Các biến xử lý logic GraphQL Cursor ---
         private string? currentEndCursor = null;
@@ -84,6 +85,8 @@ namespace UI.ViewModels.Product
                     currentEndCursor = result.EndCursor;
                     CanGoNext = result.HasNextPage;
                 });
+
+                UpdateDisplayRangeText(itemsPerPage, result.Products.Count);
             }
             catch (Exception ex)
             {
@@ -93,6 +96,21 @@ namespace UI.ViewModels.Product
             {
                 _dispatcherQueue.TryEnqueue(() => IsLoading = false);
             }
+        }
+
+        public void UpdateDisplayRangeText(int itemsPerPage, int currentCount)
+        {
+            if (currentCount == 0)
+            {
+                DisplayRangeText = "Không có sản phẩm nào";
+                return;
+            }
+
+            int startIndex = (CurrentPageNumber - 1) * itemsPerPage + 1;
+
+            int endIndex = Math.Min(itemsPerPage * CurrentPageNumber, itemsPerPage * (CurrentPageNumber - 1) + currentCount);
+
+            DisplayRangeText = $"Đang hiển thị sản phẩm từ {startIndex} - {endIndex}";
         }
 
         public async Task NextPageAsync(string? searchText = null, Guid? categoryId = null)

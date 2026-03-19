@@ -148,22 +148,44 @@
                     </ListView.ItemTemplate>
                 </ListView>
 
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" Margin="0,20,0,0">
-                    <Button x:Name="BtnPreviousPage" Style="{StaticResource TextBlockButtonStyle}" 
-                            Click="BtnPreviousPage_Click" IsEnabled="{x:Bind ProductVM.CanGoPrevious, Mode=OneWay}">
-                        <FontIcon Glyph="&#xE76B;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
-                    </Button>
+                <Grid Grid.Row="2" Margin="0,20,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <Border Background="{ThemeResource BrandPurpleBrush}" CornerRadius="20" MinWidth="40" Height="40">
-                        <TextBlock x:Name="TxtCurrentPage" Text="{x:Bind ProductVM.CurrentPageNumber, Mode=OneWay}"
-                                   Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    </Border>
+                    <TextBlock Grid.Column="0" 
+                               Text="{x:Bind ProductVM.DisplayRangeText, Mode=OneWay}"
+                               VerticalAlignment="Center" 
+                               HorizontalAlignment="Left"
+                               Foreground="Gray" 
+                               FontWeight="SemiBold"/>
 
-                    <Button x:Name="BtnNextPage" Style="{StaticResource TextBlockButtonStyle}" 
-                            Click="BtnNextPage_Click" IsEnabled="{x:Bind ProductVM.CanGoNext, Mode=OneWay}">
-                        <FontIcon Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
-                    </Button>
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20">
+                        <Button x:Name="BtnPreviousPage" 
+                                Style="{StaticResource TextBlockButtonStyle}" 
+                                Click="BtnPreviousPage_Click" 
+                                IsEnabled="{x:Bind ProductVM.CanGoPrevious, Mode=OneWay}">
+                            <FontIcon Glyph="&#xE76B;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                        </Button>
+
+                        <Border Background="{ThemeResource BrandPurpleBrush}" CornerRadius="20" MinWidth="40" Height="40">
+                            <TextBlock x:Name="TxtCurrentPage" 
+                                       Text="{x:Bind ProductVM.CurrentPageNumber, Mode=OneWay}"
+                                       Foreground="White" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                       FontWeight="Bold"/>
+                        </Border>
+
+                        <Button x:Name="BtnNextPage" 
+                                Style="{StaticResource TextBlockButtonStyle}" 
+                                Click="BtnNextPage_Click" 
+                                IsEnabled="{x:Bind ProductVM.CanGoNext, Mode=OneWay}">
+                            <FontIcon Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </Border>
 

@@ -15,11 +15,13 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
                     <SolidColorBrush x:Key="BrandPurpleBrush" Color="#5C2D91"/>
+                    <SolidColorBrush x:Key="LightPurpleBrush" Color="#8246c7"/>
                     <Color x:Key="SystemAccentColor">#5C2D91</Color>
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="BrandPurpleBrush" Color="#A760EB"/>
+                    <SolidColorBrush x:Key="LightPurpleBrush" Color="#bc86f0"/>
                     <Color x:Key="SystemAccentColor">#A760EB</Color>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
