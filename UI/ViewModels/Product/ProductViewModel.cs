@@ -45,6 +45,7 @@ namespace UI.ViewModels.Product
         // --- Các biến xử lý logic GraphQL Cursor ---
         private string? currentEndCursor = null;
         private Stack<string> previousCursors = new();
+        private bool pressedButton = false;
 
         public ProductViewModel()
         {
@@ -59,6 +60,12 @@ namespace UI.ViewModels.Product
             // Lấy cấu hình số lượng mỗi trang
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
             int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
+
+            if (!pressedButton)
+            {
+                CurrentPageNumber = 1;
+            }
+            pressedButton = false;
 
             try
             {
@@ -94,6 +101,7 @@ namespace UI.ViewModels.Product
             {
                 previousCursors.Push(currentEndCursor);
             }
+            pressedButton = true;
             CurrentPageNumber++;
             CanGoPrevious = CurrentPageNumber > 1;
 
@@ -104,6 +112,7 @@ namespace UI.ViewModels.Product
         {
             if (CurrentPageNumber > 1 && previousCursors.Count > 0)
             {
+                pressedButton = true;
                 CurrentPageNumber--;
                 CanGoPrevious = CurrentPageNumber > 1;
 
