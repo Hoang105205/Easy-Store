@@ -18,15 +18,46 @@ namespace UI.Services.ProductService
         }
 
         // Trả về một Tuple chứa Danh sách sản phẩm, EndCursor và trạng thái HasNextPage
-        public async Task<(List<ProductModel> Products, string? EndCursor, bool HasNextPage)> GetProductsAsync(
-            int itemsPerPage, 
-            string? afterCursor, 
+        public async Task<List<ProductModel>> GetProductsAsync(
             string? searchText = null, 
             Guid? categoryId = null
         )
         {
             var result = await _client.GetProducts.ExecuteAsync(
-                first: itemsPerPage, 
+                searchTerm: searchText,
+                categoryId: categoryId
+            );
+
+            if (result.Errors?.Count > 0)
+            {
+                // Quăng lỗi để ViewModel bắt và xử lý
+                throw new Exception(result.Errors[0].Message);
+            }
+
+            // Map dữ liệu GraphQL sang Model của ứng dụng
+            var mappedData = result.Data?.Products?.Select(x => new ProductModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Sku = x.Sku,
+                CategoryName = x.Category?.Name ?? "Chưa có danh mục",
+                ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
+                StockQuantity = x.StockQuantity,
+                SalePrice = x.SalePrice
+            }).ToList() ?? new List<ProductModel>();
+
+            return mappedData;
+        }
+
+        public async Task<(List<ProductModel> Products, string? EndCursor, bool HasNextPage)> GetProductsPaginationAsync(
+            int itemsPerPage,
+            string? afterCursor,
+            string? searchText = null,
+            Guid? categoryId = null
+        )
+        {
+            var result = await _client.GetProductsPagination.ExecuteAsync(
+                first: itemsPerPage,
                 after: afterCursor,
                 searchTerm: searchText,
                 categoryId: categoryId
@@ -39,7 +70,7 @@ namespace UI.Services.ProductService
             }
 
             // Map dữ liệu GraphQL sang Model của ứng dụng
-            var mappedData = result.Data?.Products?.Nodes?.Select(x => new ProductModel
+            var mappedData = result.Data?.ProductsPagination?.Nodes?.Select(x => new ProductModel
             {
                 Id = x.Id,
                 Name = x.Name,
@@ -50,7 +81,7 @@ namespace UI.Services.ProductService
                 SalePrice = x.SalePrice
             }).ToList() ?? new List<ProductModel>();
 
-            var pageInfo = result.Data?.Products?.PageInfo;
+            var pageInfo = result.Data?.ProductsPagination?.PageInfo;
 
             return (mappedData, pageInfo?.EndCursor, pageInfo?.HasNextPage ?? false);
         }

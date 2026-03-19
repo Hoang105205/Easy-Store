@@ -9,7 +9,8 @@ type Query {
   importById(id: UUID!): ImportLog
   importSummary: ImportSummary!
   users: [User!]!
-  products(searchTerm: String categoryId: UUID "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ProductSortInput!]): ProductsConnection
+  products(searchTerm: String categoryId: UUID order: [ProductSortInput!]): [Product!]!
+  productsPagination(searchTerm: String categoryId: UUID "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ProductSortInput!]): ProductsPaginationConnection
   productById(id: UUID!): Product
   categories: [Category!]!
   orders("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [OrderSortInput!]): OrdersConnection
@@ -43,11 +44,11 @@ input ProductSortInput {
 }
 
 "A connection to a list of items."
-type ProductsConnection {
+type ProductsPaginationConnection {
   "Information to aid in pagination."
   pageInfo: PageInfo!
   "A list of edges."
-  edges: [ProductsEdge!]
+  edges: [ProductsPaginationEdge!]
   "A flattened list of the nodes."
   nodes: [Product!]
 }
@@ -109,7 +110,7 @@ type PageInfo {
 }
 
 "An edge in a connection."
-type ProductsEdge {
+type ProductsPaginationEdge {
   "A cursor for use in pagination."
   cursor: String!
   "The item at the end of the edge."
@@ -193,6 +194,8 @@ type Category {
   products: [Product]
 }
 
+scalar UUID
+
 type Product {
   id: UUID!
   categoryId: UUID!
@@ -208,8 +211,6 @@ type Product {
   importLogs: [ImportLogDetail!]!
   images: [ProductImage!]!
 }
-
-scalar UUID
 
 type User {
   id: UUID!

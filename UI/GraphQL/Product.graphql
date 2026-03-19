@@ -1,10 +1,33 @@
 ﻿query GetProducts(
+  $searchTerm: String, 
+  $categoryId: UUID
+) {
+  products(
+    searchTerm: $searchTerm, 
+    categoryId: $categoryId
+  ) {
+    id
+    name
+    sku
+    salePrice
+    stockQuantity
+    category {
+      name
+    }
+    images {
+      imagePath
+      isPrimary
+    }
+  }
+}
+
+query GetProductsPagination(
   $first: Int!, 
   $after: String, 
   $searchTerm: String, 
   $categoryId: UUID
 ) {
-  products(
+  productsPagination(
     first: $first, 
     after: $after, 
     searchTerm: $searchTerm, 
