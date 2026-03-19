@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UI.ViewModels;
 using UI.ViewModels.Product;
@@ -56,6 +57,21 @@ namespace UI.Views
             _debounceTimer = new DispatcherTimer();
             _debounceTimer.Interval = TimeSpan.FromMilliseconds(_waitingInterval);
             _debounceTimer.Tick += DebounceTimer_Tick;
+        }
+
+        private long? ParsePrice(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
+
+            string cleanString = Regex.Replace(input, @"[^\d]", "");
+
+            if (long.TryParse(cleanString, out long result))
+            {
+                return result;
+            }
+
+            return null;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -105,9 +121,16 @@ namespace UI.Views
                 currentCategoryId = selectedCategory.Id;
             }
 
+            string rawMin = TxtMinPrice.Text;
+            string rawMax = TxtMaxPrice.Text;
+            long? minPrice = ParsePrice(rawMin);
+            long? maxPrice = ParsePrice(rawMax);
+
             await ProductVM.LoadProductsAsync(
                 searchText: currentSearchText, 
-                categoryId: currentCategoryId
+                categoryId: currentCategoryId,
+                minPrice: minPrice,
+                maxPrice: maxPrice
             );
         }
 
@@ -163,6 +186,12 @@ namespace UI.Views
                 _debounceTimer.Stop();
                 ExecuteSearchAndFilter();
             }
+        }
+
+        private void PriceInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _debounceTimer.Stop();
+            _debounceTimer.Start();
         }
 
         private async void BtnNextPage_Click(object sender, RoutedEventArgs e)

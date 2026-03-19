@@ -10,7 +10,7 @@ type Query {
   importSummary: ImportSummary!
   users: [User!]!
   products(searchTerm: String categoryId: UUID order: [ProductSortInput!]): [Product!]!
-  productsPagination(searchTerm: String categoryId: UUID "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ProductSortInput!]): ProductsPaginationConnection
+  productsPagination(searchTerm: String categoryId: UUID minPrice: Long maxPrice: Long "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ProductSortInput!]): ProductsPaginationConnection
   productById(id: UUID!): Product
   categories: [Category!]!
   orders("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [OrderSortInput!]): OrdersConnection
@@ -194,6 +194,9 @@ type Category {
   products: [Product]
 }
 
+"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
+scalar Long
+
 scalar UUID
 
 type Product {
@@ -259,9 +262,6 @@ type OrderItem {
 
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
-
-"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
-scalar Long
 
 input ImportLogDetailInput {
   productId: UUID!

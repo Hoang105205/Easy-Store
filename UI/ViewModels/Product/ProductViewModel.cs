@@ -54,7 +54,12 @@ namespace UI.ViewModels.Product
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread(); // Lấy luồng UI để cập nhật giao diện an toàn
         }
 
-        public async Task LoadProductsAsync(string? afterCursor = null, string? searchText = null, Guid? categoryId = null)
+        public async Task LoadProductsAsync(
+            string? afterCursor = null, 
+            string? searchText = null, 
+            Guid? categoryId = null,
+            long? minPrice = null,
+            long? maxPrice = null)
         {
             IsLoading = true;
 
@@ -70,7 +75,7 @@ namespace UI.ViewModels.Product
 
             try
             {
-                var result = await _productService.GetProductsPaginationAsync(itemsPerPage, afterCursor, searchText, categoryId);
+                var result = await _productService.GetProductsPaginationAsync(itemsPerPage, afterCursor, searchText, categoryId, minPrice, maxPrice);
 
                 // Cập nhật UI trên Thread chính
                 _dispatcherQueue.TryEnqueue(() =>

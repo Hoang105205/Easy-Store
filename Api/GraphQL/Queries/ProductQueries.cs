@@ -55,7 +55,9 @@ public class ProductQueries
     public IQueryable<Product> GetProductsPagination(
             [Service] AppDbContext context,
             string? searchTerm = null,
-            Guid? categoryId = null
+            Guid? categoryId = null,
+            long? minPrice = null,
+            long? maxPrice = null
         )
     {
         var query = context.Products.AsQueryable();
@@ -63,6 +65,16 @@ public class ProductQueries
         if (categoryId.HasValue)
         {
             query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
+
+        if (minPrice.HasValue)
+        {
+            query = query.Where(p => p.SalePrice >= minPrice.Value);
+        }
+
+        if (maxPrice.HasValue)
+        {
+            query = query.Where(p => p.SalePrice <= maxPrice.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
