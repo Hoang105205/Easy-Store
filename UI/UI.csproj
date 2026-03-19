@@ -31,6 +31,7 @@
     <None Remove="Assets\onboarding3.png" />
     <None Remove="GraphQL\Auth.graphql" />
     <None Remove="GraphQL\Import.graphql" />
+    <None Remove="GraphQL\Order.graphql" />
     <None Remove="Views\ConfigDialog.xaml" />
     <None Remove="Views\Dashboard\DashboardPage.xaml" />
     <None Remove="Views\Import\CreateImportPage.xaml" />

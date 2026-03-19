@@ -12,6 +12,8 @@ type Query {
   products(searchTerm: String categoryId: UUID "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ProductSortInput!]): ProductsConnection
   productById(id: UUID!): Product
   categories: [Category!]!
+  orders("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [OrderSortInput!]): OrdersConnection
+  orderById(id: UUID!): Order
 }
 
 type Mutation {
@@ -62,6 +64,28 @@ type ImportHistoryConnection {
   totalCount: Int!
 }
 
+input OrderSortInput {
+  id: SortEnumType
+  receiptNumber: SortEnumType
+  status: SortEnumType
+  note: SortEnumType
+  totalAmount: SortEnumType
+  totalProfit: SortEnumType
+  isDraft: SortEnumType
+  orderDate: SortEnumType
+  updatedAt: SortEnumType
+}
+
+"A connection to a list of items."
+type OrdersConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [OrdersEdge!]
+  "A flattened list of the nodes."
+  nodes: [Order!]
+}
+
 enum SortEnumType {
   ASC
   DESC
@@ -100,6 +124,14 @@ type ImportHistoryEdge {
   node: ImportLog!
 }
 
+"An edge in a connection."
+type OrdersEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Order!
+}
+
 input CompleteImportInput {
   details: [ImportLogDetailInput!]!
   isDraft: Boolean!
@@ -125,6 +157,19 @@ input CreateProductInput {
 type LoginResultDTO {
   success: Boolean!
   message: String!
+}
+
+type Order {
+  id: UUID!
+  receiptNumber: Int!
+  status: String!
+  note: String
+  totalAmount: Long!
+  totalProfit: Long!
+  isDraft: Boolean!
+  orderDate: DateTime!
+  updatedAt: DateTime!
+  orderItems: [OrderItem]
 }
 
 type ImportSummary {
@@ -196,14 +241,26 @@ enum ImportStatus {
   COMPLETED
 }
 
-"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
-scalar Long
+"The `Decimal` scalar type represents a decimal floating-point number."
+scalar Decimal
+
+type OrderItem {
+  id: UUID!
+  orderId: UUID!
+  productId: UUID!
+  quantity: Int!
+  unitSalePrice: Long!
+  unitImportPrice: Long!
+  totalPrice: Long!
+  order: Order
+  product: Product
+}
 
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
-"The `Decimal` scalar type represents a decimal floating-point number."
-scalar Decimal
+"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
+scalar Long
 
 input ImportLogDetailInput {
   productId: UUID!

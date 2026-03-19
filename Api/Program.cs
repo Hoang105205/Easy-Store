@@ -41,6 +41,7 @@ builder.Services
     .AddTypeExtension<ProductQueries>()
     .AddTypeExtension<CategoryQueries>()
     .AddTypeExtension<ImportQueries>()
+    .AddTypeExtension<OrderQueries>()
     .AddMutationType<Mutation>()
     .AddTypeExtension<AuthMutation>()
     .AddTypeExtension<ProductMutation>()

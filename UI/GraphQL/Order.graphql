@@ -1,0 +1,44 @@
+query GetOrders(
+  $first: Int!, 
+  $after: String
+  ) {
+  orders(
+    first: $first, 
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    nodes {
+      id
+      receiptNumber
+      status
+      totalAmount
+      totalProfit
+      orderDate
+    }
+  }
+}
+
+query GetOrderById($id: UUID!) {
+  orderById(id: $id) {
+    id
+    receiptNumber
+    status
+    totalAmount
+    totalProfit
+    isDraft
+    orderDate
+    updatedAt
+    orderItems {
+      orderId
+      productId
+      quantity
+      unitSalePrice
+      totalPrice
+    }
+  }
+}
