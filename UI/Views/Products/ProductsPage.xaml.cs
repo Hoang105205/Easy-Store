@@ -40,6 +40,7 @@ namespace UI.Views
 
         private Guid? currentCategoryId = null;
         private string? currentSearchText = null;
+        private long? minPrice = null, maxPrice = null;
 
         private DispatcherTimer _debounceTimer;
 
@@ -123,8 +124,8 @@ namespace UI.Views
 
             string rawMin = TxtMinPrice.Text;
             string rawMax = TxtMaxPrice.Text;
-            long? minPrice = ParsePrice(rawMin);
-            long? maxPrice = ParsePrice(rawMax);
+            minPrice = ParsePrice(rawMin);
+            maxPrice = ParsePrice(rawMax);
 
             await ProductVM.LoadProductsAsync(
                 searchText: currentSearchText, 
@@ -196,12 +197,22 @@ namespace UI.Views
 
         private async void BtnNextPage_Click(object sender, RoutedEventArgs e)
         {
-            await ProductVM.NextPageAsync(searchText: currentSearchText, categoryId: currentCategoryId);
+            await ProductVM.NextPageAsync(
+                searchText: currentSearchText,
+                categoryId: currentCategoryId,
+                minPrice: minPrice,
+                maxPrice: maxPrice
+            );
         }
 
         private async void BtnPreviousPage_Click(object sender, RoutedEventArgs e)
         {
-            await ProductVM.PreviousPageAsync(searchText: currentSearchText, categoryId: currentCategoryId);
+            await ProductVM.PreviousPageAsync(
+                searchText: currentSearchText,
+                categoryId: currentCategoryId,
+                minPrice: minPrice,
+                maxPrice: maxPrice
+            );
         }
         
         private void BtnAddProduct_Click(object sender, RoutedEventArgs e)

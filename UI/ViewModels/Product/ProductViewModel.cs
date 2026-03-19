@@ -70,6 +70,11 @@ namespace UI.ViewModels.Product
             if (!pressedButton)
             {
                 CurrentPageNumber = 1;
+                afterCursor = null;
+
+                previousCursors.Clear();
+                currentEndCursor = null;
+                CanGoPrevious = false;
             }
             pressedButton = false;
 
@@ -118,7 +123,7 @@ namespace UI.ViewModels.Product
             DisplayRangeText = $"Đang hiển thị sản phẩm từ {startIndex} - {endIndex}";
         }
 
-        public async Task NextPageAsync(string? searchText = null, Guid? categoryId = null)
+        public async Task NextPageAsync(string? searchText = null, Guid? categoryId = null, long? minPrice = null, long? maxPrice = null)
         {
             if (currentEndCursor != null)
             {
@@ -128,10 +133,16 @@ namespace UI.ViewModels.Product
             CurrentPageNumber++;
             CanGoPrevious = CurrentPageNumber > 1;
 
-            await LoadProductsAsync(afterCursor: currentEndCursor, searchText: searchText, categoryId: categoryId);
+            await LoadProductsAsync(
+                afterCursor: currentEndCursor, 
+                searchText: searchText, 
+                categoryId: categoryId,
+                minPrice: minPrice,
+                maxPrice: maxPrice
+            );
         }
 
-        public async Task PreviousPageAsync(string? searchText = null, Guid? categoryId = null)
+        public async Task PreviousPageAsync(string? searchText = null, Guid? categoryId = null, long? minPrice = null, long? maxPrice = null)
         {
             if (CurrentPageNumber > 1 && previousCursors.Count > 0)
             {
@@ -141,7 +152,13 @@ namespace UI.ViewModels.Product
 
                 previousCursors.Pop();
                 string? cursorToLoad = previousCursors.Count > 0 ? previousCursors.Peek() : null;
-                await LoadProductsAsync(afterCursor: cursorToLoad, searchText: searchText, categoryId: categoryId);
+                await LoadProductsAsync(
+                    afterCursor: cursorToLoad,
+                    searchText: searchText,
+                    categoryId: categoryId,
+                    minPrice: minPrice,
+                    maxPrice: maxPrice
+                );
             }
         }
     }
