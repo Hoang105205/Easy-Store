@@ -23,6 +23,43 @@ internal class OrderQueries
         return query;
     }
 
+    [UsePaging(DefaultPageSize = 20)]
+    [UseProjection]
+    [UseSorting]
+    public IQueryable<Order> GetOrdersPagination(
+        [Service] AppDbContext context,
+        string? receiptNumber = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null
+    )
+    {
+        var query = context.Orders.AsQueryable();
+
+        // Lọc theo mã hóa đơn (Tìm kiếm gần đúng)
+        if (!string.IsNullOrWhiteSpace(receiptNumber) && int.TryParse(receiptNumber, out int receiptInt))
+        {
+            query = query.Where(o => o.ReceiptNumber == receiptInt);
+        }
+
+        // Lọc từ ngày
+        if (startDate.HasValue)
+        {
+            query = query.Where(o => o.OrderDate >= startDate.Value);
+        }
+
+        // Lọc đến ngày
+        if (endDate.HasValue)
+        {
+            // Cộng thêm 1 ngày và trừ đi 1 tick để lấy đến 23:59:59 của ngày được chọn
+            var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(o => o.OrderDate <= endOfDay);
+        }
+
+        query = query.OrderByDescending(p => p.OrderDate).ThenBy(p => p.Id);
+
+        return query;
+    }
+
     [UseSingleOrDefault]
     [UseProjection]
     public IQueryable<Order> GetOrderById(Guid id, [Service] AppDbContext dbContext)

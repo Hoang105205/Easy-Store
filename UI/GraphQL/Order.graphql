@@ -23,6 +23,37 @@ query GetOrders(
   }
 }
 
+query GetOrdersPagination(
+  $first: Int!, 
+  $after: String,
+  $receiptNumber: String,
+  $startDate: DateTime,
+  $endDate: DateTime
+) {
+  ordersPagination(
+    first: $first, 
+    after: $after,
+    receiptNumber: $receiptNumber,
+    startDate: $startDate,
+    endDate: $endDate
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    nodes {
+      id
+      receiptNumber
+      status
+      totalAmount
+      totalProfit
+      orderDate
+    }
+  }
+}
+
 query GetOrderById($id: UUID!) {
   orderById(id: $id) {
     id
@@ -39,6 +70,14 @@ query GetOrderById($id: UUID!) {
       quantity
       unitSalePrice
       totalPrice
+      product {
+        name
+        sku
+        images {
+          imagePath
+          isPrimary
+        }
+      }
     }
   }
 }
