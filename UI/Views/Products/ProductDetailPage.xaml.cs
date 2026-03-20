@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using UI.ViewModels;
 
@@ -76,6 +77,41 @@ namespace UI.Views.Products
                 }
                 catch (Exception ex) { await ShowDialog("Không thể xóa", ex.Message); }
             }
+        }
+
+        private void TxtPrice_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null) return;
+
+            var raw = textBox.Text;
+
+            raw = raw
+                .Replace(".", "")
+                .Replace(",", "")
+                .Replace("đ", "")
+                .Trim();
+
+            if (long.TryParse(raw, out var number))
+            {
+                textBox.Text = number.ToString("N0", new CultureInfo("vi-VN")) + " đ";
+            }
+        }
+
+        private void TxtPrice_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null) return;
+
+            var raw = textBox.Text;
+
+            raw = raw
+                .Replace(".", "")
+                .Replace(",", "")
+                .Replace("đ", "")
+                .Trim();
+
+            textBox.Text = raw;
         }
 
         // Các hàm xử lý ảnh: Upload, Drag & Drop, Remove
