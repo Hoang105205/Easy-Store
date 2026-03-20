@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -227,6 +228,42 @@ namespace UI.Views
                 this.Frame.Navigate(typeof(Products.ProductDetailPage), selectedProduct.Id);
             }
         }
+
+        private void TxtPrice_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null) return;
+
+            var raw = textBox.Text;
+
+            raw = raw
+                .Replace(".", "")
+                .Replace(",", "")
+                .Replace("đ", "")
+                .Trim();
+
+            if (long.TryParse(raw, out var number))
+            {
+                textBox.Text = number.ToString("N0", new CultureInfo("vi-VN")) + " đ";
+            }
+        }
+
+        private void TxtPrice_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null) return;
+
+            var raw = textBox.Text;
+
+            raw = raw
+                .Replace(".", "")
+                .Replace(",", "")
+                .Replace("đ", "")
+                .Trim();
+
+            textBox.Text = raw;
+        }
+
         private void NewCategoryDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             string inputName = TxtNewCategoryName.Text.Trim();

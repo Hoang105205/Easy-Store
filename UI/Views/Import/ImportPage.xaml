@@ -102,7 +102,7 @@
                     Width="1.5*"/>
 
                 <controls:DataGridTextColumn Header="Tổng tiền" 
-                    Binding="{Binding TotalAmount, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" 
+                    Binding="{Binding TotalAmount, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
                     Width="1.5*"/>
 
                 <controls:DataGridTemplateColumn Header="Trạng thái" Width="1.5*">
