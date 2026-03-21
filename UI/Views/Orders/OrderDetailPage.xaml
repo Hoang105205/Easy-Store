@@ -1,0 +1,92 @@
+<Page
+    x:Class="UI.Views.Orders.OrderDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:converters="using:UI.Utils.Converters"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+    </Page.Resources>
+
+    <Grid Padding="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="16">
+                <Button Click="BtnBack_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
+                <TextBlock Text="Chi tiết hóa đơn" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="Số hóa đơn:" FontSize="24" Foreground="Gray" VerticalAlignment="Center"/>
+                <TextBlock Text="{x:Bind ViewModel.OrderDetail.ReceiptNumber, Mode=OneWay}" FontSize="24" Foreground="Gray" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" 
+                        Visibility="{x:Bind ViewModel.IsActionVisible, Mode=OneWay}">
+                <Button Content="Thanh toán" Background="Green" Foreground="White" Width="120" Click="BtnPay_Click"/>
+                <Button Content="Xóa đơn" Background="DarkRed" Foreground="White" Width="100" Click="BtnDelete_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Spacing="4" Margin="0,0,0,12">
+            <TextBlock Text="Chi tiết đơn hàng" FontSize="18" FontWeight="SemiBold"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Ngày tạo:" Foreground="Gray"/>
+                <TextBlock Text="{x:Bind ViewModel.OrderDetail.OrderDate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='dd/MM/yyyy HH:mm'}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <Border Grid.Row="2" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+            <Grid>
+                <ProgressRing IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Width="50" Height="50" Canvas.ZIndex="10"/>
+
+                <controls:DataGrid ItemsSource="{x:Bind ViewModel.OrderDetail.OrderItems, Mode=OneWay}"
+                                   AutoGenerateColumns="False" IsReadOnly="True"
+                                   HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                    <controls:DataGrid.Columns>
+                        <controls:DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="SizeToCells"/>
+                        <controls:DataGridTextColumn Header="Tên SP" Binding="{Binding ProductName}" Width="2*"/>
+                        <controls:DataGridTextColumn Header="Danh mục" Binding="{Binding CategoryName}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Số lượng" Binding="{Binding Quantity}" Width="1*"/>
+                        <controls:DataGridTextColumn Header="Giá nhập" Binding="{Binding UnitImportPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Đơn giá" Binding="{Binding UnitSalePrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Thành tiền" Binding="{Binding TotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" Width="1.5*"/>
+                    </controls:DataGrid.Columns>
+                </controls:DataGrid>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="3" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Ghi chú:" FontWeight="SemiBold"/>
+                <TextBlock Text="{x:Bind ViewModel.OrderDetail.Note, Mode=OneWay}" Foreground="Gray" TextWrapping="Wrap" Margin="0,4,20,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="8" MinWidth="300">
+                <Grid>
+                    <TextBlock Text="Tổng giá nhập:" HorizontalAlignment="Left" Foreground="Gray"/>
+                    <TextBlock Text="{x:Bind ViewModel.OrderDetail.TotalImportPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} đ'}" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                </Grid>
+                <Grid>
+                    <TextBlock Text="Tổng cộng:" HorizontalAlignment="Left" Foreground="Gray"/>
+                    <TextBlock Text="{x:Bind ViewModel.OrderDetail.TotalAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} đ'}" HorizontalAlignment="Right" FontWeight="Bold" FontSize="16"/>
+                </Grid>
+                <Line Stroke="LightGray" X1="0" X2="300" Y1="0" Y2="0" Margin="0,4"/>
+                <Grid>
+                    <TextBlock Text="Lợi nhuận:" HorizontalAlignment="Left" FontWeight="SemiBold" Foreground="Green"/>
+                    <TextBlock Text="{x:Bind ViewModel.OrderDetail.TotalProfit, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} đ'}" HorizontalAlignment="Right" FontWeight="Bold" FontSize="18" Foreground="Green"/>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

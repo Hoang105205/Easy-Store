@@ -65,20 +65,32 @@ query GetOrderById($id: UUID!) {
     isDraft
     orderDate
     updatedAt
+    note
     orderItems {
       orderId
       productId
       quantity
+      unitImportPrice
       unitSalePrice
       totalPrice
       product {
         name
         sku
-        images {
-          imagePath
-          isPrimary
+        category {
+          name
         }
       }
     }
   }
+}
+
+mutation PayOrder($id: UUID!) {
+  payOrder(id: $id) {
+    id
+    status
+  }
+}
+
+mutation DeleteOrder($id: UUID!) {
+  deleteOrder(id: $id)
 }

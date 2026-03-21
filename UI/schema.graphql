@@ -28,6 +28,8 @@ type Mutation {
   deleteProduct(id: UUID!): Boolean!
   createCategory(name: String!): Category!
   deleteCategory(id: UUID!): Boolean!
+  payOrder(id: UUID!): Order!
+  deleteOrder(id: UUID!): Boolean!
 }
 
 input ProductSortInput {
@@ -154,6 +156,12 @@ type OrdersPaginationEdge {
   node: Order!
 }
 
+input CompleteImportInput {
+  details: [ImportLogDetailInput!]!
+  isDraft: Boolean!
+  isAutoSave: Boolean!
+}
+
 input UpdateProductInput {
   id: UUID!
   sku: String!
@@ -240,18 +248,6 @@ type User {
   hasCompletedOnboarding: Boolean!
 }
 
-input CompleteImportInput {
-  details: [ImportLogDetailInput!]!
-  isDraft: Boolean!
-  isAutoSave: Boolean!
-}
-
-input ImportLogDetailInput {
-  productId: UUID!
-  quantityAdded: Int!
-  actualImportPrice: Long!
-}
-
 type ProductImage {
   id: UUID!
   productId: UUID!
@@ -288,6 +284,12 @@ type OrderItem {
   totalPrice: Long!
   order: Order
   product: Product
+}
+
+input ImportLogDetailInput {
+  productId: UUID!
+  quantityAdded: Int!
+  actualImportPrice: Long!
 }
 
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."

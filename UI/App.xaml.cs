@@ -65,6 +65,7 @@ public partial class App : Application
         services.AddTransient<CreateImportViewModel>();
         services.AddTransient<OrderPageViewModel>();
         services.AddTransient<NewOrderPageViewModel>();
+        services.AddTransient<OrderDetailPageViewModel>();
 
         // Bạn có thể đăng ký thêm các Service khác tại đây (ví dụ: NavigationService, DialogService)
     }

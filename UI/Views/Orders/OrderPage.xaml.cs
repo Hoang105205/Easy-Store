@@ -35,6 +35,8 @@ namespace UI.Views.Orders
         {
             InitializeComponent();
 
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
+
             this.Loaded += (s, e) => _isPageReady = true;
 
             OrderVM = (App.Current as App)!.Services.GetRequiredService<OrderPageViewModel>();
@@ -51,9 +53,8 @@ namespace UI.Views.Orders
             await OrderVM.LoadOrdersAsync();
         }
 
-        // --- XỬ LÝ LỌC & TÌM KIẾM ---
 
-        // Hàm này sẽ giả định bạn có 1 AutoSuggestBox tên là SearchBox
+        // SearchBox
         private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
@@ -69,7 +70,7 @@ namespace UI.Views.Orders
             ExecuteSearchAndFilter();
         }
 
-        // Hàm này giả định bạn có 2 CalendarDatePicker tên là StartDatePicker và EndDatePicker
+        // 2 CalendarDatePicker là StartDatePicker và EndDatePicker
         private void DatePicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
         {
             // Bỏ qua nếu page chưa load xong
@@ -125,7 +126,7 @@ namespace UI.Views.Orders
         {
             if (!_isPageReady) return;
 
-            // 1. Cập nhật trạng thái từ UI
+            // Cập nhật trạng thái từ UI
             currentSearchReceiptNumber = SearchBox.Text.Trim();
             if (string.IsNullOrEmpty(currentSearchReceiptNumber))
             {
@@ -135,7 +136,7 @@ namespace UI.Views.Orders
             currentStartDate = StartDatePicker.Date;
             currentEndDate = EndDatePicker.Date;
 
-            // 2. Gọi API thông qua ViewModel
+            // Gọi API thông qua ViewModel
             await OrderVM.LoadOrdersAsync(
                 receiptNumber: currentSearchReceiptNumber,
                 startDate: currentStartDate,
@@ -143,8 +144,7 @@ namespace UI.Views.Orders
             );
         }
 
-        // --- XỬ LÝ PHÂN TRANG ---
-
+        // phân trang
         private async void BtnNextPage_Click(object sender, RoutedEventArgs e)
         {
             await OrderVM.NextPageAsync(
@@ -165,7 +165,17 @@ namespace UI.Views.Orders
 
         private void BtnAddOrder_Click(object sender, RoutedEventArgs e)
         {
-            // this.Frame.Navigate(typeof(CreateOrderPage));
+            // this.Frame.Navigate(typeof(CreateOrderPage)); // chưa làm
+        }
+
+        private void OrdersGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            // Lấy ra dòng vừa double click
+            if (OrdersGrid.SelectedItem is OrderModel selectedOrder)
+            {
+                // truyền Guid
+                this.Frame.Navigate(typeof(OrderDetailPage), selectedOrder.Id);
+            }
         }
     }
 }
