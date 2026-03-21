@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
-namespace UI.Utils.Converters.ImportPage;
+namespace UI.Utils.Converters;
 
 public class StringFormatConverter : IValueConverter
 {

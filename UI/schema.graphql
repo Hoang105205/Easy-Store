@@ -96,6 +96,8 @@ type OrdersPaginationConnection {
   edges: [OrdersPaginationEdge!]
   "A flattened list of the nodes."
   nodes: [Order!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
 }
 
 enum SortEnumType {

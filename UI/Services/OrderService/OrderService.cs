@@ -16,7 +16,7 @@ namespace UI.Services.OrderService
             _client = App.Current.Services.GetRequiredService<IEasyStoreClient>();
         }
 
-        public async Task<(List<OrderModel> Orders, string? EndCursor, bool HasNextPage)> GetOrdersPaginationAsync(
+        public async Task<(List<OrderModel> Orders, string? EndCursor, bool HasNextPage, int TotalCount)> GetOrdersPaginationAsync(
             int itemsPerPage,
             string? afterCursor,
             string? receiptNumber = null,
@@ -48,7 +48,9 @@ namespace UI.Services.OrderService
 
             var pageInfo = result.Data?.OrdersPagination?.PageInfo;
 
-            return (mappedData, pageInfo?.EndCursor, pageInfo?.HasNextPage ?? false);
+            var totalCount = result.Data?.OrdersPagination?.TotalCount ?? 0;
+
+            return (mappedData, pageInfo?.EndCursor, pageInfo?.HasNextPage ?? false, totalCount);
         }
     }
 }

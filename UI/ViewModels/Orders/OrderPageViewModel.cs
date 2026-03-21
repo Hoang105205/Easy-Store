@@ -32,6 +32,7 @@ namespace UI.ViewModels.Orders
         [ObservableProperty] private bool canGoNext;
         [ObservableProperty] private bool canGoPrevious = false;
         [ObservableProperty] private string displayRangeText = string.Empty;
+        [ObservableProperty] private int totalOrdersCount = 0;
 
         // --- Quản lý Cursor ---
         private string? currentEndCursor = null;
@@ -78,6 +79,8 @@ namespace UI.ViewModels.Orders
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    TotalOrdersCount = result.TotalCount;
+
                     Orders.Clear();
                     foreach (var item in result.Orders)
                     {

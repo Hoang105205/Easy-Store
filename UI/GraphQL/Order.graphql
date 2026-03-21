@@ -37,6 +37,7 @@ query GetOrdersPagination(
     startDate: $startDate,
     endDate: $endDate
   ) {
+    totalCount
     pageInfo {
       hasNextPage
       hasPreviousPage

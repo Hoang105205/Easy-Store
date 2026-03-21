@@ -7,8 +7,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:converters="using:UI.Utils.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:StatusColorConverter x:Key="StatusColorConverter"/>
+        <converters:StatusIconConverter x:Key="StatusIconConverter"/>
+        <converters:StatusTextConverter x:Key="StatusTextConverter"/>
+    </Page.Resources>
 
     <Grid Padding="30">
         <Grid.RowDefinitions>
@@ -32,7 +40,7 @@
                         CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                     <StackPanel Spacing="8">
                         <TextBlock Text="TỔNG SỐ HÓA ĐƠN" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" FontWeight="SemiBold"/>
-                        <TextBlock Text="0" Style="{StaticResource TitleTextBlockStyle}"/>
+                        <TextBlock Text="{x:Bind OrderVM.TotalOrdersCount, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}"/>
                     </StackPanel>
                 </Border>
 
@@ -105,11 +113,14 @@
                     <controls:DataGrid.Columns>
                         <controls:DataGridTextColumn Header="Mã hóa đơn" Binding="{Binding ReceiptNumber}" Width="1.5*"/>
 
-                        <controls:DataGridTextColumn Header="Ngày tạo" Binding="{Binding OrderDate}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Ngày tạo" Binding="{Binding OrderDate, Converter={StaticResource StringFormatConverter}, ConverterParameter='dd/MM/yyyy HH:mm'}" 
+                            Width="1.5*"/>
 
-                        <controls:DataGridTextColumn Header="Doanh thu" Binding="{Binding TotalAmount}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Doanh thu" Binding="{Binding TotalAmount, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" 
+                            Width="1.5*"/>
 
-                        <controls:DataGridTextColumn Header="Lợi nhuận" Binding="{Binding TotalProfit}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Lợi nhuận" Binding="{Binding TotalProfit, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" 
+                            Width="1.5*"/>
 
                         <controls:DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="1.5*"/>
                     </controls:DataGrid.Columns>

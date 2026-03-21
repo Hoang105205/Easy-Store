@@ -23,7 +23,7 @@ internal class OrderQueries
         return query;
     }
 
-    [UsePaging(DefaultPageSize = 20)]
+    [UsePaging(IncludeTotalCount = true, DefaultPageSize = 20)]
     [UseProjection]
     [UseSorting]
     public IQueryable<Order> GetOrdersPagination(
