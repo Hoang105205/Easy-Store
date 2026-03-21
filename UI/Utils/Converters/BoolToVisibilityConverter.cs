@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Data;
 using System;
 
-namespace UI.Utils.Converters.ImportPage;
+namespace UI.Utils.Converters;
 
 public class BoolToVisibilityConverter : IValueConverter
 {

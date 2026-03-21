@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace UI.Utils.Converters.ImportPage;
+namespace UI.Utils.Converters;
 
 public class StatusIconConverter : IValueConverter
 {
