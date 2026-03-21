@@ -40,7 +40,7 @@ namespace UI.Services.OrderService
             {
                 Id = x.Id,
                 ReceiptNumber = x.ReceiptNumber.ToString(),
-                Status = x.Status.ToString(), // Chuyển đổi Enum status sang chuỗi nếu cần
+                Status = x.Status.ToString(),
                 TotalAmount = x.TotalAmount,
                 TotalProfit = x.TotalProfit,
                 OrderDate = x.OrderDate
@@ -51,6 +51,69 @@ namespace UI.Services.OrderService
             var totalCount = result.Data?.OrdersPagination?.TotalCount ?? 0;
 
             return (mappedData, pageInfo?.EndCursor, pageInfo?.HasNextPage ?? false, totalCount);
+        }
+
+        public async Task<OrderDetailModel?> GetOrderByIdAsync(Guid id)
+        {
+            var result = await _client.GetOrderById.ExecuteAsync(id);
+            if (result.Errors?.Count > 0) throw new Exception(result.Errors[0].Message);
+
+            var orderData = result.Data?.OrderById;
+            if (orderData == null) return null;
+
+            int sttCounter = 1;
+            long totalImport = 0;
+            var items = new List<OrderItemDetailModel>();
+
+            if (orderData.OrderItems != null)
+            {
+                foreach (var item in orderData.OrderItems)
+                {
+                    long calcTotalPrice = item.Quantity * item.UnitSalePrice; // Thành tiền = sl x đơn giá, khi nào làm tạo đơn mới thì tính, cái này chỉ để hiển thị
+                    totalImport += item.Quantity * item.UnitImportPrice;
+
+                    items.Add(new OrderItemDetailModel
+                    {
+                        STT = sttCounter++,
+                        Quantity = item.Quantity,
+                        UnitSalePrice = item.UnitSalePrice,
+                        UnitImportPrice = item.UnitImportPrice,
+                        TotalPrice = calcTotalPrice,
+                        ProductName = item.Product?.Name ?? "Không rõ",
+                        ProductSku = item.Product?.Sku ?? string.Empty,
+                        CategoryName = item.Product?.Category?.Name ?? "Không rõ danh mục",
+                    });
+                }
+            }
+
+            return new OrderDetailModel
+            {
+                Id = orderData.Id,
+                ReceiptNumber = orderData.ReceiptNumber.ToString(),
+                Status = orderData.Status.ToString(),
+                TotalAmount = orderData.TotalAmount,
+                TotalProfit = orderData.TotalProfit,
+                TotalImportPrice = totalImport,
+                Note = string.IsNullOrWhiteSpace(orderData.Note) ? "Không có ghi chú" : orderData.Note,
+                IsDraft = orderData.IsDraft,
+                OrderDate = orderData.OrderDate,
+                UpdatedAt = orderData.UpdatedAt,
+                OrderItems = items
+            };
+        }
+
+        public async Task<bool> PayOrderAsync(Guid id)
+        {
+            var result = await _client.PayOrder.ExecuteAsync(id);
+            if (result.Errors?.Count > 0) throw new Exception(result.Errors[0].Message);
+            return result.Data?.PayOrder != null;
+        }
+
+        public async Task<bool> DeleteOrderAsync(Guid id)
+        {
+            var result = await _client.DeleteOrder.ExecuteAsync(id);
+            if (result.Errors?.Count > 0) throw new Exception(result.Errors[0].Message);
+            return result.Data?.DeleteOrder ?? false;
         }
     }
 }
