@@ -70,14 +70,14 @@ namespace UI.Services.OrderService
                 foreach (var item in orderData.OrderItems)
                 {
                     long calcTotalPrice = item.Quantity * item.UnitSalePrice; // Thành tiền = sl x đơn giá, khi nào làm tạo đơn mới thì tính, cái này chỉ để hiển thị
-                    totalImport += item.Quantity * item.UnitImportPrice;
+                    totalImport += item.Quantity * (item.UnitImportPrice ?? 0);
 
                     items.Add(new OrderItemDetailModel
                     {
                         STT = sttCounter++,
                         Quantity = item.Quantity,
                         UnitSalePrice = item.UnitSalePrice,
-                        UnitImportPrice = item.UnitImportPrice,
+                        UnitImportPrice = item.UnitImportPrice ?? 0,
                         TotalPrice = calcTotalPrice,
                         ProductName = item.Product?.Name ?? "Không rõ",
                         ProductSku = item.Product?.Sku ?? string.Empty,
@@ -114,6 +114,39 @@ namespace UI.Services.OrderService
             var result = await _client.DeleteOrder.ExecuteAsync(id);
             if (result.Errors?.Count > 0) throw new Exception(result.Errors[0].Message);
             return result.Data?.DeleteOrder ?? false;
+        }
+
+        public async Task<OrderModel?> UpsertDraftOrderAsync(Guid? orderId, string? note, List<DraftOrderItemInput> items)
+        {
+            var input = new UpsertDraftOrderInput
+            {
+                OrderId = orderId,
+                Note = note,
+                Items = items // Map dữ liệu từ UI Models sang định dạng Input sinh ra bởi StrawberryShake
+            };
+
+            var result = await _client.UpsertDraftOrder.ExecuteAsync(input);
+            if (result.Errors?.Count > 0) throw new Exception(result.Errors[0].Message);
+
+            var data = result.Data?.UpsertDraftOrder;
+            if (data == null) return null;
+
+            return new OrderModel
+            {
+                Id = data.Id,
+                ReceiptNumber = data.ReceiptNumber.ToString(),
+                TotalAmount = data.TotalAmount,
+                IsDraft = data.IsDraft
+            };
+        }
+
+        public async Task<bool> FinalizeOrderAsync(Guid orderId)
+        {
+            var result = await _client.FinalizeOrder.ExecuteAsync(orderId);
+            if (result.Errors?.Count > 0) throw new Exception(result.Errors[0].Message);
+
+            // Nếu kết quả trả về không null nghĩa là thành công
+            return result.Data?.FinalizeOrder != null;
         }
     }
 }

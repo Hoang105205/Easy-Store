@@ -16,6 +16,7 @@ namespace UI.ViewModels.Orders
         public string? Status { get; set; }
         public long? TotalAmount { get; set; }
         public long? TotalProfit { get; set; }
+        public bool IsDraft { get; set; }
         public DateTimeOffset? OrderDate { get; set; }
     }
 

@@ -20,7 +20,7 @@ public class Order
     public string Status { get; set; } = "Created";
 
     [MaxLength(100)]
-    public string ?Note { get; set; } = null;
+    public string? Note { get; set; } = null;
 
     public long TotalAmount { get; set; } = 0;
     public long TotalProfit { get; set; } = 0;
