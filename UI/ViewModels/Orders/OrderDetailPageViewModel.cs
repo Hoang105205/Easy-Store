@@ -59,8 +59,8 @@ public partial class OrderDetailPageViewModel : ObservableObject
             _dispatcherQueue.TryEnqueue(() =>
             {
                 OrderDetail = data;
-                // Chỉ hiện nút Pay/Delete khi Status là "Completed"
-                IsActionVisible = data?.Status == "Completed";
+                // Chỉ hiện nút Pay/Delete khi Status là "Created"
+                IsActionVisible = data?.Status == OrderUIStatuses.Created;
             });
         }
         catch (Exception ex)
@@ -82,7 +82,7 @@ public partial class OrderDetailPageViewModel : ObservableObject
             if (success)
             {
                 _dispatcherQueue.TryEnqueue(() => {
-                    OrderDetail.Status = "Paid";
+                    OrderDetail.Status = OrderUIStatuses.Paid;
                     IsActionVisible = false;
                     OnPropertyChanged(nameof(OrderDetail)); // Notify UI update
                 });

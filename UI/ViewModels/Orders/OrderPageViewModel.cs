@@ -9,6 +9,12 @@ using UI.Services.OrderService;
 
 namespace UI.ViewModels.Orders
 {
+    public static class OrderUIStatuses
+    {
+        public const string Created = "Created";
+        public const string Paid = "Paid";
+    }
+
     public class OrderModel
     {
         public Guid Id { get; set; }

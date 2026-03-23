@@ -5,6 +5,7 @@ using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
+using Api.Utils;
 
 namespace Api.GraphQL.Mutations;
 
@@ -30,9 +31,9 @@ public class OrderMutation
         var order = await context.Orders.FindAsync(id);
         if (order == null) throw new Exception("Không tìm thấy đơn hàng");
 
-        if (order.Status == "Paid") throw new Exception("Đơn hàng đã được thanh toán");
+        if (order.Status == Order.Statuses.Paid) throw new Exception("Đơn hàng đã được thanh toán");
 
-        order.Status = "Paid";
+        order.Status = Order.Statuses.Paid;
         order.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();
@@ -68,7 +69,7 @@ public class OrderMutation
             order = new Order
             {
                 Id = Guid.NewGuid(),
-                Status = "Created",
+                Status = Order.Statuses.Created,
                 Note = input.Note,
                 IsDraft = true,
                 OrderDate = DateTime.UtcNow,
@@ -78,14 +79,11 @@ public class OrderMutation
             await context.Orders.AddAsync(order);
         }
 
-        long totalAmount = 0;
+        long totalAmount = OrderHelper.CalculateTotalAmount(input.Items);
         var newItems = new List<OrderItem>();
 
         foreach (var item in input.Items)
         {
-            long totalPrice = item.Quantity * item.UnitSalePrice;
-            totalAmount += totalPrice;
-
             newItems.Add(new OrderItem
             {
                 Id = Guid.NewGuid(),
@@ -94,7 +92,7 @@ public class OrderMutation
                 Quantity = item.Quantity,
                 UnitImportPrice = null,
                 UnitSalePrice = item.UnitSalePrice,
-                TotalPrice = totalPrice
+                TotalPrice = item.Quantity * item.UnitSalePrice,
             });
         }
 
@@ -115,18 +113,13 @@ public class OrderMutation
         if (order == null) throw new Exception("Không tìm thấy hóa đơn");
         if (!order.IsDraft) throw new Exception("Hóa đơn này đã được tạo từ trước");
 
-        long totalProfit = 0;
-
+        // Cập nhật giá ImportPrice cho từng item
         foreach (var item in order.OrderItems)
         {
-            // Bây giờ mới chốt giá ImportPrice từ DB
-            long importPrice = item.Product?.ImportPrice ?? 0;
-            item.UnitImportPrice = importPrice;
-
-            totalProfit += (item.UnitSalePrice - importPrice) * item.Quantity;
+            item.UnitImportPrice = item.Product?.ImportPrice ?? 0;
         }
 
-        order.TotalProfit = totalProfit;
+        order.TotalProfit = OrderHelper.CalculateTotalProfit(order.OrderItems);
         order.IsDraft = false; // Chuyển hóa đơn sang trạng thái chính thức
         order.UpdatedAt = DateTime.UtcNow;
 
