@@ -1,6 +1,7 @@
 using Api.GraphQL;
 using Api.GraphQL.Mutations;
 using Api.GraphQL.Queries;
+using Api.GraphQL.Resolvers;
 using Core.Data;
 using HotChocolate.Data;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +43,8 @@ builder.Services
     .AddTypeExtension<CategoryQueries>()
     .AddTypeExtension<ImportQueries>()
     .AddTypeExtension<OrderQueries>()
+    .AddTypeExtension<DashboardQueries>()
+    .AddTypeExtension<StoreStatisticsResolvers>()
     .AddMutationType<Mutation>()
     .AddTypeExtension<AuthMutation>()
     .AddTypeExtension<ProductMutation>()
