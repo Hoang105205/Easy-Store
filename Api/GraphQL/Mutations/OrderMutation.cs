@@ -53,15 +53,20 @@ public class OrderMutation
     public async Task<Order> UpsertDraftOrderAsync(UpsertDraftOrderInput input, [Service] AppDbContext context)
     {
         Order order;
+        long totalAmount = OrderHelper.CalculateTotalAmount(input.Items);
 
         if (input.OrderId.HasValue && input.OrderId.Value != Guid.Empty)
         {
-            order = await context.Orders.Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.Id == input.OrderId.Value);
+            order = await context.Orders.FirstOrDefaultAsync(o => o.Id == input.OrderId.Value);
             if (order == null) throw new Exception("Không tìm thấy đơn nháp");
+
             order.Note = input.Note;
+            order.TotalAmount = totalAmount;
             order.UpdatedAt = DateTime.UtcNow;
-            // Dọn sạch item cũ để chèn lại cho nhanh
-            context.OrderItems.RemoveRange(order.OrderItems);
+
+            // Lấy trực tiếp danh sách item cũ từ DbSet và xóa
+            var oldItems = await context.OrderItems.Where(i => i.OrderId == order.Id).ToListAsync();
+            context.OrderItems.RemoveRange(oldItems);
         }
         else
         {
@@ -72,35 +77,41 @@ public class OrderMutation
                 Status = Order.Statuses.Created,
                 Note = input.Note,
                 IsDraft = true,
+                TotalAmount = totalAmount,
                 OrderDate = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                OrderItems = new List<OrderItem>()
             };
             await context.Orders.AddAsync(order);
         }
 
-        long totalAmount = OrderHelper.CalculateTotalAmount(input.Items);
-        var newItems = new List<OrderItem>();
-
-        foreach (var item in input.Items)
+        // Tạo mới các Items và Add trực tiếp vào DbSet
+        var newItems = input.Items.Select(item => new OrderItem
         {
-            newItems.Add(new OrderItem
-            {
-                Id = Guid.NewGuid(),
-                OrderId = order.Id,
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                UnitImportPrice = null,
-                UnitSalePrice = item.UnitSalePrice,
-                TotalPrice = item.Quantity * item.UnitSalePrice,
-            });
-        }
+            Id = Guid.NewGuid(),
+            OrderId = order.Id,
+            ProductId = item.ProductId,
+            Quantity = item.Quantity,
+            UnitImportPrice = null,
+            UnitSalePrice = item.UnitSalePrice,
+            TotalPrice = item.Quantity * item.UnitSalePrice,
+        }).ToList();
 
-        order.OrderItems = newItems;
-        order.TotalAmount = totalAmount;
+        await context.OrderItems.AddRangeAsync(newItems);
 
+        // Lưu thay đổi xuống DB (lệnh DELETE items cũ và INSERT items mới)
         await context.SaveChangesAsync();
-        return order;
+
+        // Dọn sạch bộ nhớ đệm Tracking của DbContext
+        context.ChangeTracker.Clear();
+
+        // Kéo lại freshdate từ DB, kèm theo các bảng con (Product, Category)
+        var savedOrder = await context.Orders
+            .Include(o => o.OrderItems)
+                .ThenInclude(i => i.Product)
+                    .ThenInclude(p => p.Category)
+            .FirstOrDefaultAsync(o => o.Id == order.Id);
+
+        return savedOrder ?? order;
     }
 
     public async Task<Order> FinalizeOrderAsync(Guid orderId, [Service] AppDbContext context)

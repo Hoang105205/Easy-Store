@@ -53,6 +53,21 @@ namespace UI.Services.OrderService
             return (mappedData, pageInfo?.EndCursor, pageInfo?.HasNextPage ?? false, totalCount);
         }
 
+        public async Task<List<OrderModel>> GetDraftOrdersAsync()
+        {
+            var result = await _client.GetDraftOrders.ExecuteAsync();
+            if (result.Errors?.Count > 0) throw new Exception(result.Errors[0].Message);
+
+            return result.Data?.DraftOrders?.Select(x => new OrderModel
+            {
+                Id = x.Id,
+                ReceiptNumber = x.ReceiptNumber.ToString(),
+                TotalAmount = x.TotalAmount,
+                OrderDate = x.OrderDate,
+                IsDraft = true
+            }).ToList() ?? new List<OrderModel>();
+        }
+
         public async Task<OrderDetailModel?> GetOrderByIdAsync(Guid id)
         {
             var result = await _client.GetOrderById.ExecuteAsync(id);
@@ -69,14 +84,18 @@ namespace UI.Services.OrderService
             {
                 foreach (var item in orderData.OrderItems)
                 {
-                    long calcTotalPrice = item.Quantity * item.UnitSalePrice; // Thành tiền = sl x đơn giá, khi nào làm tạo đơn mới thì tính, cái này chỉ để hiển thị
+                    // Lấy giá ưu tiên: Nếu là đơn nháp thì lấy giá trực tiếp từ Product (nếu có), ngược lại lấy giá đã lưu trong OrderItem
+                    long currentPrice = orderData.IsDraft ? (item.Product?.SalePrice ?? item.UnitSalePrice) : item.UnitSalePrice;
+
+                    long calcTotalPrice = item.Quantity * currentPrice;
                     totalImport += item.Quantity * (item.UnitImportPrice ?? 0);
 
                     items.Add(new OrderItemDetailModel
                     {
                         STT = sttCounter++,
+                        ProductId = item.ProductId,
                         Quantity = item.Quantity,
-                        UnitSalePrice = item.UnitSalePrice,
+                        UnitSalePrice = currentPrice,
                         UnitImportPrice = item.UnitImportPrice ?? 0,
                         TotalPrice = calcTotalPrice,
                         ProductName = item.Product?.Name ?? "Không rõ",

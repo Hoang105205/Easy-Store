@@ -76,6 +76,7 @@ query GetOrderById($id: UUID!) {
       product {
         name
         sku
+        salePrice
         category {
           name
         }
@@ -121,6 +122,22 @@ mutation UpsertDraftOrder($input: UpsertDraftOrderInput!) {
     receiptNumber
     totalAmount
     isDraft
+    orderItems {
+      orderId
+      productId
+      quantity
+      unitImportPrice
+      unitSalePrice
+      totalPrice
+      product {
+        name
+        sku
+        salePrice
+        category {
+          name
+        }
+      }
+    }
   }
 }
 

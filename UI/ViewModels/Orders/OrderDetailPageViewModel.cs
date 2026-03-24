@@ -26,6 +26,7 @@ public class OrderDetailModel
 public class OrderItemDetailModel
 {
     public int STT { get; set; }
+    public Guid ProductId { get; set; }
     public int Quantity { get; set; }
     public long UnitSalePrice { get; set; }
     public long UnitImportPrice { get; set; }
