@@ -41,16 +41,6 @@ public sealed partial class ImportPage : Page
         Frame.Navigate(typeof(CreateImportPage));
     }
 
-    private void OnDownloadTemplateClicked(object sender, RoutedEventArgs e)
-    {
-        // TODO: Implement download template logic
-    }
-
-    private void OnUploadExcelClicked(object sender, RoutedEventArgs e)
-    {
-        // TODO: Implement upload Excel logic
-    }
-
     private async void OnRefreshClicked(object sender, RoutedEventArgs e)
     {
         await ViewModel.LoadDataAsync(null);

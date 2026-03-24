@@ -5,8 +5,10 @@ using StrawberryShake;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using UI.Services.ExcelService;
 
 namespace UI.ViewModels.Import;
 
@@ -14,6 +16,8 @@ public partial class ImportViewModel : ObservableObject
 {
     // Dependency Injection: Client GraphQL do Strawberry Shake tự sinh ra
     private readonly IEasyStoreClient _client;
+
+    private readonly ExcelService _excelService;
 
     [ObservableProperty]
     private bool isLoading;
@@ -43,9 +47,10 @@ public partial class ImportViewModel : ObservableObject
     private string? _currentCursor = null;
     private string? _nextCursor = null;
 
-    public ImportViewModel(IEasyStoreClient client)
+    public ImportViewModel(IEasyStoreClient client, ExcelService excelService)
     {
         _client = client;
+        _excelService = excelService;
         _ = LoadDataAsync(null); 
     }
 
@@ -139,6 +144,55 @@ public partial class ImportViewModel : ObservableObject
         {
             _currentCursor = _cursorHistory.Pop(); // Lấy con trỏ trang trước đó ra
             await LoadDataAsync(_currentCursor);
+        }
+    }
+
+    [RelayCommand]
+    private async Task DownloadTemplateAsync()
+    {
+        try
+        {
+            var savePicker = new Windows.Storage.Pickers.FileSavePicker
+            {
+                SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads,
+                SuggestedFileName = "MauNhapHang_EasyStore"
+            };
+            savePicker.FileTypeChoices.Add("Excel Workbook", new List<string>() { ".xlsx" });
+
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.Current.AppMainWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
+
+            var file = await savePicker.PickSaveFileAsync();
+            if (file != null)
+            {
+                using (var stream = await file.OpenStreamForWriteAsync())
+                {
+                    // Gọi Service dùng chung
+                    _excelService.GenerateImportTemplate(stream);
+                }
+                System.Diagnostics.Debug.WriteLine("Tải file mẫu thành công từ trang List!");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Lỗi: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task UploadExcelAsync()
+    {
+        try
+        {
+            // Tạm thời in ra log để test nút bấm trước
+            System.Diagnostics.Debug.WriteLine("Đã bấm nút Upload Excel. Sẵn sàng gọi FileOpenPicker!");
+
+            // TODO: Ở bước tới, ta sẽ mở cửa sổ chọn file, 
+            // lấy được file Excel rồi quăng sang trang CreateImportPage
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Lỗi: {ex.Message}");
         }
     }
 }

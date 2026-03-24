@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using UI.Services.AuthService;
 using UI.Services.CategoryService;
+using UI.Services.ExcelService;
 using UI.Services.OrderService;
 using UI.Services.ProductService;
 using UI.ViewModels;
@@ -47,6 +48,7 @@ public partial class App : Application
         services.AddSingleton<CategoryService>();
         services.AddSingleton<ProductService>();
         services.AddSingleton<OrderService>();
+        services.AddSingleton<ExcelService>();
 
         services.AddEasyStoreClient()
             .ConfigureHttpClient(client =>
