@@ -15,14 +15,20 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
                     <SolidColorBrush x:Key="BrandPurpleBrush" Color="#5C2D91"/>
-                    <SolidColorBrush x:Key="LightPurpleBrush" Color="#8246c7"/>
+                    <SolidColorBrush x:Key="LightPurpleBrush" Color="#8246C7"/>
+                    <SolidColorBrush x:Key="BackgroundBrush" Color="#f6e8ff"/>
                     <Color x:Key="SystemAccentColor">#5C2D91</Color>
+                    <Color x:Key="SystemAccentLightColor">#8246C7</Color>
+                    <Color x:Key="SystemButtonColor">#f6e8ff</Color>
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="BrandPurpleBrush" Color="#A760EB"/>
-                    <SolidColorBrush x:Key="LightPurpleBrush" Color="#bc86f0"/>
+                    <SolidColorBrush x:Key="LightPurpleBrush" Color="#BC86F0"/>
+                    <SolidColorBrush x:Key="BackgroundBrush" Color="#CCA8F0"/>
                     <Color x:Key="SystemAccentColor">#A760EB</Color>
+                    <Color x:Key="SystemAccentLightColor">#BC86F0</Color>
+                        <Color x:Key="SystemButtonColor">#CCA8F0</Color>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
