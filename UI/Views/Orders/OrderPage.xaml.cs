@@ -165,7 +165,7 @@ namespace UI.Views.Orders
 
         private void BtnAddOrder_Click(object sender, RoutedEventArgs e)
         {
-            // this.Frame.Navigate(typeof(CreateOrderPage)); // chưa làm
+            this.Frame.Navigate(typeof(NewOrderPage)); // chưa làm
         }
 
         private void OrdersGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

@@ -34,7 +34,7 @@ namespace UI.ViewModels
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         }
 
-        public async Task LoadCategoriesAsync()
+        public async Task LoadCategoriesAsync(bool includeCreateNew = true)
         {
             var apiCategories = await _categoryService.GetCategoriesAsync();
 
@@ -57,11 +57,14 @@ namespace UI.ViewModels
                     });
                 }
 
-                Categories.Add(new CategoryDropdownItem
-                { 
-                    Id = CREATE_NEW_CATEGORY_ID,
-                    Name = "+ Tạo danh mục mới..."
-                });
+                if (includeCreateNew)
+                {
+                    Categories.Add(new CategoryDropdownItem
+                    {
+                        Id = CREATE_NEW_CATEGORY_ID,
+                        Name = "+ Tạo danh mục mới..."
+                    });
+                }
             });
         }
 

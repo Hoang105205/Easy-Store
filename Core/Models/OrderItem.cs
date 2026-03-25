@@ -18,7 +18,7 @@ public class OrderItem
     public long UnitSalePrice { get; set; }
 
     // Lưu lại giá MAC tại thời điểm bán để tính lãi chuẩn xác
-    public long UnitImportPrice { get; set; }
+    public long? UnitImportPrice { get; set; }
 
     public long TotalPrice { get; set; }
 

@@ -16,8 +16,7 @@ internal class OrderQueries
     [UseSorting]
     public IQueryable<Order> GetOrders([Service] AppDbContext context)
     {
-        var query = context.Orders.AsQueryable();
-
+        var query = context.Orders.Where(o => !o.IsDraft).AsQueryable();
         query = query.OrderByDescending(p => p.OrderDate).ThenBy(p => p.Id);
 
         return query;
@@ -33,7 +32,7 @@ internal class OrderQueries
         DateTime? endDate = null
     )
     {
-        var query = context.Orders.AsQueryable();
+        var query = context.Orders.Where(o => !o.IsDraft).AsQueryable();
 
         // Lọc theo mã hóa đơn (Tìm kiếm gần đúng)
         if (!string.IsNullOrWhiteSpace(receiptNumber) && int.TryParse(receiptNumber, out int receiptInt))
@@ -65,5 +64,11 @@ internal class OrderQueries
     public IQueryable<Order> GetOrderById(Guid id, [Service] AppDbContext dbContext)
     { 
         return dbContext.Orders.Where(p => p.Id == id);
+    }
+
+    [UseProjection]
+    public IQueryable<Order> GetDraftOrders([Service] AppDbContext context)
+    {
+        return context.Orders.Where(o => o.IsDraft).OrderBy(o => o.OrderDate);
     }
 }

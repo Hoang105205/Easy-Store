@@ -76,6 +76,7 @@ query GetOrderById($id: UUID!) {
       product {
         name
         sku
+        salePrice
         category {
           name
         }
@@ -93,4 +94,60 @@ mutation PayOrder($id: UUID!) {
 
 mutation DeleteOrder($id: UUID!) {
   deleteOrder(id: $id)
+}
+
+query GetDraftOrders {
+  draftOrders {
+    id
+    receiptNumber
+    totalAmount
+    orderDate
+    note
+    orderItems {
+      productId
+      quantity
+      unitSalePrice
+      totalPrice
+      product {
+        name
+        sku
+      }
+    }
+  }
+}
+
+mutation UpsertDraftOrder($input: UpsertDraftOrderInput!) {
+  upsertDraftOrder(input: $input) {
+    id
+    receiptNumber
+    totalAmount
+    isDraft
+    orderItems {
+      orderId
+      productId
+      quantity
+      unitImportPrice
+      unitSalePrice
+      totalPrice
+      product {
+        name
+        sku
+        salePrice
+        category {
+          name
+        }
+      }
+    }
+  }
+}
+
+mutation FinalizeOrder($orderId: UUID!) {
+  finalizeOrder(orderId: $orderId) {
+    id
+    receiptNumber
+    totalAmount
+    totalProfit
+    isDraft
+    status
+  }
 }

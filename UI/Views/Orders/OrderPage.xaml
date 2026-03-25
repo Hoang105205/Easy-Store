@@ -48,7 +48,7 @@
                         CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                     <StackPanel Spacing="8">
                         <TextBlock Text="HÓA ĐƠN ĐANG LƯU TẠM" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" FontWeight="SemiBold"/>
-                        <TextBlock Text="0" Style="{StaticResource TitleTextBlockStyle}" Foreground="DarkOrange"/>
+                        <TextBlock Text="{x:Bind OrderVM.DraftOrdersCount, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" Foreground="DarkOrange"/>
                     </StackPanel>
                 </Border>
             </Grid>

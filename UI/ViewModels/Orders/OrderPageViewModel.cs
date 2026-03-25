@@ -9,6 +9,12 @@ using UI.Services.OrderService;
 
 namespace UI.ViewModels.Orders
 {
+    public static class OrderUIStatuses
+    {
+        public const string Created = "Created";
+        public const string Paid = "Paid";
+    }
+
     public class OrderModel
     {
         public Guid Id { get; set; }
@@ -16,6 +22,7 @@ namespace UI.ViewModels.Orders
         public string? Status { get; set; }
         public long? TotalAmount { get; set; }
         public long? TotalProfit { get; set; }
+        public bool IsDraft { get; set; }
         public DateTimeOffset? OrderDate { get; set; }
     }
 
@@ -33,6 +40,7 @@ namespace UI.ViewModels.Orders
         [ObservableProperty] private bool canGoPrevious = false;
         [ObservableProperty] private string displayRangeText = string.Empty;
         [ObservableProperty] private int totalOrdersCount = 0;
+        [ObservableProperty] private int draftOrdersCount = 0;
 
         // --- Quản lý Cursor ---
         private string? currentEndCursor = null;
@@ -77,10 +85,12 @@ namespace UI.ViewModels.Orders
                     startDate,
                     endDate);
 
+                var drafts = await _orderService.GetDraftOrdersAsync();
+
                 _dispatcherQueue.TryEnqueue(() =>
                 {
                     TotalOrdersCount = result.TotalCount;
-
+                    DraftOrdersCount = drafts.Count;
                     Orders.Clear();
                     foreach (var item in result.Orders)
                     {
