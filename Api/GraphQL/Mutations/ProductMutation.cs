@@ -14,6 +14,7 @@ public record CreateProductInput(
     string Sku,
     string Name,
     Guid CategoryId,
+    int MinimumStockQuantity,
     List<string> ImagePaths
 );
 
@@ -23,6 +24,7 @@ public record UpdateProductInput(
     string Name,
     Guid CategoryId,
     long SalePrice,
+    int MinimumStockQuantity,
     List<string> ImagePaths
 );
 
@@ -43,6 +45,7 @@ public class ProductMutation
             ImportPrice = 0,
             SalePrice = 0,
             StockQuantity = 0,
+            MinimumStockQuantity = input.MinimumStockQuantity,
             IsDraft = false,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -77,6 +80,7 @@ public class ProductMutation
         product.Name = input.Name;
         product.CategoryId = input.CategoryId;
         product.SalePrice = input.SalePrice;
+        product.MinimumStockQuantity = input.MinimumStockQuantity;
         product.UpdatedAt = DateTime.UtcNow;
 
         // Cập nhật ảnh (Xóa ảnh cũ, thêm ảnh mới)

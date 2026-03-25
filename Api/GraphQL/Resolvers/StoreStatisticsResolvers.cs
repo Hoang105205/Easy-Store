@@ -65,18 +65,24 @@ public class StoreStatisticsResolvers
         [Parent] StoreStatistics parent,
         [Service] AppDbContext context)
     {
-        return await context.OrderItems
-            .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
-            .Select(g => new ProductStat
-            {
-                Id = g.Key.ProductId,
-                Name = g.Key.Name ?? "Unknown",
-                Quantity = g.Sum(oi => oi.Quantity),
-                LastOrder = g.Max(oi => oi.Order.OrderDate)
-            })
-            .OrderByDescending(x => x.Quantity)
-            .Take(5)
-            .ToListAsync();
+        var query = context.OrderItems.AsQueryable();
+
+        if (parent.StartDate.HasValue)
+        {
+            query = query.Where(o => o.Order.OrderDate >= parent.StartDate.Value);
+        }
+
+        return await  query.GroupBy(oi => new { oi.ProductId, oi.Product.Name })
+                           .Select(g => new ProductStat
+                           {
+                               Id = g.Key.ProductId,
+                               Name = g.Key.Name ?? "Unknown",
+                               Quantity = g.Sum(oi => oi.Quantity),
+                               LastOrder = g.Max(oi => oi.Order.OrderDate)
+                           })
+                           .OrderByDescending(x => x.Quantity)
+                           .Take(5)
+                           .ToListAsync();
     }
 
     // Field 5: nearlyOutOfStock
@@ -85,7 +91,7 @@ public class StoreStatisticsResolvers
         [Service] AppDbContext context)
     {
         return await context.Products
-            .Where(p => p.StockQuantity > 0 && p.StockQuantity <= 10)
+            .Where(p => p.StockQuantity > 0 && p.StockQuantity <= p.MinimumStockQuantity)
             .Select(p => new ProductStat
             {
                 Id = p.Id,
