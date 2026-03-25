@@ -267,6 +267,7 @@ input DraftOrderItemInput {
   productId: UUID!
   quantity: Int!
   unitSalePrice: Long!
+}
 input UpdateProductInput {
   id: UUID!
   sku: String!
