@@ -30,6 +30,7 @@
     <None Remove="Assets\LoginIllustration.jpg" />
     <None Remove="Assets\onboarding3.png" />
     <None Remove="GraphQL\Auth.graphql" />
+    <None Remove="GraphQL\Dashboard.graphql" />
     <None Remove="GraphQL\Import.graphql" />
     <None Remove="GraphQL\Order.graphql" />
     <None Remove="Views\ConfigDialog.xaml" />
@@ -71,8 +72,10 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.2.251219" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
+    <PackageReference Include="CSharpMarkup.WinUI.LiveChartsCore.SkiaSharpView" Version="3.1.2" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.12" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
@@ -106,6 +109,11 @@
     <Content Update="Assets\Images\muoi.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Orders\OrderTabContentControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Orders\OrderDetailPage.xaml">

@@ -26,6 +26,7 @@ public class OrderDetailModel
 public class OrderItemDetailModel
 {
     public int STT { get; set; }
+    public Guid ProductId { get; set; }
     public int Quantity { get; set; }
     public long UnitSalePrice { get; set; }
     public long UnitImportPrice { get; set; }
@@ -59,8 +60,8 @@ public partial class OrderDetailPageViewModel : ObservableObject
             _dispatcherQueue.TryEnqueue(() =>
             {
                 OrderDetail = data;
-                // Chỉ hiện nút Pay/Delete khi Status là "Completed"
-                IsActionVisible = data?.Status == "Completed";
+                // Chỉ hiện nút Pay/Delete khi Status là "Created"
+                IsActionVisible = data?.Status == OrderUIStatuses.Created;
             });
         }
         catch (Exception ex)
@@ -82,7 +83,7 @@ public partial class OrderDetailPageViewModel : ObservableObject
             if (success)
             {
                 _dispatcherQueue.TryEnqueue(() => {
-                    OrderDetail.Status = "Paid";
+                    OrderDetail.Status = OrderUIStatuses.Paid;
                     IsActionVisible = false;
                     OnPropertyChanged(nameof(OrderDetail)); // Notify UI update
                 });

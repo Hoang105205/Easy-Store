@@ -51,6 +51,7 @@ public partial class App : Application
         services.AddSingleton<OrderService>();
         services.AddSingleton<ExcelService>();
         services.AddSingleton<ImportService>();
+        services.AddSingleton<DashboardService>();
 
         services.AddEasyStoreClient()
             .ConfigureHttpClient(client =>
@@ -70,6 +71,7 @@ public partial class App : Application
         services.AddTransient<OrderPageViewModel>();
         services.AddTransient<NewOrderPageViewModel>();
         services.AddTransient<OrderDetailPageViewModel>();
+        services.AddTransient<DashboardViewModel>();
 
         // Bạn có thể đăng ký thêm các Service khác tại đây (ví dụ: NavigationService, DialogService)
     }

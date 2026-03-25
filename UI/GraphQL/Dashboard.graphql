@@ -1,0 +1,19 @@
+query GetDashboardStats($days: Int) {
+  dashboardStats(days: $days) {
+    totalIncome
+    totalNewOrders
+    nearlyOutOfStock { 
+      name 
+      quantity 
+    }
+    bestSellingProducts { 
+      name 
+      quantity
+      lastOrder
+    }
+    totalRevenue { 
+      date 
+      revenue 
+    }
+  }
+}

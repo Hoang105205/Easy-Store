@@ -55,8 +55,8 @@ namespace UI.ViewModels.Product
         }
 
         public async Task LoadProductsAsync(
-            string? afterCursor = null, 
-            string? searchText = null, 
+            string? afterCursor = null,
+            string? searchText = null,
             Guid? categoryId = null,
             long? minPrice = null,
             long? maxPrice = null)
@@ -134,8 +134,8 @@ namespace UI.ViewModels.Product
             CanGoPrevious = CurrentPageNumber > 1;
 
             await LoadProductsAsync(
-                afterCursor: currentEndCursor, 
-                searchText: searchText, 
+                afterCursor: currentEndCursor,
+                searchText: searchText,
                 categoryId: categoryId,
                 minPrice: minPrice,
                 maxPrice: maxPrice
@@ -159,6 +159,36 @@ namespace UI.ViewModels.Product
                     minPrice: minPrice,
                     maxPrice: maxPrice
                 );
+            }
+        }
+
+        public async Task LoadAllProductsAsync(string? searchText = null, Guid? categoryId = null)
+        {
+            IsLoading = true;
+            try
+            {
+                // Sử dụng hàm GetProductsAsync không phân trang từ Service
+                var allProducts = await _productService.GetProductsAsync(searchText, categoryId);
+
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    Products.Clear();
+                    foreach (var item in allProducts)
+                    {
+                        Products.Add(item);
+                    }
+
+                    // Cập nhật text hiển thị số lượng (tùy chọn)
+                    DisplayRangeText = $"Hiển thị {allProducts.Count} sản phẩm";
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LỖI LẤY TẤT CẢ SẢN PHẨM] {ex.Message}");
+            }
+            finally
+            {
+                _dispatcherQueue.TryEnqueue(() => IsLoading = false);
             }
         }
     }
