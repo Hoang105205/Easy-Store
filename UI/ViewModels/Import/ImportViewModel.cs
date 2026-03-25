@@ -1,19 +1,29 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GreenDonut.Data.Cursors;
+using Microsoft.UI.Xaml.Controls;
 using StrawberryShake;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using UI.Services.ExcelService;
+using UI.Services.ImportService;
+using UI.Views.Import;
+using Windows.Storage;
 
 namespace UI.ViewModels.Import;
 
 public partial class ImportViewModel : ObservableObject
 {
-    // Dependency Injection: Client GraphQL do Strawberry Shake tự sinh ra
-    private readonly IEasyStoreClient _client;
+    private readonly ImportService _importService;
+
+    private readonly ExcelService _excelService;
+
+    public Action<StorageFile>? NavigateToCreateImportAction { get; set; }
 
     [ObservableProperty]
     private bool isLoading;
@@ -43,9 +53,10 @@ public partial class ImportViewModel : ObservableObject
     private string? _currentCursor = null;
     private string? _nextCursor = null;
 
-    public ImportViewModel(IEasyStoreClient client)
+    public ImportViewModel(ImportService importService, ExcelService excelService)
     {
-        _client = client;
+        _importService = importService;
+        _excelService = excelService;
         _ = LoadDataAsync(null); 
     }
 
@@ -77,7 +88,7 @@ public partial class ImportViewModel : ObservableObject
         int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
 
         // Gọi hàm GraphQL đã định nghĩa trong file Import.graphql
-        var result = await _client.GetImportHistory.ExecuteAsync(first: itemsPerPage, after: cursor);
+        var result = await _importService.GetImportHistoryAsync(first: itemsPerPage, after: cursor);
 
         // result.IsSuccessResult() là hàm có sẵn của Strawberry Shake
         if (result.IsSuccessResult() && result.Data?.ImportHistory != null)
@@ -106,7 +117,7 @@ public partial class ImportViewModel : ObservableObject
 
     private async Task LoadImportSummary()
     {
-        var summaryResult = await _client.GetImportSummary.ExecuteAsync();
+        var summaryResult = await _importService.GetImportSummaryAsync();
         if (summaryResult.IsSuccessResult() && summaryResult.Data?.ImportSummary != null)
         {
             var summary = summaryResult.Data.ImportSummary;
@@ -139,6 +150,73 @@ public partial class ImportViewModel : ObservableObject
         {
             _currentCursor = _cursorHistory.Pop(); // Lấy con trỏ trang trước đó ra
             await LoadDataAsync(_currentCursor);
+        }
+    }
+
+    [RelayCommand]
+    private async Task DownloadTemplateAsync()
+    {
+        try
+        {
+            var savePicker = new Windows.Storage.Pickers.FileSavePicker
+            {
+                SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads,
+                SuggestedFileName = "MauNhapHang_EasyStore"
+            };
+            savePicker.FileTypeChoices.Add("Excel Workbook", new List<string>() { ".xlsx" });
+
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.Current.AppMainWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
+
+            var file = await savePicker.PickSaveFileAsync();
+            if (file != null)
+            {
+                using (var stream = await file.OpenStreamForWriteAsync())
+                {
+                    // Gọi Service dùng chung
+                    _excelService.GenerateImportTemplate(stream);
+                }
+                Debug.WriteLine("Tải file mẫu thành công từ trang List!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Lỗi: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task UploadExcelAsync()
+    {
+        try
+        {
+            // 1. Khởi tạo cửa sổ chọn file (Chỉ cho phép chọn file .xlsx)
+            var openPicker = new Windows.Storage.Pickers.FileOpenPicker();
+            openPicker.ViewMode = Windows.Storage.Pickers.PickerViewMode.List;
+            openPicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Downloads;
+            openPicker.FileTypeFilter.Add(".xlsx");
+
+            // 2. Cấp "Căn cước" (HWND) cho cửa sổ Picker hoạt động trong WinUI 3
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.Current.AppMainWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hwnd);
+
+            // 3. Chờ người dùng chọn file
+            StorageFile file = await openPicker.PickSingleFileAsync();
+
+            if (file != null)
+            {
+                Debug.WriteLine($"Đã chọn file: {file.Name}");
+
+                NavigateToCreateImportAction?.Invoke(file);
+            }
+            else
+            {
+                Debug.WriteLine("Người dùng đã hủy chọn file.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Lỗi chọn file Excel: {ex.Message}");
         }
     }
 }

@@ -88,6 +88,14 @@ query GetProductById($id: UUID!) {
   }
 }
 
+query GetProductBySku($sku: String!) {
+  productBySku(sku: $sku) {
+    id
+    name
+    sku
+  }
+}
+
 mutation UpdateProduct($input: UpdateProductInput!) {
   updateProduct(input: $input) {
     id

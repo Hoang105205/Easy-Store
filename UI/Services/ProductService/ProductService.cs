@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using StrawberryShake;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -137,6 +138,11 @@ namespace UI.Services.ProductService
             var result = await _client.DeleteProduct.ExecuteAsync(id);
             if (result.Errors.Count > 0) throw new Exception(result.Errors[0].Message);
             return result.Data?.DeleteProduct ?? false;
+        }
+
+        public async Task<IOperationResult<IGetProductBySkuResult>> GetProductBySkuAsync(string sku)
+        {
+            return await _client.GetProductBySku.ExecuteAsync(sku);
         }
     }
 }

@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.IO;
 using UI.Services.AuthService;
 using UI.Services.CategoryService;
+using UI.Services.ExcelService;
+using UI.Services.ImportService;
 using UI.Services.OrderService;
 using UI.Services.ProductService;
 using UI.ViewModels;
@@ -47,6 +49,8 @@ public partial class App : Application
         services.AddSingleton<CategoryService>();
         services.AddSingleton<ProductService>();
         services.AddSingleton<OrderService>();
+        services.AddSingleton<ExcelService>();
+        services.AddSingleton<ImportService>();
         services.AddSingleton<DashboardService>();
 
         services.AddEasyStoreClient()
@@ -59,11 +63,11 @@ public partial class App : Application
 
         services.AddTransient<ImportViewModel>();
         services.AddTransient<ImportEditorViewModel>();
+        services.AddTransient<CreateImportViewModel>();
         services.AddTransient<ProductViewModel>();
         services.AddTransient<ProductDetailViewModel>();
         services.AddTransient<CreateProductViewModel>();
         services.AddTransient<CategoryViewModel>();
-        services.AddTransient<CreateImportViewModel>();
         services.AddTransient<OrderPageViewModel>();
         services.AddTransient<NewOrderPageViewModel>();
         services.AddTransient<OrderDetailPageViewModel>();

@@ -73,9 +73,9 @@
                 <AppBarButton Icon="Document" Label="Nhập từ Excel">
                     <AppBarButton.Flyout>
                         <MenuFlyout>
-                            <MenuFlyoutItem Text="Tải file mẫu (.xlsx)" Icon="Download" Click="OnDownloadTemplateClicked"/>
+                            <MenuFlyoutItem Text="Tải file mẫu (.xlsx)" Icon="Download" Command="{x:Bind ViewModel.DownloadTemplateCommand}"/>
                             <MenuFlyoutSeparator/>
-                            <MenuFlyoutItem Text="Tải file lên để nhập" Icon="Upload" Click="OnUploadExcelClicked"/>
+                            <MenuFlyoutItem Text="Tải file lên để nhập" Icon="Upload" Command="{x:Bind ViewModel.UploadExcelCommand}"/>
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
