@@ -8,12 +8,14 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UI.ViewModels.Import;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -47,7 +49,15 @@ public sealed partial class CreateImportPage : Page
     {
         base.OnNavigatedTo(e);
 
-        await ViewModel.LoadExistingAutoSaveAsync();
+        if (e.Parameter is StorageFile excelFile)
+        {
+            await ViewModel.ProcessImportedExcelAsync(excelFile);
+        }
+        else
+        {
+            await ViewModel.LoadExistingAutoSaveAsync();
+        }
+
     }
 
     private async void OnInputLostFocus(object sender, RoutedEventArgs e)

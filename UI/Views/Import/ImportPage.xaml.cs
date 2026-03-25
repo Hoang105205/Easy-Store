@@ -33,7 +33,12 @@ public sealed partial class ImportPage : Page
     {
         InitializeComponent();
 
-        ViewModel = (App.Current as App)!.Services.GetService<ImportViewModel>();
+        ViewModel = (App.Current as App)!.Services!.GetService<ImportViewModel>()!;
+
+        ViewModel.NavigateToCreateImportAction = (excelFile) =>
+        {
+            Frame.Navigate(typeof(CreateImportPage), excelFile);
+        };
     }
 
     private void OnCreateNewImportClicked(object sender, RoutedEventArgs e)

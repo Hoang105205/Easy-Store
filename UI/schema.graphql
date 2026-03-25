@@ -12,6 +12,7 @@ type Query {
   products(searchTerm: String categoryId: UUID order: [ProductSortInput!]): [Product!]!
   productsPagination(searchTerm: String categoryId: UUID minPrice: Long maxPrice: Long "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ProductSortInput!]): ProductsPaginationConnection
   productById(id: UUID!): Product
+  productBySku(sku: String!): Product
   categories: [Category!]!
   orders("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [OrderSortInput!]): OrdersConnection
   ordersPagination(receiptNumber: String startDate: DateTime endDate: DateTime "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [OrderSortInput!]): OrdersPaginationConnection
