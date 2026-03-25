@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="UI.Views.Orders.OrderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UI.Views.Orders"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:converters="using:UI.Utils.Converters"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:StatusColorConverter x:Key="StatusColorConverter"/>
+        <converters:StatusIconConverter x:Key="StatusIconConverter"/>
+        <converters:StatusTextConverter x:Key="StatusTextConverter"/>
+    </Page.Resources>
+
+    <Grid Padding="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="20" Margin="0,0,0,20">
+            <TextBlock Text="Danh sách hóa đơn" FontSize="24" FontWeight="Bold"/>
+
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                        CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="TỔNG SỐ HÓA ĐƠN" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Text="{x:Bind OrderVM.TotalOrdersCount, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                        CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="HÓA ĐƠN ĐANG LƯU TẠM" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Text="{x:Bind OrderVM.DraftOrdersCount, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" Foreground="DarkOrange"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <AutoSuggestBox x:Name="SearchBox" Grid.Column="0"
+                            PlaceholderText="Nhập mã hóa đơn" 
+                            QueryIcon="Find" 
+                            Height="40" Width="250"
+                            CornerRadius="8" 
+                            VerticalAlignment="Center" Margin="0,0,16,0"
+                            TextChanged="SearchBox_TextChanged"
+                            QuerySubmitted="SearchBox_QuerySubmitted"/>
+
+            <CalendarDatePicker x:Name="StartDatePicker" Grid.Column="1"
+                                PlaceholderText="Từ ngày"
+                                Height="40" Width="150"
+                                CornerRadius="8"
+                                VerticalAlignment="Center" Margin="0,0,16,0"
+                                DateChanged="DatePicker_DateChanged"/>
+
+            <CalendarDatePicker x:Name="EndDatePicker" Grid.Column="2"
+                                PlaceholderText="Đến ngày"
+                                Height="40" Width="150"
+                                CornerRadius="8"
+                                VerticalAlignment="Center"
+                                DateChanged="DatePicker_DateChanged"/>
+
+            <Button Grid.Column="4" Height="40" CornerRadius="8" Background="MediumPurple" BorderThickness="1" Click="BtnAddOrder_Click">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE710;" FontSize="14" FontWeight="Bold"/>
+                    <TextBlock Text="Tạo hóa đơn" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <Border Grid.Row="2" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="16" 
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="1">
+            <Grid>
+                <ProgressRing x:Name="LoadingRing" IsActive="{x:Bind OrderVM.IsLoading, Mode=OneWay}" 
+                              Width="50" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center" Canvas.ZIndex="10"/>
+
+                <controls:DataGrid 
+                    x:Name="OrdersGrid"
+                    ItemsSource="{x:Bind OrderVM.Orders, Mode=OneWay}"
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True"
+                    GridLinesVisibility="Horizontal"
+                    HeadersVisibility="Column"
+                    RowHeight="48"
+                    Margin="0,0,0,0"
+                    DoubleTapped="OrdersGrid_DoubleTapped">
+
+                    <controls:DataGrid.Columns>
+                        <controls:DataGridTextColumn Header="Mã hóa đơn" Binding="{Binding ReceiptNumber}" Width="1.5*"/>
+
+                        <controls:DataGridTextColumn Header="Ngày tạo" Binding="{Binding OrderDate, Converter={StaticResource StringFormatConverter}, ConverterParameter='dd/MM/yyyy HH:mm'}" 
+                            Width="1.5*"/>
+
+                        <controls:DataGridTextColumn Header="Doanh thu" Binding="{Binding TotalAmount, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" 
+                            Width="1.5*"/>
+
+                        <controls:DataGridTextColumn Header="Lợi nhuận" Binding="{Binding TotalProfit, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" 
+                            Width="1.5*"/>
+
+                        <controls:DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="1.5*"/>
+                    </controls:DataGrid.Columns>
+                </controls:DataGrid>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="3" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" 
+                       Text="{x:Bind OrderVM.DisplayRangeText, Mode=OneWay}"
+                       VerticalAlignment="Center" 
+                       HorizontalAlignment="Left"
+                       Foreground="Gray" 
+                       FontWeight="SemiBold"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20">
+                <Button x:Name="BtnPreviousPage" 
+                        Style="{StaticResource TextBlockButtonStyle}" 
+                        Click="BtnPreviousPage_Click" 
+                        IsEnabled="{x:Bind OrderVM.CanGoPrevious, Mode=OneWay}">
+                    <FontIcon Glyph="&#xE76B;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                </Button>
+
+                <Border Background="{ThemeResource BrandPurpleBrush}" CornerRadius="20" MinWidth="40" Height="40">
+                    <TextBlock x:Name="TxtCurrentPage" 
+                               Text="{x:Bind OrderVM.CurrentPageNumber, Mode=OneWay}"
+                               Foreground="White" 
+                               VerticalAlignment="Center" HorizontalAlignment="Center" 
+                               FontWeight="Bold"/>
+                </Border>
+
+                <Button x:Name="BtnNextPage" 
+                        Style="{StaticResource TextBlockButtonStyle}" 
+                        Click="BtnNextPage_Click" 
+                        IsEnabled="{x:Bind OrderVM.CanGoNext, Mode=OneWay}">
+                    <FontIcon Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

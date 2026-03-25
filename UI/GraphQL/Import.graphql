@@ -1,0 +1,100 @@
+﻿# 1. Mutation lưu phiếu nhập (Dùng chung cho cả Auto-save, Lưu tạm và Hoàn thành)
+mutation CompleteImportLog($input: CompleteImportInput!) {
+  completeImport(input: $input) {
+    id
+    status
+    totalAmount
+    isAutoSaved
+  }
+}
+
+# 2. Query lấy phiếu đang nhập dở (Auto-save) để load lại lúc mở trang
+query GetActiveAutoSave {
+  activeAutoSave {
+    id
+    createdAt
+    status
+    details {
+      productId
+      quantityAdded
+      actualImportPrice
+      product {
+        name
+        sku
+      }
+    }
+  }
+}
+
+# 3. Query lấy danh sách lịch sử nhập hàng
+query GetImportHistory($first: Int, $after: String) {
+  importHistory(first: $first, after: $after) {
+    totalCount # Tổng số lượng phiếu đang có trong DB
+    pageInfo {
+      hasNextPage # Còn trang sau không?
+      endCursor   # Điểm neo để gọi trang tiếp theo
+    }
+    nodes { # Dữ liệu thực sự sẽ nằm trong mảng nodes này
+      id
+      createdAt
+      status
+      totalAmount
+      details {
+        quantityAdded
+        actualImportPrice
+        product {
+          name
+          sku
+        }
+      }
+    }
+  }
+}
+
+# 4. Query lấy chi tiết 1 lịch sử nhập hàng
+query GetImportById($id: UUID!) {
+  importById(id: $id) {
+    id
+    createdAt
+    status
+    totalAmount
+    isAutoSaved
+    details {
+      quantityAdded
+      actualImportPrice
+      product {
+        id
+        name
+        sku
+        images {
+          imagePath
+          isPrimary
+        }
+      }
+    }
+  }
+}
+
+# 5. Query lấy thống kê chung về phiếu nhập hàng (Tổng số phiếu, Tổng tiền, Số phiếu đang ở trạng thái Draft)
+query GetImportSummary {
+  importSummary {
+    totalCount
+    totalAmount
+    draftCount
+  }
+}
+
+# 6. Gọi hàm Chốt phiếu tạm thành Hoàn thành
+mutation MarkImportCompleted($importId: UUID!) {
+  markImportCompleted(importId: $importId) {
+    id
+    status
+    isAutoSaved
+    createdAt
+  }
+}
+
+# 7. Gọi hàm Xóa phiếu tạm (Trả về true/false)
+mutation DeleteImport($importId: UUID!) {
+  deleteImport(importId: $importId)
+}

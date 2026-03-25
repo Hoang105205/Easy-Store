@@ -1,0 +1,153 @@
+query GetOrders(
+  $first: Int!, 
+  $after: String
+  ) {
+  orders(
+    first: $first, 
+    after: $after
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    nodes {
+      id
+      receiptNumber
+      status
+      totalAmount
+      totalProfit
+      orderDate
+    }
+  }
+}
+
+query GetOrdersPagination(
+  $first: Int!, 
+  $after: String,
+  $receiptNumber: String,
+  $startDate: DateTime,
+  $endDate: DateTime
+) {
+  ordersPagination(
+    first: $first, 
+    after: $after,
+    receiptNumber: $receiptNumber,
+    startDate: $startDate,
+    endDate: $endDate
+  ) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    nodes {
+      id
+      receiptNumber
+      status
+      totalAmount
+      totalProfit
+      orderDate
+    }
+  }
+}
+
+query GetOrderById($id: UUID!) {
+  orderById(id: $id) {
+    id
+    receiptNumber
+    status
+    totalAmount
+    totalProfit
+    isDraft
+    orderDate
+    updatedAt
+    note
+    orderItems {
+      orderId
+      productId
+      quantity
+      unitImportPrice
+      unitSalePrice
+      totalPrice
+      product {
+        name
+        sku
+        salePrice
+        category {
+          name
+        }
+      }
+    }
+  }
+}
+
+mutation PayOrder($id: UUID!) {
+  payOrder(id: $id) {
+    id
+    status
+  }
+}
+
+mutation DeleteOrder($id: UUID!) {
+  deleteOrder(id: $id)
+}
+
+query GetDraftOrders {
+  draftOrders {
+    id
+    receiptNumber
+    totalAmount
+    orderDate
+    note
+    orderItems {
+      productId
+      quantity
+      unitSalePrice
+      totalPrice
+      product {
+        name
+        sku
+      }
+    }
+  }
+}
+
+mutation UpsertDraftOrder($input: UpsertDraftOrderInput!) {
+  upsertDraftOrder(input: $input) {
+    id
+    receiptNumber
+    totalAmount
+    isDraft
+    orderItems {
+      orderId
+      productId
+      quantity
+      unitImportPrice
+      unitSalePrice
+      totalPrice
+      product {
+        name
+        sku
+        salePrice
+        category {
+          name
+        }
+      }
+    }
+  }
+}
+
+mutation FinalizeOrder($orderId: UUID!) {
+  finalizeOrder(orderId: $orderId) {
+    id
+    receiptNumber
+    totalAmount
+    totalProfit
+    isDraft
+    status
+  }
+}

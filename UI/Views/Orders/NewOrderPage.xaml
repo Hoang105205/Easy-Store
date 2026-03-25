@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="UI.Views.Orders.NewOrderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UI.Views.Orders"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <TabView x:Name="OrderTabView" 
+             AddTabButtonClick="OrderTabView_AddTabButtonClick"
+             TabCloseRequested="OrderTabView_TabCloseRequested"
+             IsAddTabButtonVisible="True"
+             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    </TabView>
+</Page>

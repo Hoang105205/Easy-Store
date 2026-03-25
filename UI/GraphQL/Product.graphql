@@ -1,0 +1,99 @@
+﻿query GetProducts(
+  $searchTerm: String, 
+  $categoryId: UUID
+) {
+  products(
+    searchTerm: $searchTerm, 
+    categoryId: $categoryId
+  ) {
+    id
+    name
+    sku
+    salePrice
+    stockQuantity
+    category {
+      name
+    }
+    images {
+      imagePath
+      isPrimary
+    }
+  }
+}
+
+query GetProductsPagination(
+  $first: Int!, 
+  $after: String, 
+  $searchTerm: String, 
+  $categoryId: UUID,
+  $minPrice: Long,
+  $maxPrice: Long
+) {
+  productsPagination(
+    first: $first, 
+    after: $after, 
+    searchTerm: $searchTerm, 
+    categoryId: $categoryId
+    minPrice: $minPrice
+    maxPrice: $maxPrice
+  ) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    nodes {
+      id
+      name
+      sku
+      salePrice
+      stockQuantity
+      category {
+        name
+      }
+      images {
+        imagePath
+        isPrimary
+      }
+    }
+  }
+}
+
+mutation CreateProduct($input: CreateProductInput!) {
+  createProduct(input: $input) {
+    id
+    name
+  }
+}
+
+query GetProductById($id: UUID!) {
+  productById(id: $id) {
+    id
+    sku
+    name
+    importPrice
+    salePrice
+    stockQuantity
+    createdAt
+    categoryId
+    category {
+      id
+      name
+    }
+    images {
+      imagePath
+      isPrimary
+    }
+  }
+}
+
+mutation UpdateProduct($input: UpdateProductInput!) {
+  updateProduct(input: $input) {
+    id
+  }
+}
+
+mutation DeleteProduct($id: UUID!) {
+  deleteProduct(id: $id)
+}
