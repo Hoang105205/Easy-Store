@@ -8,6 +8,9 @@
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:StatusColorConverter x:Key="StatusColorConverter"/>
+        <converters:StatusIconConverter x:Key="StatusIconConverter"/>
+        <converters:StatusTextConverter x:Key="StatusTextConverter"/>
     </Page.Resources>
 
     <Grid Padding="30">
@@ -20,16 +23,26 @@
 
         <Grid Grid.Row="0" Margin="0,0,0,20">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="16">
-                <Button Click="BtnBack_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
+                <Button Command="{x:Bind ViewModel.GoBackCommand}" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
                 <TextBlock Text="Chi tiết hóa đơn" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
                 <TextBlock Text="Số hóa đơn:" FontSize="24" Foreground="Gray" VerticalAlignment="Center"/>
                 <TextBlock Text="{x:Bind ViewModel.OrderDetail.ReceiptNumber, Mode=OneWay}" FontSize="24" Foreground="Gray" VerticalAlignment="Center"/>
+
+                <Border CornerRadius="6" Padding="8,4" Margin="16,0,0,0" VerticalAlignment="Center"
+                        Background="{Binding OrderDetail.Status, Converter={StaticResource StatusColorConverter}, ConverterParameter='Light'}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="{x:Bind ViewModel.OrderDetail.Status, Mode=OneWay, Converter={StaticResource StatusIconConverter}}" 
+                                  Foreground="{x:Bind ViewModel.OrderDetail.Status, Mode=OneWay, Converter={StaticResource StatusColorConverter}}" FontSize="14"/>
+                        <TextBlock Text="{x:Bind ViewModel.OrderDetail.Status, Mode=OneWay, Converter={StaticResource StatusTextConverter}}" 
+                                   Foreground="{x:Bind ViewModel.OrderDetail.Status, Mode=OneWay, Converter={StaticResource StatusColorConverter}}" FontWeight="Bold"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" 
                         Visibility="{x:Bind ViewModel.IsActionVisible, Mode=OneWay}">
-                <Button Content="Thanh toán" Background="Green" Foreground="White" Width="120" Click="BtnPay_Click"/>
-                <Button Content="Xóa đơn" Background="DarkRed" Foreground="White" Width="100" Click="BtnDelete_Click"/>
+                <Button Content="Thanh toán" Background="Green" Foreground="White" Width="120" Command="{x:Bind ViewModel.PayOrderCommand}"/>
+                <Button Content="Xóa đơn" Background="DarkRed" Foreground="White" Width="100" Command="{x:Bind ViewModel.DeleteOrderCommand}"/>
             </StackPanel>
         </Grid>
 
@@ -53,9 +66,9 @@
                         <controls:DataGridTextColumn Header="Tên SP" Binding="{Binding ProductName}" Width="2*"/>
                         <controls:DataGridTextColumn Header="Danh mục" Binding="{Binding CategoryName}" Width="1.5*"/>
                         <controls:DataGridTextColumn Header="Số lượng" Binding="{Binding Quantity}" Width="1*"/>
-                        <controls:DataGridTextColumn Header="Giá nhập" Binding="{Binding UnitImportPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" Width="1.5*"/>
-                        <controls:DataGridTextColumn Header="Đơn giá" Binding="{Binding UnitSalePrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" Width="1.5*"/>
-                        <controls:DataGridTextColumn Header="Thành tiền" Binding="{Binding TotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Giá nhập" Binding="{Binding UnitImportPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Đơn giá" Binding="{Binding UnitSalePrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Thành tiền" Binding="{Binding TotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Width="1.5*"/>
                     </controls:DataGrid.Columns>
                 </controls:DataGrid>
             </Grid>
