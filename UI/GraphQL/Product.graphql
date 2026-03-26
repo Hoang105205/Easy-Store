@@ -75,6 +75,7 @@ query GetProductById($id: UUID!) {
     importPrice
     salePrice
     stockQuantity
+    minimumStockQuantity
     createdAt
     categoryId
     category {

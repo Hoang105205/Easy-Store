@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace UI.Utils.Converters;
@@ -46,29 +47,30 @@ public class StringFormatConverter : IValueConverter
         {
             if (targetType == typeof(int) || targetType == typeof(int?))
             {
-                str = str.Replace(".", "").Replace(",", "").Replace("đ", "").Trim();
-                if (int.TryParse(str, NumberStyles.Any, culture, out var i))
+                var digitsOnly = new string(str.Where(char.IsDigit).ToArray());
+
+                if (string.IsNullOrEmpty(digitsOnly))
+                    return targetType == typeof(int?) ? null : 0;
+
+                if (int.TryParse(digitsOnly, out var i))
                     return i;
             }
 
             if (targetType == typeof(long) || targetType == typeof(long?))
             {
-                str = str.Replace(".", "").Replace(",", "").Replace("đ", "").Trim();
-                if (long.TryParse(str, NumberStyles.Any, culture, out var l))
-                    return l;
-            }
+                var digitsOnly = new string(str.Where(char.IsDigit).ToArray());
+                if (string.IsNullOrEmpty(digitsOnly)) return targetType == typeof(long?) ? null : 0L;
 
-            if (targetType == typeof(double) || targetType == typeof(double?))
-            {
-                str = str.Replace(".", "").Replace(",", "").Replace("đ", "").Trim();
-                if (double.TryParse(str, NumberStyles.Any, culture, out var d))
-                    return d;
+                if (long.TryParse(digitsOnly, out var l))
+                    return l;
             }
 
             if (targetType == typeof(decimal) || targetType == typeof(decimal?))
             {
-                str = str.Replace(".", "").Replace(",", "").Replace("đ", "").Trim();
-                if (decimal.TryParse(str, NumberStyles.Any, culture, out var m))
+                var validChars = new string(str.Where(c => char.IsDigit(c) || c == ',' || c == '.').ToArray());
+                if (string.IsNullOrEmpty(validChars)) return targetType == typeof(decimal?) ? null : 0m;
+
+                if (decimal.TryParse(validChars, NumberStyles.Any, culture, out var m))
                     return m;
             }
 

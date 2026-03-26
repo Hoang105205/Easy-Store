@@ -91,13 +91,14 @@ namespace UI.Services.ProductService
             return (mappedData, pageInfo?.EndCursor, pageInfo?.HasNextPage ?? false);
         }
 
-        public async Task<bool> CreateProductAsync(string sku, string name, Guid categoryId, List<string> images)
+        public async Task<bool> CreateProductAsync(string sku, string name, Guid categoryId, int minimumStockQuantity, List<string> images)
         {
             var input = new CreateProductInput
             {
                 Sku = sku,
                 Name = name,
                 CategoryId = categoryId,
+                MinimumStockQuantity = minimumStockQuantity,
                 ImagePaths = images
             };
 
@@ -118,7 +119,7 @@ namespace UI.Services.ProductService
             return result.Data?.ProductById;
         }
 
-        public async Task<bool> UpdateProductAsync(Guid id, string sku, string name, Guid categoryId, long salePrice, List<string> images)
+        public async Task<bool> UpdateProductAsync(Guid id, string sku, string name, Guid categoryId, long salePrice, int minimumStockQuantity, List<string> images)
         {
             var input = new UpdateProductInput
             {
@@ -127,6 +128,7 @@ namespace UI.Services.ProductService
                 Name = name,
                 CategoryId = categoryId,
                 SalePrice = salePrice,
+                MinimumStockQuantity = minimumStockQuantity,
                 ImagePaths = images
             };
             var result = await _client.UpdateProduct.ExecuteAsync(input);

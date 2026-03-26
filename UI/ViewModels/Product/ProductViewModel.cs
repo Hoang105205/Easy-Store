@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Core.Models;
 using HotChocolate.Language;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +11,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using UI.Messages;
 using UI.Services.AuthService;
 using UI.Services.ProductService;
 
@@ -43,6 +47,15 @@ namespace UI.ViewModels.Product
         [ObservableProperty] private bool canGoPrevious = false;
         [ObservableProperty] private string displayRangeText = String.Empty;
 
+        [ObservableProperty] private string? searchText = null;
+        [ObservableProperty] private Guid? categoryId = null;
+        [ObservableProperty] private long? minPrice = null, maxPrice = null;
+
+        public Action? NavigateToAddProductAction { get; set; }
+        public Action<Guid>? NavigateToProductDetailAction { get; set; }
+
+        private CancellationTokenSource? _loadCts;
+
         // --- Các biến xử lý logic GraphQL Cursor ---
         private string? currentEndCursor = null;
         private Stack<string> previousCursors = new();
@@ -51,19 +64,48 @@ namespace UI.ViewModels.Product
         public ProductViewModel()
         {
             _productService = App.Current.Services.GetRequiredService<ProductService>();
-            _dispatcherQueue = DispatcherQueue.GetForCurrentThread(); // Lấy luồng UI để cập nhật giao diện an toàn
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+            WeakReferenceMessenger.Default.Register<CategorySelectedMessage>(this, async (r, m) =>
+            {
+                _debounceCts?.Cancel();
+                CategoryId = m.Value;
+                await LoadProductsAsync();
+            });
+
+            WeakReferenceMessenger.Default.Register<CategoryDeletedMessage>(this, async (r, m) =>
+            {
+                _debounceCts?.Cancel();
+                if (CategoryId == m.Value)
+                {
+                    CategoryId = null;
+                }
+                await LoadProductsAsync();
+            });
         }
 
-        public async Task LoadProductsAsync(
-            string? afterCursor = null,
-            string? searchText = null,
-            Guid? categoryId = null,
-            long? minPrice = null,
-            long? maxPrice = null)
+        [RelayCommand]
+        public void AddProduct()
         {
+            NavigateToAddProductAction?.Invoke();
+        }
+
+        [RelayCommand]
+        public void GoToProductDetail(ProductModel selectedProduct)
+        {
+            if (selectedProduct != null)
+            {
+                NavigateToProductDetailAction?.Invoke(selectedProduct.Id);
+            }
+        }
+
+        public async Task LoadProductsAsync(string? afterCursor = null)
+        {
+            _loadCts?.Cancel();
+            _loadCts = new CancellationTokenSource();
+            var currentToken = _loadCts.Token;
             IsLoading = true;
 
-            // Lấy cấu hình số lượng mỗi trang
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
             int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
 
@@ -80,11 +122,14 @@ namespace UI.ViewModels.Product
 
             try
             {
-                var result = await _productService.GetProductsPaginationAsync(itemsPerPage, afterCursor, searchText, categoryId, minPrice, maxPrice);
+                var result = await _productService.GetProductsPaginationAsync(itemsPerPage, afterCursor, SearchText, CategoryId, MinPrice, MaxPrice);
 
-                // Cập nhật UI trên Thread chính
+                if (currentToken.IsCancellationRequested) return;
+
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (currentToken.IsCancellationRequested) return;
+
                     Products.Clear();
 
                     foreach (var item in result.Products)
@@ -96,15 +141,21 @@ namespace UI.ViewModels.Product
                     CanGoNext = result.HasNextPage;
                 });
 
-                UpdateDisplayRangeText(itemsPerPage, result.Products.Count);
+                if (!currentToken.IsCancellationRequested)
+                {
+                    UpdateDisplayRangeText(itemsPerPage, result.Products.Count);
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LỖI LẤY SẢN PHẨM] {ex.Message}");
+                Debug.WriteLine($"[LỖI LẤY SẢN PHẨM] {ex.Message}");
             }
             finally
             {
-                _dispatcherQueue.TryEnqueue(() => IsLoading = false);
+                if (!currentToken.IsCancellationRequested)
+                {
+                    _dispatcherQueue.TryEnqueue(() => IsLoading = false);
+                }
             }
         }
 
@@ -123,7 +174,8 @@ namespace UI.ViewModels.Product
             DisplayRangeText = $"Đang hiển thị sản phẩm từ {startIndex} - {endIndex}";
         }
 
-        public async Task NextPageAsync(string? searchText = null, Guid? categoryId = null, long? minPrice = null, long? maxPrice = null)
+        [RelayCommand]
+        public async Task NextPage()
         {
             if (currentEndCursor != null)
             {
@@ -133,16 +185,11 @@ namespace UI.ViewModels.Product
             CurrentPageNumber++;
             CanGoPrevious = CurrentPageNumber > 1;
 
-            await LoadProductsAsync(
-                afterCursor: currentEndCursor,
-                searchText: searchText,
-                categoryId: categoryId,
-                minPrice: minPrice,
-                maxPrice: maxPrice
-            );
+            await LoadProductsAsync(afterCursor: currentEndCursor);
         }
 
-        public async Task PreviousPageAsync(string? searchText = null, Guid? categoryId = null, long? minPrice = null, long? maxPrice = null)
+        [RelayCommand]
+        public async Task PreviousPage()
         {
             if (CurrentPageNumber > 1 && previousCursors.Count > 0)
             {
@@ -152,13 +199,7 @@ namespace UI.ViewModels.Product
 
                 previousCursors.Pop();
                 string? cursorToLoad = previousCursors.Count > 0 ? previousCursors.Peek() : null;
-                await LoadProductsAsync(
-                    afterCursor: cursorToLoad,
-                    searchText: searchText,
-                    categoryId: categoryId,
-                    minPrice: minPrice,
-                    maxPrice: maxPrice
-                );
+                await LoadProductsAsync(afterCursor: cursorToLoad);
             }
         }
 
@@ -167,7 +208,6 @@ namespace UI.ViewModels.Product
             IsLoading = true;
             try
             {
-                // Sử dụng hàm GetProductsAsync không phân trang từ Service
                 var allProducts = await _productService.GetProductsAsync(searchText, categoryId);
 
                 _dispatcherQueue.TryEnqueue(() =>
@@ -178,18 +218,53 @@ namespace UI.ViewModels.Product
                         Products.Add(item);
                     }
 
-                    // Cập nhật text hiển thị số lượng (tùy chọn)
                     DisplayRangeText = $"Hiển thị {allProducts.Count} sản phẩm";
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[LỖI LẤY TẤT CẢ SẢN PHẨM] {ex.Message}");
+                Debug.WriteLine($"[LỖI LẤY TẤT CẢ SẢN PHẨM] {ex.Message}");
             }
             finally
             {
                 _dispatcherQueue.TryEnqueue(() => IsLoading = false);
             }
+        }
+
+        // --- DEBOUNCE LOGIC ---
+        private CancellationTokenSource? _debounceCts;
+        private readonly int _debounceDelay = 500;
+
+        partial void OnSearchTextChanged(string? value) => DebounceLoadProducts();
+        partial void OnMinPriceChanged(long? value) => DebounceLoadProducts();
+        partial void OnMaxPriceChanged(long? value) => DebounceLoadProducts();
+
+        private async void DebounceLoadProducts()
+        {
+            _debounceCts?.Cancel();
+
+            _debounceCts = new CancellationTokenSource();
+            var token = _debounceCts.Token;
+
+            try
+            {
+                await Task.Delay(_debounceDelay, token);
+
+                if (!token.IsCancellationRequested)
+                {
+                    await LoadProductsAsync();
+                }
+            }
+            catch (TaskCanceledException)
+            {
+            }
+        }
+
+        public void UnregisterMessages()
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(this);
+            _debounceCts?.Cancel();
+            _loadCts?.Cancel();
         }
     }
 }
