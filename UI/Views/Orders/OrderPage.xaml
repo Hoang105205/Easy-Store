@@ -65,15 +65,15 @@
 
             <AutoSuggestBox x:Name="SearchBox" Grid.Column="0"
                             PlaceholderText="Nhập mã hóa đơn" 
+                            Text="{x:Bind OrderVM.SearchReceiptNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             QueryIcon="Find" 
                             Height="40" Width="250"
                             CornerRadius="8" 
-                            VerticalAlignment="Center" Margin="0,0,16,0"
-                            TextChanged="SearchBox_TextChanged"
-                            QuerySubmitted="SearchBox_QuerySubmitted"/>
+                            VerticalAlignment="Center" Margin="0,0,16,0"/>
 
             <CalendarDatePicker x:Name="StartDatePicker" Grid.Column="1"
                                 PlaceholderText="Từ ngày"
+                                Date="{x:Bind OrderVM.StartDate, Mode=TwoWay}"
                                 Height="40" Width="150"
                                 CornerRadius="8"
                                 VerticalAlignment="Center" Margin="0,0,16,0"
@@ -81,12 +81,13 @@
 
             <CalendarDatePicker x:Name="EndDatePicker" Grid.Column="2"
                                 PlaceholderText="Đến ngày"
+                                Date="{x:Bind OrderVM.EndDate, Mode=TwoWay}"
                                 Height="40" Width="150"
                                 CornerRadius="8"
                                 VerticalAlignment="Center"
                                 DateChanged="DatePicker_DateChanged"/>
 
-            <Button Grid.Column="4" Height="40" CornerRadius="8" Background="MediumPurple" BorderThickness="1" Click="BtnAddOrder_Click">
+            <Button Grid.Column="4" Height="40" CornerRadius="8" Background="MediumPurple" BorderThickness="1" Command="{x:Bind OrderVM.AddOrderCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon Glyph="&#xE710;" FontSize="14" FontWeight="Bold"/>
                     <TextBlock Text="Tạo hóa đơn" FontWeight="SemiBold"/>
@@ -123,7 +124,21 @@
                         <controls:DataGridTextColumn Header="Lợi nhuận" Binding="{Binding TotalProfit, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" 
                             Width="1.5*"/>
 
-                        <controls:DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="1.5*"/>
+                        <controls:DataGridTemplateColumn Header="Trạng thái" Width="1.5*">
+                            <controls:DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <FontIcon Glyph="{Binding Status, Converter={StaticResource StatusIconConverter}}" 
+                                             Foreground="{Binding Status, Converter={StaticResource StatusColorConverter}}"
+                                             FontSize="14"/>
+
+                                        <TextBlock Text="{Binding Status, Converter={StaticResource StatusTextConverter}}" 
+                                             Foreground="{Binding Status, Converter={StaticResource StatusColorConverter}}"
+                                             FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </controls:DataGridTemplateColumn.CellTemplate>
+                        </controls:DataGridTemplateColumn>
                     </controls:DataGrid.Columns>
                 </controls:DataGrid>
             </Grid>
@@ -146,7 +161,7 @@
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20">
                 <Button x:Name="BtnPreviousPage" 
                         Style="{StaticResource TextBlockButtonStyle}" 
-                        Click="BtnPreviousPage_Click" 
+                        Command="{x:Bind OrderVM.PreviousPageCommand}"
                         IsEnabled="{x:Bind OrderVM.CanGoPrevious, Mode=OneWay}">
                     <FontIcon Glyph="&#xE76B;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
                 </Button>
@@ -161,7 +176,7 @@
 
                 <Button x:Name="BtnNextPage" 
                         Style="{StaticResource TextBlockButtonStyle}" 
-                        Click="BtnNextPage_Click" 
+                        Command="{x:Bind OrderVM.NextPageCommand}"
                         IsEnabled="{x:Bind OrderVM.CanGoNext, Mode=OneWay}">
                     <FontIcon Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
                 </Button>

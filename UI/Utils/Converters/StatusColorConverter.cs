@@ -19,6 +19,12 @@ public class StatusColorConverter : IValueConverter
         if (status == "Draft" || status == "Phiếu tạm")
             return new SolidColorBrush(Colors.DarkOrange);
 
+        if (status == "Created" || status == "Mới tạo")
+            return new SolidColorBrush(Colors.DarkOrange);
+
+        if (status == "Paid" || status == "Đã thanh toán")
+            return new SolidColorBrush(Colors.SeaGreen);
+
         return new SolidColorBrush(Colors.Gray);
     }
 
