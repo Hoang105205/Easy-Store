@@ -25,6 +25,7 @@ public class Product
     public long ?ImportPrice { get; set; } // Giá MAC
     public long ?SalePrice { get; set; }
     public int StockQuantity { get; set; } = 0;
+    public int AvailableStockQuantity { get; set; } = 0;
     public int MinimumStockQuantity { get; set; } = 0;
 
     // Cờ Auto-save

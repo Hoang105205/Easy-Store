@@ -67,5 +67,13 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Order>()
             .Property(o => o.ReceiptNumber)
             .UseSerialColumn();
+
+        modelBuilder.Entity<Product>()
+            .HasIndex(p => p.SKU)
+            .IsUnique();
+
+        modelBuilder.Entity<Category>()
+            .HasIndex(p => p.Name)
+            .IsUnique();
     }
 }
