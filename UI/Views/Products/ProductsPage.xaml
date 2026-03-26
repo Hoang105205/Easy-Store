@@ -5,8 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:UI.Utils.Converters"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
@@ -34,34 +33,31 @@
             </Grid.ColumnDefinitions>
 
             <AutoSuggestBox x:Name="SearchBox"
+                            Text="{x:Bind ProductVM.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             PlaceholderText="Gợi ý tìm kiếm" 
                             QueryIcon="Find" 
                             Height="40" 
                             CornerRadius="8" 
-                            VerticalAlignment="Center"
-                            TextChanged="SearchBox_TextChanged"
-                            QuerySubmitted="SearchBox_QuerySubmitted"/>
+                            VerticalAlignment="Center" />
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="15,0,0,0" VerticalAlignment="Center">
-
                 <ComboBox x:Name="CategoryComboBox" 
                           PlaceholderText="Danh mục" 
                           Width="150" Height="40" 
                           CornerRadius="8"
                           ItemsSource="{x:Bind CategoryVM.Categories, Mode=OneWay}"
-                          SelectedIndex="0"
-                          DisplayMemberPath="Name" 
-                          SelectionChanged="CategoryComboBox_SelectionChanged"/>
-
+                          SelectedItem="{x:Bind CategoryVM.SelectedCategory, Mode=TwoWay}"
+                          DisplayMemberPath="Name" />
+                
                 <Button x:Name="BtnDeleteCategory" 
                         Height="40" Width="40" 
                         CornerRadius="8" 
                         Background="Transparent"
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        IsEnabled="{x:Bind CategoryVM.Deletable, Mode=OneWay}"
                         BorderThickness="1"
-                        IsEnabled="False"
                         ToolTipService.ToolTip="Xóa danh mục này"
-                        Click="BtnDeleteCategory_Click">
+                        Command="{x:Bind CategoryVM.DeleteSelectedCategoryCommand}">
                     <FontIcon Glyph="&#xE74D;" FontSize="14" Foreground="#E74C3C"/>
                 </Button>
             </StackPanel>
@@ -75,25 +71,32 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBox x:Name="TxtMinPrice" 
+                             Tag="{}{0:N0} đ"
                              PlaceholderText="Từ (VNĐ)" 
-                             TextAlignment="Center" 
-                             TextChanged="PriceInput_TextChanged"
-                             LostFocus="TxtPrice_LostFocus"
-                             GotFocus="TxtPrice_GotFocus"/>
+                             TextAlignment="Center"
+                             GotFocus="NumberTextBox_GotFocus"
+                             LostFocus="NumberTextBox_LostFocus"
+                             Text="{x:Bind ProductVM.MinPrice, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}"/>
 
                     <TextBlock Grid.Column="1" Text="-" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
                     <TextBox x:Name="TxtMaxPrice" 
+                             Tag="{}{0:N0} đ"
                              Grid.Column="2" 
                              PlaceholderText="Đến (VNĐ)" 
                              TextAlignment="Center" 
-                             TextChanged="PriceInput_TextChanged"
-                             LostFocus="TxtPrice_LostFocus"
-                             GotFocus="TxtPrice_GotFocus"/>
+                             GotFocus="NumberTextBox_GotFocus"
+                             LostFocus="NumberTextBox_LostFocus"
+                             Text="{x:Bind ProductVM.MaxPrice, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}"/>
                 </Grid>
             </StackPanel>
 
-            <Button Grid.Column="3" Height="40" CornerRadius="8" Click="BtnAddProduct_Click" Background="MediumPurple" BorderThickness="1">
+            <Button Grid.Column="3" 
+                    Height="40" CornerRadius="8" 
+                    Background="MediumPurple" 
+                    BorderThickness="1"
+                    Command="{x:Bind ProductVM.AddProductCommand}">
+                
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon Glyph="&#xE710;" FontSize="14" FontWeight="Bold"/>
                     <TextBlock Text="Thêm sản phẩm" FontWeight="SemiBold"/>
@@ -185,7 +188,7 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20">
                         <Button x:Name="BtnPreviousPage" 
                                 Style="{StaticResource TextBlockButtonStyle}" 
-                                Click="BtnPreviousPage_Click" 
+                                Command="{x:Bind ProductVM.PreviousPageCommand}" 
                                 IsEnabled="{x:Bind ProductVM.CanGoPrevious, Mode=OneWay}">
                             <FontIcon Glyph="&#xE76B;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
                         </Button>
@@ -200,7 +203,7 @@
 
                         <Button x:Name="BtnNextPage" 
                                 Style="{StaticResource TextBlockButtonStyle}" 
-                                Click="BtnNextPage_Click" 
+                                Command="{x:Bind ProductVM.NextPageCommand}" 
                                 IsEnabled="{x:Bind ProductVM.CanGoNext, Mode=OneWay}">
                             <FontIcon Glyph="&#xE76C;" FontSize="16" Foreground="{ThemeResource BrandPurpleBrush}"/>
                         </Button>
@@ -208,28 +211,5 @@
                 </Grid>
             </Grid>
         </Border>
-
-        <ContentDialog x:Name="NewCategoryDialog"
-               Title="Tạo danh mục mới"
-               PrimaryButtonText="Tạo mới"
-               CloseButtonText="Hủy"
-               DefaultButton="Primary"
-               PrimaryButtonClick="NewCategoryDialog_PrimaryButtonClick">
-            <StackPanel Spacing="10" Margin="0,10,0,0">
-                <TextBlock Text="Vui lòng nhập tên danh mục bạn muốn tạo:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-
-                <TextBox x:Name="TxtNewCategoryName" 
-                 PlaceholderText="Ví dụ: Đồ điện tử, Giày dép..." 
-                 Width="300"
-                 IsSpellCheckEnabled="False" 
-                 IsTextPredictionEnabled="False"
-                 TextChanged="TxtNewCategoryName_TextChanged"/>
-                <TextBlock x:Name="TxtCategoryError" 
-                   Foreground="#E74C3C" 
-                   FontSize="12" 
-                   Visibility="Collapsed" 
-                   TextWrapping="Wrap"/>
-            </StackPanel>
-        </ContentDialog>
     </Grid>
 </Page>

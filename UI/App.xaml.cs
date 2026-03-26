@@ -25,6 +25,8 @@ public partial class App : Application
 {
     private MainWindow? _window;
 
+    public static Window? ActiveWindow;
+
     public Process? ApiProcess { get; private set; }
 
     public IServiceProvider Services { get; private set; }
@@ -84,6 +86,7 @@ public partial class App : Application
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         _window = new MainWindow();
+        ActiveWindow = _window;
 
         // Tìm cái RootFrame mà chúng ta vừa định nghĩa ở MainWindow
         Frame rootFrame = _window.RootFrame;

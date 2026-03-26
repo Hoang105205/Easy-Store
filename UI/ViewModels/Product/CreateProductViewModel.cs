@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using System;
@@ -29,7 +30,13 @@ public partial class CreateProductViewModel : ObservableObject
 
     [ObservableProperty] private string productName = string.Empty;
 
-    [ObservableProperty] private CategoryModel? selectedCategory;  
+    [ObservableProperty] private int? minimumStock = null;
+
+    [ObservableProperty] private CategoryModel? selectedCategory;
+
+    public Action? GoBackAction { get; set; }
+    public Func<string, string, Task>? ShowAlertAction { get; set; }
+    public Func<string, string, Task<bool>>? ShowConfirmAction { get; set; }
 
     public CreateProductViewModel()
     {
@@ -53,28 +60,72 @@ public partial class CreateProductViewModel : ObservableObject
         });
     }
 
-    // Trả về Tuple (IsSuccess, ErrorMessage)
     public (bool, string) ValidateForm()
     {
         if (string.IsNullOrWhiteSpace(Sku)) return (false, "Vui lòng nhập mã SKU.");
         if (string.IsNullOrWhiteSpace(ProductName)) return (false, "Vui lòng nhập tên sản phẩm.");
+        if (MinimumStock < 0)
+        {
+            return (false, "Vui lòng nhập số lượng tồn tối thiểu hợp lệ (số nguyên dương).");
+        }
         if (SelectedCategory == null) return (false, "Vui lòng chọn danh mục.");
         if (SelectedImages.Count < 1) return (false, "Vui lòng chọn ít nhất 1 ảnh.");
 
         return (true, string.Empty);
     }
 
-    public async Task<bool> SaveProductAsync()
+    [RelayCommand]
+    public async Task SaveProduct()
     {
-        var validation = ValidateForm();
-        if (!validation.Item1) throw new Exception(validation.Item2);
+        try
+        {
+            var validation = ValidateForm();
+            if (!validation.Item1)
+            {
+                if (ShowAlertAction != null) await ShowAlertAction("Lỗi", validation.Item2);
+                return;
+            }
 
-        return await _productService.CreateProductAsync(
-            Sku,
-            ProductName,
-            SelectedCategory!.Id,
-            new List<string>(SelectedImages)
-        );
+            int minimumStockQuantity = MinimumStock ?? 0;
+
+            var success = await _productService.CreateProductAsync(
+                Sku,
+                ProductName,
+                SelectedCategory!.Id,
+                minimumStockQuantity,
+                new List<string>(SelectedImages)
+            );
+
+            if (success)
+            {
+                if (ShowAlertAction != null) await ShowAlertAction("Thành công", "Sản phẩm được tạo mới thành công");
+                GoBackAction?.Invoke();
+            }
+        }
+        catch (Exception ex)
+        {
+            if (ShowAlertAction != null) await ShowAlertAction("Lỗi", ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    public async Task Cancel()
+    {
+        if (ShowConfirmAction != null)
+        {
+            var result = await ShowConfirmAction("Xác nhận", "Bạn có chắc muốn hủy? Các thông tin đã nhập trước đó sẽ bị xóa.");
+            if (result) GoBackAction?.Invoke();
+        }
+    }
+
+    [RelayCommand]
+    public async Task Reset()
+    {
+        if (ShowConfirmAction != null)
+        {
+            var result = await ShowConfirmAction("Xác nhận", "Bạn có muốn nhập lại? Các thông tin đã nhập trước đó sẽ bị xóa.");
+            if (result) ResetForm();
+        }
     }
 
     public void ResetForm()
@@ -82,6 +133,16 @@ public partial class CreateProductViewModel : ObservableObject
         ProductName = string.Empty;
         Sku = string.Empty;
         SelectedCategory = null;
+        MinimumStock = null;
         SelectedImages.Clear();
+    }
+
+    [RelayCommand]
+    public void RemoveImage(string imagePath)
+    {
+        if (SelectedImages.Contains(imagePath))
+        {
+            SelectedImages.Remove(imagePath);
+        }
     }
 }

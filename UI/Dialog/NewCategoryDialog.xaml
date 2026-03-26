@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="UI.Dialog.NewCategoryDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UI.Dialog"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    
+    <StackPanel Spacing="10" Margin="0,10,0,0">
+        <TextBlock Text="Vui lòng nhập tên danh mục bạn muốn tạo:" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+        <TextBox Name="TxtNewCategoryName" 
+                 PlaceholderText="Ví dụ: Đồ điện tử, Giày dép..." 
+                 Width="300"
+                 IsSpellCheckEnabled="False" 
+                 IsTextPredictionEnabled="False"
+                 TextChanged="TxtNewCategoryName_TextChanged"/>
+        
+        <TextBlock Name="TxtCategoryError" 
+                   Foreground="#E74C3C" 
+                   FontSize="12" 
+                   Visibility="Collapsed" 
+                   TextWrapping="Wrap"/>
+        
+    </StackPanel>
+</ContentDialog>

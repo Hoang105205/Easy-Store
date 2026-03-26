@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -32,7 +33,8 @@ public partial class ProductDetailViewModel : ObservableObject
     [ObservableProperty] private CategoryModel? selectedCategory;
     [ObservableProperty] private long importPrice = 0;
     [ObservableProperty] private int stockQuantity = 0;
-    [ObservableProperty] private long salePrice = 0;
+    [ObservableProperty] private long? salePrice = 0;
+    [ObservableProperty] private int? minimumStockQuantity = 0;
     [ObservableProperty] private string createdAtText = string.Empty;
 
     // ảnh
@@ -40,6 +42,10 @@ public partial class ProductDetailViewModel : ObservableObject
     public ObservableCollection<string> DisplayImages { get; } = new(); 
     public ObservableCollection<string> EditImages { get; } = new();    
     public ObservableCollection<CategoryModel> Categories { get; } = new();
+
+    public Action? GoBackAction { get; set; }
+    public Func<string, string, string, string, Task<bool>>? ShowConfirmAction { get; set; }
+    public Func<string, string, Task>? ShowAlertAction { get; set; }
 
     // Lưu lại bản nháp để Restore nếu bấm Hủy
     private IGetProductById_ProductById? _originalData;
@@ -90,11 +96,11 @@ public partial class ProductDetailViewModel : ObservableObject
         ProductName = data.Name ?? string.Empty;
         ImportPrice = data.ImportPrice ?? 0;
         SalePrice = data.SalePrice ?? 0;
+        MinimumStockQuantity = data.MinimumStockQuantity;
         StockQuantity = data.StockQuantity;
         CreatedAtText = data.CreatedAt.ToString("dd/MM/yyyy HH:mm");
         SelectedCategory = Categories.FirstOrDefault(c => c.Id == data.CategoryId);
 
-        // Map Ảnh
         DisplayImages.Clear();
         EditImages.Clear();
         if (data.Images != null)
@@ -109,6 +115,7 @@ public partial class ProductDetailViewModel : ObservableObject
         MainImage = DisplayImages.FirstOrDefault() ?? "ms-appx:///Assets/StoreLogo.png";
     }
 
+    [RelayCommand]
     public void EnableEditMode()
     {
         PageTitle = "Chỉnh sửa sản phẩm";
@@ -118,6 +125,7 @@ public partial class ProductDetailViewModel : ObservableObject
         IsEditable = true;
     }
 
+    [RelayCommand]
     public void CancelEditMode()
     {
         PageTitle = "Chi tiết sản phẩm";
@@ -127,19 +135,69 @@ public partial class ProductDetailViewModel : ObservableObject
         IsEditable = false;
         if (_originalData != null)
         {
-            _dispatcherQueue.TryEnqueue(() => FillData(_originalData)); // Restore lại data cũ
-        } 
+            _dispatcherQueue.TryEnqueue(() => FillData(_originalData));
+        }
     }
 
-    public async Task<bool> SaveChangesAsync()
+    [RelayCommand]
+    public async Task SaveChanges()
     {
-        if (string.IsNullOrWhiteSpace(ProductName) || SelectedCategory == null)
-            throw new Exception("Tên và Danh mục không được để trống!");
+        if (ShowConfirmAction != null)
+        {
+            bool isConfirmed = await ShowConfirmAction("Xác nhận", "Bạn có chắc chắn muốn lưu các thay đổi này?", "Có", "Không");
+            if (!isConfirmed) return;
+        }
 
-        var success = await _productService.UpdateProductAsync(ProductId, Sku, ProductName, SelectedCategory.Id, SalePrice, new List<string>(EditImages));
-        if (success) await LoadDataAsync(ProductId); // Load lại data mới nhất từ DB
-        return success;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(ProductName) || SelectedCategory == null)
+                throw new Exception("Tên và Danh mục không được để trống!");
+
+            long salePriceValue = SalePrice ?? 0;
+            int minimumStockQuantityValue = MinimumStockQuantity ?? 0;
+            var success = await _productService.UpdateProductAsync(ProductId, Sku, ProductName, SelectedCategory.Id, salePriceValue, minimumStockQuantityValue, new List<string>(EditImages));
+
+            if (success)
+            {
+                await LoadDataAsync(ProductId);
+                CancelEditMode(); // Thoát chế độ sửa
+                if (ShowAlertAction != null) await ShowAlertAction("Thành công", "Đã cập nhật sản phẩm thành công!");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (ShowAlertAction != null) await ShowAlertAction("Lỗi", ex.Message);
+        }
     }
 
-    public async Task<bool> DeleteAsync() => await _productService.DeleteProductAsync(ProductId);
+    [RelayCommand]
+    public async Task Delete()
+    {
+        if (ShowConfirmAction != null)
+        {
+            bool isConfirmed = await ShowConfirmAction("Cảnh báo nguy hiểm", $"Bạn có chắc chắn muốn xóa sản phẩm '{ProductName}' không? Hành động này không thể hoàn tác.", "Xóa", "Hủy");
+            if (!isConfirmed) return;
+        }
+
+        try
+        {
+            await _productService.DeleteProductAsync(ProductId);
+            if (ShowAlertAction != null) await ShowAlertAction("Thành công", "Sản phẩm đã bị xóa.");
+
+            GoBackAction?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            if (ShowAlertAction != null) await ShowAlertAction("Không thể xóa", ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    public void RemoveImage(string imagePath)
+    {
+        if (EditImages.Contains(imagePath))
+        {
+            EditImages.Remove(imagePath);
+        }
+    }
 }

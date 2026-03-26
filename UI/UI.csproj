@@ -14,6 +14,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Dialog\CommonDialog\**" />
+    <EmbeddedResource Remove="Dialog\CommonDialog\**" />
+    <GraphQL Remove="Dialog\CommonDialog\**" />
+    <None Remove="Dialog\CommonDialog\**" />
+    <Page Remove="Dialog\CommonDialog\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Remove="Assets\Images\onboarding1.png" />
   </ItemGroup>
   <ItemGroup>
@@ -29,6 +36,7 @@
     <None Remove="Assets\Images\muoi.jpg" />
     <None Remove="Assets\LoginIllustration.jpg" />
     <None Remove="Assets\onboarding3.png" />
+    <None Remove="Dialog\NewCategoryDialog.xaml" />
     <None Remove="GraphQL\Auth.graphql" />
     <None Remove="GraphQL\Dashboard.graphql" />
     <None Remove="GraphQL\Import.graphql" />
@@ -180,6 +188,11 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+  <ItemGroup>
+    <Page Update="Dialog\NewCategoryDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
 
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
@@ -200,4 +213,7 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="if not exist &quot;$(TargetDir)AppX&quot; mkdir &quot;$(TargetDir)AppX&quot;&#xA;C:\Windows\System32\xcopy.exe /y /s /e /i /h /r &quot;$(SolutionDir)Api\bin\$(Configuration)\net10.0\win-x64\*&quot; &quot;$(TargetDir)AppX\&quot;" />
   </Target>
+  <ItemGroup>
+    <PRIResource Remove="Dialog\CommonDialog\**" />
+  </ItemGroup>
 </Project>

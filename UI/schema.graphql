@@ -45,6 +45,8 @@ input ProductSortInput {
   importPrice: SortEnumType
   salePrice: SortEnumType
   stockQuantity: SortEnumType
+  availableStockQuantity: SortEnumType
+  minimumStockQuantity: SortEnumType
   isDraft: SortEnumType
   createdAt: SortEnumType
   updatedAt: SortEnumType
@@ -165,6 +167,7 @@ input CreateProductInput {
   sku: String!
   name: String!
   categoryId: UUID!
+  minimumStockQuantity: Int!
   imagePaths: [String!]!
 }
 
@@ -243,6 +246,8 @@ type Product {
   importPrice: Long
   salePrice: Long
   stockQuantity: Int!
+  availableStockQuantity: Int!
+  minimumStockQuantity: Int!
   isDraft: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -258,6 +263,22 @@ type User {
   hasCompletedOnboarding: Boolean!
 }
 
+input UpdateProductInput {
+  id: UUID!
+  sku: String!
+  name: String!
+  categoryId: UUID!
+  salePrice: Long!
+  minimumStockQuantity: Int!
+  imagePaths: [String!]!
+}
+
+input CompleteImportInput {
+  details: [ImportLogDetailInput!]!
+  isDraft: Boolean!
+  isAutoSave: Boolean!
+}
+
 input UpsertDraftOrderInput {
   orderId: UUID
   note: String
@@ -268,20 +289,6 @@ input DraftOrderItemInput {
   productId: UUID!
   quantity: Int!
   unitSalePrice: Long!
-}
-input UpdateProductInput {
-  id: UUID!
-  sku: String!
-  name: String!
-  categoryId: UUID!
-  salePrice: Long!
-  imagePaths: [String!]!
-}
-
-input CompleteImportInput {
-  details: [ImportLogDetailInput!]!
-  isDraft: Boolean!
-  isAutoSave: Boolean!
 }
 
 input ImportLogDetailInput {
