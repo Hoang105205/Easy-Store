@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 using UI.Services.OrderService;
 
@@ -42,10 +44,23 @@ namespace UI.ViewModels.Orders
         [ObservableProperty] private int totalOrdersCount = 0;
         [ObservableProperty] private int draftOrdersCount = 0;
 
+        // --- Các biến Binding cho Filter ---
+        [ObservableProperty] private string? searchReceiptNumber = null;
+        [ObservableProperty] private DateTimeOffset? startDate = null;
+        [ObservableProperty] private DateTimeOffset? endDate = null;
+
+        // --- Navigation Actions ---
+        public Action? NavigateToAddOrderAction { get; set; }
+        public Action<Guid>? NavigateToOrderDetailAction { get; set; }
+
         // --- Quản lý Cursor ---
         private string? currentEndCursor = null;
         private Stack<string> previousCursors = new();
         private bool pressedButton = false;
+
+        private CancellationTokenSource? _debounceCts;
+        private CancellationTokenSource? _loadCts;
+        private readonly int _debounceDelay = 500;
 
         public OrderPageViewModel()
         {
@@ -53,13 +68,41 @@ namespace UI.ViewModels.Orders
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         }
 
-        // Hàm Tải dữ liệu chính
-        public async Task LoadOrdersAsync(
-            string? afterCursor = null,
-            string? receiptNumber = null,
-            DateTimeOffset? startDate = null,
-            DateTimeOffset? endDate = null)
+        // Kích hoạt Debounce mỗi khi các thuộc tính tìm kiếm thay đổi
+        partial void OnSearchReceiptNumberChanged(string? value) => DebounceLoadOrders();
+        partial void OnStartDateChanged(DateTimeOffset? value) => DebounceLoadOrders();
+        partial void OnEndDateChanged(DateTimeOffset? value) => DebounceLoadOrders();
+
+        private async void DebounceLoadOrders()
         {
+            _debounceCts?.Cancel();
+            _debounceCts = new CancellationTokenSource();
+            var token = _debounceCts.Token;
+
+            try
+            {
+                await Task.Delay(_debounceDelay, token);
+
+                if (!token.IsCancellationRequested)
+                {
+                    // Reset phân trang khi có thay đổi tìm kiếm
+                    pressedButton = false;
+                    await LoadOrdersAsync();
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Bỏ qua lỗi khi task bị hủy
+            }
+        }
+
+        // Hàm Tải dữ liệu chính
+        public async Task LoadOrdersAsync(string? afterCursor = null)
+        {
+            _loadCts?.Cancel();
+            _loadCts = new CancellationTokenSource();
+            var currentToken = _loadCts.Token;
+
             IsLoading = true;
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
             int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
@@ -81,17 +124,20 @@ namespace UI.ViewModels.Orders
                 var result = await _orderService.GetOrdersPaginationAsync(
                     itemsPerPage,
                     afterCursor,
-                    receiptNumber,
-                    startDate,
-                    endDate);
+                    SearchReceiptNumber,
+                    StartDate,
+                    EndDate);
 
                 var drafts = await _orderService.GetDraftOrdersAsync();
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (currentToken.IsCancellationRequested) return;
+
                     TotalOrdersCount = result.TotalCount;
                     DraftOrdersCount = drafts.Count;
                     Orders.Clear();
+
                     foreach (var item in result.Orders)
                     {
                         Orders.Add(item);
@@ -101,7 +147,10 @@ namespace UI.ViewModels.Orders
                     CanGoNext = result.HasNextPage;
                 });
 
-                UpdateDisplayRangeText(itemsPerPage, result.Orders.Count);
+                if (!currentToken.IsCancellationRequested)
+                {
+                    UpdateDisplayRangeText(itemsPerPage, result.Orders.Count);
+                }
             }
             catch (Exception ex)
             {
@@ -127,21 +176,24 @@ namespace UI.ViewModels.Orders
             DisplayRangeText = $"Đang hiển thị đơn hàng từ {startIndex} - {endIndex}";
         }
 
-        // --- Hàm Thực thi Tìm Kiếm (Gọi khi bấm Nút Tìm kiếm hoặc đổi ngày) ---
-        public async Task SearchOrdersAsync()
+        // --- Xử lý Navigation & Commands ---
+        [RelayCommand]
+        public void AddOrder()
         {
-            // Reset toàn bộ state phân trang khi tìm kiếm mới
-            currentEndCursor = null;
-            previousCursors.Clear();
-            pressedButton = false;
-            CurrentPageNumber = 1;
-            CanGoPrevious = false;
-
-            await LoadOrdersAsync();
+            NavigateToAddOrderAction?.Invoke();
         }
 
-        // --- Xử lý Nút Next / Prev ---
-        public async Task NextPageAsync(string? receiptNumber = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        [RelayCommand]
+        public void GoToOrderDetail(OrderModel selectedOrder)
+        {
+            if (selectedOrder != null)
+            {
+                NavigateToOrderDetailAction?.Invoke(selectedOrder.Id);
+            }
+        }
+
+        [RelayCommand]
+        public async Task NextPage()
         {
             if (currentEndCursor != null)
             {
@@ -151,10 +203,11 @@ namespace UI.ViewModels.Orders
             CurrentPageNumber++;
             CanGoPrevious = CurrentPageNumber > 1;
 
-            await LoadOrdersAsync(afterCursor: currentEndCursor, receiptNumber, startDate, endDate);
+            await LoadOrdersAsync(afterCursor: currentEndCursor);
         }
 
-        public async Task PreviousPageAsync(string? receiptNumber = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        [RelayCommand]
+        public async Task PreviousPage()
         {
             if (CurrentPageNumber > 1 && previousCursors.Count > 0)
             {
@@ -164,8 +217,14 @@ namespace UI.ViewModels.Orders
 
                 previousCursors.Pop();
                 string? cursorToLoad = previousCursors.Count > 0 ? previousCursors.Peek() : null;
-                await LoadOrdersAsync(afterCursor: cursorToLoad, receiptNumber, startDate, endDate);
+                await LoadOrdersAsync(afterCursor: cursorToLoad);
             }
+        }
+
+        public void CancelOperations()
+        {
+            _debounceCts?.Cancel();
+            _loadCts?.Cancel();
         }
     }
 }

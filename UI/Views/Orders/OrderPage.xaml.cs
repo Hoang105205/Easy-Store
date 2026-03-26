@@ -1,18 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
 using Microsoft.Extensions.DependencyInjection;
 using UI.ViewModels.Orders;
 
@@ -21,30 +11,22 @@ namespace UI.Views.Orders
     public sealed partial class OrderPage : Page
     {
         public OrderPageViewModel OrderVM { get; }
-
         private bool _isPageReady = false;
-        private int _waitingInterval = 500;
-        private DispatcherTimer _debounceTimer;
-
-        // Các biến lưu trạng thái lọc hiện tại
-        private string? currentSearchReceiptNumber = null;
-        private DateTimeOffset? currentStartDate = null;
-        private DateTimeOffset? currentEndDate = null;
 
         public OrderPage()
         {
             InitializeComponent();
 
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
-
             this.Loaded += (s, e) => _isPageReady = true;
+
+            this.Unloaded += OrderPage_Unloaded;
 
             OrderVM = (App.Current as App)!.Services.GetRequiredService<OrderPageViewModel>();
 
-            // Khởi tạo bộ đếm Debounce
-            _debounceTimer = new DispatcherTimer();
-            _debounceTimer.Interval = TimeSpan.FromMilliseconds(_waitingInterval);
-            _debounceTimer.Tick += DebounceTimer_Tick;
+            // Setup Navigation Actions
+            OrderVM.NavigateToAddOrderAction = () => this.Frame.Navigate(typeof(NewOrderPage));
+            OrderVM.NavigateToOrderDetailAction = (orderId) => this.Frame.Navigate(typeof(OrderDetailPage), orderId);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -53,24 +35,12 @@ namespace UI.Views.Orders
             await OrderVM.LoadOrdersAsync();
         }
 
-
-        // SearchBox
-        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        private void OrderPage_Unloaded(object sender, RoutedEventArgs e)
         {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-                _debounceTimer.Stop();
-                _debounceTimer.Start();
-            }
+            OrderVM?.CancelOperations();
         }
 
-        private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            _debounceTimer.Stop();
-            ExecuteSearchAndFilter();
-        }
-
-        // 2 CalendarDatePicker là StartDatePicker và EndDatePicker
+        // Vẫn giữ sự kiện này vì đây là UI Logic (Ràng buộc phạm vi lịch)
         private void DatePicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
         {
             // Bỏ qua nếu page chưa load xong
@@ -112,69 +82,15 @@ namespace UI.Views.Orders
                 StartDatePicker.MaxDate = new DateTimeOffset(new DateTime(2100, 1, 1)); // Reset về mặc định
             }
 
-            _debounceTimer.Stop();
-            ExecuteSearchAndFilter();
-        }
-
-        private void DebounceTimer_Tick(object sender, object e)
-        {
-            _debounceTimer.Stop();
-            ExecuteSearchAndFilter();
-        }
-
-        private async void ExecuteSearchAndFilter()
-        {
-            if (!_isPageReady) return;
-
-            // Cập nhật trạng thái từ UI
-            currentSearchReceiptNumber = SearchBox.Text.Trim();
-            if (string.IsNullOrEmpty(currentSearchReceiptNumber))
-            {
-                currentSearchReceiptNumber = null;
-            }
-
-            currentStartDate = StartDatePicker.Date;
-            currentEndDate = EndDatePicker.Date;
-
-            // Gọi API thông qua ViewModel
-            await OrderVM.LoadOrdersAsync(
-                receiptNumber: currentSearchReceiptNumber,
-                startDate: currentStartDate,
-                endDate: currentEndDate
-            );
-        }
-
-        // phân trang
-        private async void BtnNextPage_Click(object sender, RoutedEventArgs e)
-        {
-            await OrderVM.NextPageAsync(
-                receiptNumber: currentSearchReceiptNumber,
-                startDate: currentStartDate,
-                endDate: currentEndDate
-            );
-        }
-
-        private async void BtnPreviousPage_Click(object sender, RoutedEventArgs e)
-        {
-            await OrderVM.PreviousPageAsync(
-                receiptNumber: currentSearchReceiptNumber,
-                startDate: currentStartDate,
-                endDate: currentEndDate
-            );
-        }
-
-        private void BtnAddOrder_Click(object sender, RoutedEventArgs e)
-        {
-            this.Frame.Navigate(typeof(NewOrderPage)); // chưa làm
+            // Không cần gọi ExecuteSearchAndFilter() ở đây vì TwoWay Binding ở XAML sẽ tự động trigger Event ở ViewModel
         }
 
         private void OrdersGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            // Lấy ra dòng vừa double click
             if (OrdersGrid.SelectedItem is OrderModel selectedOrder)
             {
-                // truyền Guid
-                this.Frame.Navigate(typeof(OrderDetailPage), selectedOrder.Id);
+                // Thay vì chuyển Frame ở đây, ta dùng Command
+                OrderVM.GoToOrderDetailCommand.Execute(selectedOrder);
             }
         }
     }

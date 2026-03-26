@@ -16,6 +16,12 @@ public class StatusIconConverter : IValueConverter
         if (status == "Draft" || status == "Phiếu tạm")
             return "\uE7C3"; // Mã Unicode của cây bút/giấy nháp (Phiếu tạm)
 
+        if (status == "Created" || status == "Mới tạo")
+            return "\uE7C3"; // Mã Unicode của cây bút/giấy nháp (Mới tạo)
+
+        if (status == "Paid" || status == "Đã thanh toán")
+            return "\uE73E"; // Mã Unicode của dấu Check (Đã thanh toán)
+
         return "\uE9CE"; // Dấu chấm hỏi nếu không xác định
     }
 
