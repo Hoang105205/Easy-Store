@@ -80,8 +80,9 @@ public class StoreStatisticsResolvers
                                Quantity = g.Sum(oi => oi.Quantity),
                                LastOrder = g.Max(oi => oi.Order.OrderDate)
                            })
+                           .Where(x => x.Quantity > 0)
                            .OrderByDescending(x => x.Quantity)
-                           .Take(5)
+                           .Take(10)
                            .ToListAsync();
     }
 
@@ -91,7 +92,7 @@ public class StoreStatisticsResolvers
         [Service] AppDbContext context)
     {
         return await context.Products
-            .Where(p => p.StockQuantity > 0 && p.StockQuantity <= p.MinimumStockQuantity)
+            .Where(p => p.StockQuantity <= p.MinimumStockQuantity)
             .Select(p => new ProductStat
             {
                 Id = p.Id,
@@ -99,7 +100,6 @@ public class StoreStatisticsResolvers
                 Quantity = p.StockQuantity
             })
             .OrderBy(p => p.Quantity)
-            .Take(5)
             .ToListAsync();
     }
 }
