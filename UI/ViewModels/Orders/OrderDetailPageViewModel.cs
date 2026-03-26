@@ -1,10 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UI.Services.OrderService;
+using Microsoft.UI.Xaml; // nhận XamlRoot
+using Microsoft.UI.Xaml.Controls; // gọi ContentDialog
 
 namespace UI.ViewModels.Orders;
 
@@ -45,6 +48,14 @@ public partial class OrderDetailPageViewModel : ObservableObject
     [ObservableProperty] private bool isLoading;
     [ObservableProperty] private bool isActionVisible;
 
+    // --- Xử lý giao tiếp với View ---
+    public Func<Task<bool>>? ConfirmPayAction { get; set; }
+    public Func<Task<bool>>? ConfirmDeleteAction { get; set; }
+
+    // --- Vẽ Dialog và chuyển trang ---
+    public XamlRoot? XamlRoot { get; set; }
+    public Action? NavigateBackAction { get; set; }
+
     public OrderDetailPageViewModel()
     {
         _orderService = App.Current.Services.GetRequiredService<OrderService>();
@@ -74,9 +85,29 @@ public partial class OrderDetailPageViewModel : ObservableObject
         }
     }
 
-    public async Task<bool> PayOrderAsync()
+    [RelayCommand]
+    public void GoBack()
     {
-        if (OrderDetail == null) return false;
+        NavigateBackAction?.Invoke();
+    }
+
+    [RelayCommand]
+    public async Task PayOrderAsync()
+    {
+        if (OrderDetail == null || XamlRoot == null) return;
+
+        ContentDialog dialog = new ContentDialog
+        {
+            Title = "Xác nhận thanh toán",
+            Content = "Bạn có chắc chắn muốn xác nhận thanh toán cho đơn hàng này?",
+            PrimaryButtonText = "Thanh toán",
+            CloseButtonText = "Hủy",
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+
         try
         {
             var success = await _orderService.PayOrderAsync(OrderDetail.Id);
@@ -88,18 +119,43 @@ public partial class OrderDetailPageViewModel : ObservableObject
                     OnPropertyChanged(nameof(OrderDetail)); // Notify UI update
                 });
             }
-            return success;
         }
-        catch { return false; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LỖI THANH TOÁN] {ex.Message}");
+        }
     }
 
-    public async Task<bool> DeleteOrderAsync()
+    [RelayCommand]
+    public async Task DeleteOrderAsync()
     {
-        if (OrderDetail == null) return false;
+        if (OrderDetail == null || XamlRoot == null) return;
+
+        ContentDialog dialog = new ContentDialog
+        {
+            Title = "Xác nhận xóa",
+            Content = "Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa đơn hàng này?",
+            PrimaryButtonText = "Xóa",
+            CloseButtonText = "Hủy",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+
         try
         {
-            return await _orderService.DeleteOrderAsync(OrderDetail.Id);
+            bool success = await _orderService.DeleteOrderAsync(OrderDetail.Id);
+            if (success)
+            {
+                // Nếu xóa thành công, tự động quay về trang trước
+                NavigateBackAction?.Invoke();
+            }
         }
-        catch { return false; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LỖI XÓA ĐƠN] {ex.Message}");
+        }
     }
 }
