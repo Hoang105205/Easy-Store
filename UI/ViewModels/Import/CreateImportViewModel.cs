@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using StrawberryShake;
 using System;
 using System.Collections.Generic;
@@ -158,19 +159,19 @@ public partial class CreateImportViewModel : ObservableObject
             AutoSaveColor = "DarkOrange";
         });
 
-        var success = await ExecuteSaveAsync(isDraft: false, isAutoSave: true);
+        var (success, errorMessage) = await ExecuteSaveAsync(isDraft: false, isAutoSave: true);
 
         _dispatcherQueue.TryEnqueue(() => {
             if (success)
             {
                 AutoSaveText = $"Đã lưu ({DateTime.Now.ToString("HH:mm:ss")})";
-                AutoSaveIcon = "\uE73E"; 
+                AutoSaveIcon = "\uE73E";
                 AutoSaveColor = "SeaGreen";
             }
             else
             {
-                AutoSaveText = "Lỗi khi lưu!"; 
-                AutoSaveIcon = "\uEA39"; 
+                AutoSaveText = errorMessage;
+                AutoSaveIcon = "\uEA39";
                 AutoSaveColor = "Red";
             }
         });
@@ -180,14 +181,27 @@ public partial class CreateImportViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveDraftAsync()
     {
-        var success = await ExecuteSaveAsync(isDraft: true, isAutoSave: false);
+        var (success, errorMessage) = await ExecuteSaveAsync(isDraft: true, isAutoSave: false);
+
         if (success)
         {
             _dispatcherQueue.TryEnqueue(() => {
                 GoBackAction?.Invoke();
-
-
                 Debug.WriteLine("Đã lưu Phiếu Tạm thành công, về trang chủ thôi!");
+            });
+        }
+        else
+        {
+            // HIỆN DIALOG BÁO LỖI CHO NGƯỜI DÙNG
+            _dispatcherQueue.TryEnqueue(async () => {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Không thể tạo phiếu tạm",
+                    Content = errorMessage,
+                    CloseButtonText = "Đã hiểu",
+                    XamlRoot = App.Current!.AppMainWindow!.Content.XamlRoot
+                };
+                await errorDialog.ShowAsync();
             });
         }
     }
@@ -195,13 +209,27 @@ public partial class CreateImportViewModel : ObservableObject
     [RelayCommand]
     private async Task CompleteImportAsync()
     {
-        var success = await ExecuteSaveAsync(isDraft: false, isAutoSave: false);
+        var (success, errorMessage) = await ExecuteSaveAsync(isDraft: false, isAutoSave: false);
+
         if (success)
         {
             _dispatcherQueue.TryEnqueue(() => {
                 GoBackAction?.Invoke();
-
                 Debug.WriteLine("Đã chốt sổ và cộng kho, về trang chủ thôi!");
+            });
+        }
+        else
+        {
+            // HIỆN DIALOG BÁO LỖI CHO NGƯỜI DÙNG
+            _dispatcherQueue.TryEnqueue(async () => {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Không thể chốt phiếu",
+                    Content = errorMessage,
+                    CloseButtonText = "Đã hiểu",
+                    XamlRoot = App.Current!.AppMainWindow!.Content.XamlRoot
+                };
+                await errorDialog.ShowAsync();
             });
         }
     }
@@ -243,15 +271,14 @@ public partial class CreateImportViewModel : ObservableObject
         }
     }
 
-    private async Task<bool> ExecuteSaveAsync(bool isDraft, bool isAutoSave)
+    private async Task<(bool IsSuccess, string ErrorMessage)> ExecuteSaveAsync(bool isDraft, bool isAutoSave)
     {
         // 1. Dùng module lọc hàng sạch
         var validItems = GetValidItems();
 
         if (validItems.Count == 0)
         {
-            Debug.WriteLine("Không có sản phẩm nào hợp lệ để lưu.");
-            return false;
+            return (false, "Không có sản phẩm nào hợp lệ để lưu.");
         }
 
         try
@@ -269,12 +296,21 @@ public partial class CreateImportViewModel : ObservableObject
             // 3. Gửi xuống Backend
             var result = await _importService.CompleteImportLogAsync(input);
 
-            return result.IsSuccessResult();
+            if (result.IsErrorResult())
+            {
+                var firstError = result.Errors?.FirstOrDefault();
+                string backendError = firstError?.Message ?? "Lỗi không xác định từ máy chủ.";
+
+                Debug.WriteLine($"GraphQL Error: {backendError}");
+                return (false, backendError); 
+            }
+
+            return (true, string.Empty);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Lỗi gọi API lưu: {ex.Message}");
-            return false;
+            return (false, "Lỗi kết nối mạng. Vui lòng thử lại!");
         }
     }
 
@@ -329,7 +365,31 @@ public partial class CreateImportViewModel : ObservableObject
             foreach (var rawRow in rawRows)
             {
                 var validatedItem = await ValidateAndMapRowAsync(rawRow);
-                tempList.Add(validatedItem);
+
+                if (validatedItem.HasError || validatedItem.ProductId == Guid.Empty)
+                {
+                    tempList.Add(validatedItem);
+                    continue;
+                }
+
+                var existingItem = tempList.FirstOrDefault(x => x.ProductId == validatedItem.ProductId);
+
+                if (existingItem != null)
+                {
+                    // 1. Tính tổng tiền hiện tại của cả 2 dòng (trước khi cộng dồn số lượng)
+                    double totalValue = (existingItem.Quantity * existingItem.ImportPrice)
+                                      + (validatedItem.Quantity * validatedItem.ImportPrice);
+
+                    // 2. Cộng dồn số lượng
+                    existingItem.Quantity += validatedItem.Quantity;
+
+                    // 3. Tính giá nhập trung bình CÓ TRỌNG SỐ (Weighted Average)
+                    existingItem.ImportPrice = totalValue / existingItem.Quantity;
+                }
+                else
+                {
+                    tempList.Add(validatedItem);
+                }
             }
 
             // Bước 3: Đưa dữ liệu lên UI an toàn
