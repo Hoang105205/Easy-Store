@@ -42,26 +42,19 @@
                             <ColumnDefinition Width="200"/>
                         </Grid.ColumnDefinitions>
 
-                        <AutoSuggestBox x:Name="SearchProductBox" 
-                        Grid.Column="0" 
-                        PlaceholderText="Tìm kiếm tên sản phẩm, mã SKU..." 
-                        QueryIcon="Find" 
-                        Height="40" 
-                        CornerRadius="8" 
-                        QuerySubmitted="SearchProductBox_QuerySubmitted"/>
+                        <AutoSuggestBox x:Name="SearchProductBox" Grid.Column="0" 
+                                        PlaceholderText="Tìm kiếm tên sản phẩm, mã SKU..." 
+                                        Text="{x:Bind ViewModel.SearchProductText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        QueryIcon="Find" Height="40" CornerRadius="8"/>
 
-                        <ComboBox x:Name="CategoryFilter" 
-                  Grid.Column="1" 
-                  HorizontalAlignment="Stretch" 
-                  PlaceholderText="Tất cả danh mục" 
-                  Height="40" 
-                  CornerRadius="8" 
-                  SelectionChanged="Filter_SelectionChanged" 
-                  ItemsSource="{x:Bind CategoryVM.Categories, Mode=OneWay}"
-                  DisplayMemberPath="Name"/>
+                        <ComboBox x:Name="CategoryFilter" Grid.Column="1" HorizontalAlignment="Stretch" 
+                                  PlaceholderText="Tất cả danh mục" Height="40" CornerRadius="8" 
+                                  ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
+                                  DisplayMemberPath="Name"/>
                     </Grid>
 
-                    <controls:DataGrid x:Name="ProductsGrid" DoubleTapped="ProductsGrid_DoubleTapped" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" RowHeight="60" ItemsSource="{x:Bind ProductVM.Products, Mode=OneWay}">
+                    <controls:DataGrid x:Name="ProductsGrid" DoubleTapped="ProductsGrid_DoubleTapped" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" RowHeight="60" ItemsSource="{x:Bind ViewModel.Products, Mode=OneWay}">
                         <controls:DataGrid.Columns>
 
                             <controls:DataGridTemplateColumn Header="Sản phẩm" Width="3*">
@@ -80,7 +73,7 @@
 
                             <controls:DataGridTextColumn Header="Tồn kho" Binding="{Binding StockQuantity}" Width="1*"/>
 
-                            <controls:DataGridTextColumn Header="Giá Đơn Vị" Binding="{Binding SalePrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" Width="1.5*"/>
+                            <controls:DataGridTextColumn Header="Giá Đơn Vị" Binding="{Binding SalePrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Width="1.5*"/>
 
                         </controls:DataGrid.Columns>
                     </controls:DataGrid>
@@ -98,17 +91,17 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,16" Spacing="4">
-                        <TextBlock Text="{x:Bind CartVM.ReceiptNumber, Mode=OneWay}" FontWeight="Bold" FontSize="18"/>
+                        <TextBlock Text="{x:Bind ViewModel.ReceiptNumber, Mode=OneWay}" FontWeight="Bold" FontSize="18"/>
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="Ngày tạo:" Foreground="Gray"/>
 
-                            <TextBlock Text="{x:Bind CartVM.OrderDate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:dd/MM/yyyy HH:mm\}'}" Foreground="Gray"/>
+                            <TextBlock Text="{x:Bind ViewModel.OrderDate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:dd/MM/yyyy HH:mm\}'}" Foreground="Gray"/>
                         </StackPanel>
                     </StackPanel>
 
                     <controls:DataGrid x:Name="CartGrid" Grid.Row="1" Margin="0,0,0,16"
                            AutoGenerateColumns="False" 
-                           ItemsSource="{x:Bind CartVM.CartItems, Mode=OneWay}" 
+                           ItemsSource="{x:Bind ViewModel.CartItems, Mode=OneWay}" 
                            LoadingRow="CartGrid_LoadingRow" 
                            HeadersVisibility="Column" 
                            GridLinesVisibility="Horizontal">
@@ -132,16 +125,16 @@
                                 </controls:DataGridTemplateColumn.CellTemplate>
                             </controls:DataGridTemplateColumn>
 
-                            <controls:DataGridTextColumn Header="Đơn giá" Binding="{Binding UnitPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\}'}" IsReadOnly="True" Width="Auto"/>
+                            <controls:DataGridTextColumn Header="Đơn giá" Binding="{Binding UnitPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" IsReadOnly="True" Width="Auto"/>
                         </controls:DataGrid.Columns>
                     </controls:DataGrid>
 
                     <TextBox Grid.Row="2" Header="Ghi chú" PlaceholderText="Nhập ghi chú cho đơn hàng..." 
-                 Text="{x:Bind CartVM.Note, Mode=TwoWay}" TextWrapping="Wrap" MinHeight="60" Margin="0,0,0,16"/>
+                        Text="{x:Bind ViewModel.Note, Mode=TwoWay}" TextWrapping="Wrap" MinHeight="60" Margin="0,0,0,16"/>
 
                     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,16" Spacing="8">
                         <TextBlock Text="Tổng tiền:" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        <TextBlock Text="{x:Bind CartVM.TotalAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:N0\} VNĐ'}" 
+                        <TextBlock Text="{x:Bind ViewModel.TotalAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
                        FontSize="20" FontWeight="Bold" Foreground="{ThemeResource SystemFillColorSuccessBrush}"/>
                     </StackPanel>
 
@@ -153,11 +146,11 @@
 
                         <Button Grid.Column="0" Content="Hủy" HorizontalAlignment="Stretch" 
                             Style="{ThemeResource DefaultButtonStyle}" 
-                            Click="BtnCancel_Click"/>
+                            Command="{x:Bind ViewModel.CancelOrderCommand}"/>
 
                         <Button Grid.Column="1" Content="Tạo đơn" HorizontalAlignment="Stretch" 
                             Style="{ThemeResource AccentButtonStyle}" 
-                            Click="BtnCreate_Click"/>
+                            Command="{x:Bind ViewModel.FinalizeOrderCommand}"/>
                     </Grid>
                 </Grid>
             </Border>
