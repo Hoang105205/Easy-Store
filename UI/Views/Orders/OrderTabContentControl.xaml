@@ -8,152 +8,88 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:converters="using:UI.Utils.Converters"
+    DataContextChanged="UserControl_DataContextChanged"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
     </UserControl.Resources>
 
-    <Grid Padding="20">
+    <Grid Margin="0,8,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Tạo hóa đơn mới" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+        <StackPanel Grid.Row="0" Margin="0,0,0,16" Spacing="4">
+            <TextBlock Text="{x:Bind ViewModel.ReceiptNumber, Mode=OneWay}" FontWeight="Bold" FontSize="18"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Ngày tạo:" Foreground="Gray"/>
+                <TextBlock Text="{x:Bind ViewModel.OrderDate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:dd/MM/yyyy HH:mm\}'}" Foreground="Gray"/>
+            </StackPanel>
+        </StackPanel>
 
-        <Grid Grid.Row="1" ColumnSpacing="20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="6*"/>
-                <ColumnDefinition Width="4*"/>
-            </Grid.ColumnDefinitions>
+        <controls:DataGrid x:Name="CartGrid" Grid.Row="1" Margin="0,0,0,16" AutoGenerateColumns="False" 
+                           ItemsSource="{x:Bind ViewModel.CartItems, Mode=OneWay}" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+            <controls:DataGrid.Columns>
+                <controls:DataGridTextColumn Header="STT" Binding="{Binding Stt}" IsReadOnly="True" Width="SizeToCells"/>
+                <controls:DataGridTextColumn Header="Sản phẩm" Binding="{Binding ProductName}" IsReadOnly="True" Width="*"/>
 
-            <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                    CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0" Margin="0,0,0,16" ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="200"/>
-                        </Grid.ColumnDefinitions>
-
-                        <AutoSuggestBox x:Name="SearchProductBox" Grid.Column="0" 
-                                        PlaceholderText="Tìm kiếm tên sản phẩm, mã SKU..." 
-                                        Text="{x:Bind ViewModel.SearchProductText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        QueryIcon="Find" Height="40" CornerRadius="8"/>
-
-                        <ComboBox x:Name="CategoryFilter" Grid.Column="1" HorizontalAlignment="Stretch" 
-                                  PlaceholderText="Tất cả danh mục" Height="40" CornerRadius="8" 
-                                  ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
-                                  SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
-                                  DisplayMemberPath="Name"/>
-                    </Grid>
-
-                    <controls:DataGrid x:Name="ProductsGrid" DoubleTapped="ProductsGrid_DoubleTapped" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" RowHeight="60" ItemsSource="{x:Bind ViewModel.Products, Mode=OneWay}">
-                        <controls:DataGrid.Columns>
-
-                            <controls:DataGridTemplateColumn Header="Sản phẩm" Width="3*">
-                                <controls:DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" Padding="8">
-                                            <PersonPicture ProfilePicture="{Binding ImagePath}" Width="40" Height="40" CornerRadius="4" Margin="0,0,12,0"/>
-                                            <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
-                                                <TextBlock Text="{Binding Sku}" FontSize="12" Foreground="Gray"/>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </controls:DataGridTemplateColumn.CellTemplate>
-                            </controls:DataGridTemplateColumn>
-
-                            <controls:DataGridTextColumn Header="Tồn kho" Binding="{Binding StockQuantity}" Width="1*"/>
-
-                            <controls:DataGridTextColumn Header="Giá Đơn Vị" Binding="{Binding SalePrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Width="1.5*"/>
-
-                        </controls:DataGrid.Columns>
-                    </controls:DataGrid>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <StackPanel Grid.Row="0" Margin="0,0,0,16" Spacing="4">
-                        <TextBlock Text="{x:Bind ViewModel.ReceiptNumber, Mode=OneWay}" FontWeight="Bold" FontSize="18"/>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="Ngày tạo:" Foreground="Gray"/>
-
-                            <TextBlock Text="{x:Bind ViewModel.OrderDate, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='\{0:dd/MM/yyyy HH:mm\}'}" Foreground="Gray"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <controls:DataGrid x:Name="CartGrid" Grid.Row="1" Margin="0,0,0,16"
-                           AutoGenerateColumns="False" 
-                           ItemsSource="{x:Bind ViewModel.CartItems, Mode=OneWay}" 
-                           LoadingRow="CartGrid_LoadingRow" 
-                           HeadersVisibility="Column" 
-                           GridLinesVisibility="Horizontal">
-                        <controls:DataGrid.Columns>
-                            <controls:DataGridTextColumn Header="STT" Binding="{Binding Stt}" IsReadOnly="True" Width="SizeToCells"/>
-
-                            <controls:DataGridTextColumn Header="Sản phẩm" Binding="{Binding ProductName}" IsReadOnly="True" Width="*"/>
-
-                            <controls:DataGridTemplateColumn Header="SL" Width="110">
-                                <controls:DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <NumberBox Value="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                <controls:DataGridTemplateColumn Header="SL" Width="110">
+                    <controls:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <NumberBox Value="{Binding Quantity, Mode=OneWay}" 
                                            Minimum="1" 
-                                           SpinButtonPlacementMode="Hidden" 
-                                           Width="90"
-                                           Margin="4,0" 
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           ValueChanged="CartQuantity_ValueChanged"/>
-                                    </DataTemplate>
-                                </controls:DataGridTemplateColumn.CellTemplate>
-                            </controls:DataGridTemplateColumn>
+                                           Maximum="{Binding MaxQuantity, Mode=OneWay}"
+                                           ValueChanged="CartQuantity_ValueChanged"
+                                           SpinButtonPlacementMode="Hidden" Width="90" Margin="4,0" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </controls:DataGridTemplateColumn.CellTemplate>
+                </controls:DataGridTemplateColumn>
 
-                            <controls:DataGridTextColumn Header="Đơn giá" Binding="{Binding UnitPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" IsReadOnly="True" Width="Auto"/>
-                        </controls:DataGrid.Columns>
-                    </controls:DataGrid>
+                <controls:DataGridTextColumn Header="Đơn giá" Binding="{Binding UnitPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" IsReadOnly="True" Width="Auto"/>
 
-                    <TextBox Grid.Row="2" Header="Ghi chú" PlaceholderText="Nhập ghi chú cho đơn hàng..." 
+                <controls:DataGridTemplateColumn Width="60">
+                    <controls:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Background="Transparent" BorderThickness="0"
+                                                Command="{Binding RemoveCommand}"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <FontIcon Glyph="&#xE74D;" Foreground="{ThemeResource SystemFillColorCriticalBrush}" FontSize="16"/>
+                            </Button>
+                        </DataTemplate>
+                    </controls:DataGridTemplateColumn.CellTemplate>
+                </controls:DataGridTemplateColumn>
+
+            </controls:DataGrid.Columns>
+        </controls:DataGrid>
+
+        <TextBox Grid.Row="2" Header="Ghi chú" PlaceholderText="Nhập ghi chú cho đơn hàng..." 
                         Text="{x:Bind ViewModel.Note, Mode=TwoWay}" TextWrapping="Wrap" MinHeight="60" Margin="0,0,0,16"/>
 
-                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,16" Spacing="8">
-                        <TextBlock Text="Tổng tiền:" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        <TextBlock Text="{x:Bind ViewModel.TotalAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,16" Spacing="8">
+            <TextBlock Text="Tổng tiền:" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Text="{x:Bind ViewModel.TotalAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
                        FontSize="20" FontWeight="Bold" Foreground="{ThemeResource SystemFillColorSuccessBrush}"/>
-                    </StackPanel>
+        </StackPanel>
 
-                    <Grid Grid.Row="4" ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="4" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-                        <Button Grid.Column="0" Content="Hủy" HorizontalAlignment="Stretch" 
+            <Button Grid.Column="0" Content="Hủy" HorizontalAlignment="Stretch" 
                             Style="{ThemeResource DefaultButtonStyle}" 
                             Command="{x:Bind ViewModel.CancelOrderCommand}"/>
 
-                        <Button Grid.Column="1" Content="Tạo đơn" HorizontalAlignment="Stretch" 
+            <Button Grid.Column="1" Content="Tạo đơn" HorizontalAlignment="Stretch" 
                             Style="{ThemeResource AccentButtonStyle}" 
                             Command="{x:Bind ViewModel.FinalizeOrderCommand}"/>
-                    </Grid>
-                </Grid>
-            </Border>
         </Grid>
     </Grid>
 </UserControl>

@@ -44,7 +44,8 @@ namespace UI.Services.ProductService
                 CategoryName = x.Category?.Name ?? "Chưa có danh mục",
                 ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
                 StockQuantity = x.StockQuantity,
-                SalePrice = x.SalePrice
+                SalePrice = x.SalePrice,
+                AvailableStockQuantity = x.AvailableStockQuantity
             }).ToList() ?? new List<ProductModel>();
 
             return mappedData;
@@ -83,7 +84,8 @@ namespace UI.Services.ProductService
                 CategoryName = x.Category?.Name ?? "Chưa có danh mục",
                 ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
                 StockQuantity = x.StockQuantity,
-                SalePrice = x.SalePrice
+                SalePrice = x.SalePrice,
+                AvailableStockQuantity = x.AvailableStockQuantity
             }).ToList() ?? new List<ProductModel>();
 
             var pageInfo = result.Data?.ProductsPagination?.PageInfo;

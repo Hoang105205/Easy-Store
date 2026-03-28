@@ -37,6 +37,7 @@ public class OrderItemDetailModel
     public string ProductName { get; set; } = string.Empty;
     public string ProductSku { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
+    public int AvailableStockQuantity { get; set; }
 }
 
 public partial class OrderDetailPageViewModel : ObservableObject

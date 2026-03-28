@@ -1,98 +1,62 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 using System;
+using System.Threading.Tasks;
 using UI.ViewModels.Orders;
 
 namespace UI.Views.Orders
 {
     public sealed partial class OrderTabContentControl : UserControl
     {
-        public NewOrderPageViewModel ViewModel { get; }
-
-        private bool _isDataLoaded = false; // chặn load nhiều lần
+        // Nhận ViewModel từ DataContext (do Container truyền vào), không tự khởi tạo bằng DI
+        public NewOrderPageViewModel ViewModel { get; private set; }
 
         public OrderTabContentControl()
         {
             this.InitializeComponent();
-            ViewModel = App.Current.Services.GetRequiredService<NewOrderPageViewModel>();
-
             this.Loaded += OrderTabContentControl_Loaded;
             this.Unloaded += OrderTabContentControl_Unloaded;
         }
 
+        // Force x:Bind hoạt động đúng với DataTemplate
+        private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (args.NewValue is NewOrderPageViewModel vm)
+            {
+                ViewModel = vm;
+                this.Bindings.Update();
+            }
+        }
+
         private async void OrderTabContentControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // Cung cấp XamlRoot để VM gọi Dialog
+            if (ViewModel == null) return;
             ViewModel.XamlRoot = this.XamlRoot;
-
-            // Lấy Model của Tab hiện tại từ DataContext do XAML DataTemplate truyền vào
-            if (this.DataContext is OrderTabItemModel tabModel)
-            {
-                // Nối tín hiệu Hủy/Thanh toán xong từ VM ra Action tắt Tab của Container
-                ViewModel.RequestCloseTabAction = () =>
-                {
-                    tabModel.RequestCloseAction?.Invoke();
-                };
-            }
-
-            if (_isDataLoaded) return;
-            _isDataLoaded = true;
-
-            await ViewModel.LoadInitialDataAsync();
-
-            // Nếu Tab này có DraftId, tự động load chi tiết đơn nháp
-            if (this.DataContext is OrderTabItemModel model && model.DraftId.HasValue)
-            {
-                await ViewModel.LoadExistingDraftOrderAsync(model.DraftId.Value);
-            }
         }
 
         private void OrderTabContentControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            ViewModel.ForceSaveIfNeeded();
-        }
-
-        private void ProductsGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (ProductsGrid.SelectedItem is UI.ViewModels.Product.ProductModel selectedProduct)
+            if (ViewModel != null)
             {
-                ViewModel.AddProductToCartCommand.Execute(selectedProduct);
+                ViewModel.ForceSaveIfNeeded();
+                // ViewModel.Cleanup();
+                // Nếu gọi Cleanup() ở đây, Tab này sẽ bị ngắt kết nối Messenger
+                // Khi Tab khác thêm/xóa sản phẩm, Tab này sẽ không được cập nhật lại MaxQuantity.
             }
         }
 
-        private void CartGrid_LoadingRow(object sender, CommunityToolkit.WinUI.UI.Controls.DataGridRowEventArgs e)
+        private async void CartQuantity_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
-            var menuFlyout = new MenuFlyout();
-            var deleteItem = new MenuFlyoutItem { Text = "Xóa sản phẩm", Icon = new SymbolIcon(Symbol.Delete) };
-
-            deleteItem.Click += (s, args) =>
+            if (sender.DataContext is CartItemModel item && ViewModel != null)
             {
-                if (e.Row.DataContext is CartItemModel itemToRemove)
-                {
-                    ViewModel.RemoveItemCommand.Execute(itemToRemove);
-                }
-            };
+                // parse giá trị dị thường (NaN) của WinUI 3
+                int newValue = double.IsNaN(args.NewValue) ? 1 : (int)args.NewValue;
 
-            menuFlyout.Items.Add(deleteItem);
-            e.Row.ContextFlyout = menuFlyout;
-        }
+                // kiểm tra tại ViewModel
+                int validValue = await ViewModel.HandleQuantityChangedAsync(item, newValue);
 
-        private void CartQuantity_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
-        {
-            if (sender.DataContext is CartItemModel item)
-            {
-                if (double.IsNaN(args.NewValue) || args.NewValue < 1)
-                {
-                    sender.Value = 1;
-                    item.Quantity = 1;
-                }
-                else
-                {
-                    item.Quantity = (int)args.NewValue;
-                }
-                ViewModel.UpdateCartTotal();
+                // Nếu ViewModel trả về giá trị khác với UI đang hiện (bị ép rollback về Max), ta cập nhật lại UI
+                if (sender.Value != validValue) sender.Value = validValue;
             }
         }
     }
