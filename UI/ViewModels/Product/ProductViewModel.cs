@@ -20,7 +20,7 @@ using UI.Services.ProductService;
 
 namespace UI.ViewModels.Product
 {
-    public class ProductModel
+    public partial class ProductModel : ObservableObject
     {
         public Guid Id { get; set; }
         public string? Name { get; set; }
@@ -29,6 +29,9 @@ namespace UI.ViewModels.Product
         public string? CategoryName { get; set; }
         public string? ImagePath { get; set; }
         public int? StockQuantity { get; set; }
+
+        [ObservableProperty]
+        private int? availableStockQuantity;
         public long? SalePrice { get; set; }
     }
 

@@ -11,6 +11,7 @@
     sku
     salePrice
     stockQuantity
+    availableStockQuantity
     category {
       name
     }
@@ -49,6 +50,7 @@ query GetProductsPagination(
       sku
       salePrice
       stockQuantity
+      availableStockQuantity
       category {
         name
       }

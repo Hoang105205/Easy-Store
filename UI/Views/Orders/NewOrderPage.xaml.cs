@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using UI.ViewModels.Orders;
 
@@ -35,10 +36,12 @@ namespace UI.Views.Orders
             }
         }
 
-        private void OrderTabView_AddTabButtonClick(TabView sender, object args)
+        private void ProductsGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            // Gọi Command của ViewModel
-            ViewModel.AddEmptyTabCommand.Execute(null);
+            if (ProductsGrid.SelectedItem is UI.ViewModels.Product.ProductModel selectedProduct)
+            {
+                ViewModel.HandleProductDoubleTapped(selectedProduct);
+            }
         }
     }
 }
