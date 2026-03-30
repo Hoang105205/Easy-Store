@@ -47,7 +47,8 @@
                           Visibility="{x:Bind ViewModel.IsDraft, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                           Command="{x:Bind ViewModel.DeleteImportCommand}"/>
 
-            <AppBarButton Icon="Print" Label="In phiếu"/>
+            <AppBarButton Icon="Print" Label="Xuất PDF"
+                          Command="{x:Bind ViewModel.ExportPdfCommand}"/>
         </CommandBar>
 
         <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 

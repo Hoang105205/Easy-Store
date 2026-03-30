@@ -11,6 +11,7 @@ using UI.Services.CategoryService;
 using UI.Services.ExcelService;
 using UI.Services.ImportService;
 using UI.Services.OrderService;
+using UI.Services.PrintService;
 using UI.Services.ProductService;
 using UI.ViewModels;
 using UI.ViewModels.Import;
@@ -41,8 +42,16 @@ public partial class App : Application
         // 3. Cấu hình các dịch vụ cho App
         ConfigureServices(serviceCollection);
 
-        // 4. "Đóng gói" các dịch vụ lại để sẵn sàng sử dụng
+        // 4. Cấu hình giấy phép 
+        ConfigureLicenses();
+
+        // 5. "Đóng gói" các dịch vụ lại để sẵn sàng sử dụng
         Services = serviceCollection.BuildServiceProvider();
+    }
+
+    private void ConfigureLicenses()
+    {
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
     }
 
     private void ConfigureServices(IServiceCollection services)
@@ -54,6 +63,7 @@ public partial class App : Application
         services.AddSingleton<ExcelService>();
         services.AddSingleton<ImportService>();
         services.AddSingleton<DashboardService>();
+        services.AddSingleton<PdfService>();
 
         services.AddEasyStoreClient()
             .ConfigureHttpClient(client =>
