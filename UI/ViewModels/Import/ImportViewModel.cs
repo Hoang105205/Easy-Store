@@ -44,6 +44,25 @@ public partial class ImportViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(LoadPreviousPageCommand))]
     private bool hasPreviousPage;
 
+    // === CÁC BIẾN CHO BỘ LỌC ===
+    [ObservableProperty]
+    private string searchKeyword = string.Empty;
+
+    [ObservableProperty]
+    private DateTimeOffset? fromDate = null;
+
+    [ObservableProperty]
+    private DateTimeOffset? toDate = null;
+
+    // Danh sách các trạng thái để hiển thị lên ComboBox
+    public List<string> StatusOptions { get; } = new() { "Tất cả", "Hoàn thành", "Phiếu tạm" };
+
+    [ObservableProperty]
+    private string selectedStatus = "Tất cả";
+
+    [ObservableProperty]
+    private string filteredCountText = "0";
+
     // Danh sách bind thẳng ra DataGrid
     // Lưu ý: IGetImportHistory_ImportHistory_Nodes là interface do Strawberry Shake tự gen ra
     public ObservableCollection<IGetImportHistory_ImportHistory_Nodes> ImportLogs { get; } = new();
@@ -60,21 +79,32 @@ public partial class ImportViewModel : ObservableObject
         _ = LoadDataAsync(null); 
     }
 
+    // === LỆNH BẤM NÚT LỌC ===
+    [RelayCommand]
+    private async Task ApplyFilterAsync()
+    {
+        _cursorHistory.Clear();
+        HasPreviousPage = false;
+        _currentCursor = null;
+
+        await LoadDataAsync(null);
+    }
+
     public async Task LoadDataAsync(string? cursor)
     {
         if (IsLoading) return;
+
         IsLoading = true;
 
         try
         {
             await LoadImportLogs(cursor);
-
+            
             await LoadImportSummary();
         }
         catch (Exception ex)
         {
-            // TODO: Hiển thị dialog báo lỗi mạng
-            System.Diagnostics.Debug.WriteLine($"Lỗi tải lịch sử nhập hàng: {ex.Message}");
+            Debug.WriteLine($"Lỗi tải lịch sử nhập hàng: {ex.Message}");
         }
         finally
         {
@@ -84,18 +114,33 @@ public partial class ImportViewModel : ObservableObject
 
     private async Task LoadImportLogs(string? cursor)
     {
-        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+        var localSettings = ApplicationData.Current.LocalSettings;
         int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
 
-        // Gọi hàm GraphQL đã định nghĩa trong file Import.graphql
-        var result = await _importService.GetImportHistoryAsync(first: itemsPerPage, after: cursor);
+        // === BƯỚC 1: CHUẨN BỊ DỮ LIỆU LỌC TỪ UI ===
+        ImportStatus? apiStatus = SelectedStatus switch
+        {
+            "Hoàn thành" => ImportStatus.Completed,
+            "Phiếu tạm" => ImportStatus.Draft,
+            _ => null
+        };
 
-        // result.IsSuccessResult() là hàm có sẵn của Strawberry Shake
+        DateTime? apiFromDate = FromDate?.DateTime;
+        DateTime? apiToDate = ToDate?.DateTime;
+
+        var result = await _importService.GetImportHistoryAsync(
+            first: itemsPerPage,
+            after: cursor,
+            searchKeyword: SearchKeyword, 
+            fromDate: apiFromDate,
+            toDate: apiToDate,
+            status: apiStatus
+        );
+
         if (result.IsSuccessResult() && result.Data?.ImportHistory != null)
         {
             var history = result.Data.ImportHistory;
 
-            // 1. Clear bảng cũ và đổ dữ liệu mới vào
             ImportLogs.Clear();
             if (history.Nodes != null)
             {
@@ -105,12 +150,10 @@ public partial class ImportViewModel : ObservableObject
                 }
             }
 
-            // 2. Cập nhật thanh trạng thái phân trang
-            TotalCountText = $"{history.TotalCount}";
+            FilteredCountText = $"{history.TotalCount}";
             HasNextPage = history.PageInfo.HasNextPage;
             _nextCursor = history.PageInfo.EndCursor;
 
-            // Nếu lịch sử neo > 0 nghĩa là ta đang ở trang 2 trở đi -> Cho phép lùi
             HasPreviousPage = _cursorHistory.Count > 0;
         }
     }

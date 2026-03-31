@@ -27,14 +27,14 @@ query GetActiveAutoSave {
 }
 
 # 3. Query lấy danh sách lịch sử nhập hàng
-query GetImportHistory($first: Int, $after: String) {
-  importHistory(first: $first, after: $after) {
-    totalCount # Tổng số lượng phiếu đang có trong DB
+query GetImportHistory($first: Int, $after: String, $searchKeyword: String, $fromDate: DateTime, $toDate: DateTime, $status: ImportStatus) {
+  importHistory(first: $first, after: $after, searchKeyword: $searchKeyword, fromDate: $fromDate, toDate: $toDate, status: $status) {
+    totalCount
     pageInfo {
-      hasNextPage # Còn trang sau không?
-      endCursor   # Điểm neo để gọi trang tiếp theo
+      hasNextPage
+      endCursor
     }
-    nodes { # Dữ liệu thực sự sẽ nằm trong mảng nodes này
+    nodes {
       id
       createdAt
       status
