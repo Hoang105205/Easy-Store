@@ -19,7 +19,7 @@
         <converters:StatusTextConverter x:Key="StatusTextConverter"/>
     </Page.Resources>
 
-    <ScrollViewer Background="#F8F9FA" Padding="40">
+    <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="40">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -28,7 +28,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,5">
-                <TextBlock Text="Tổng quan doanh thu" FontSize="24" FontWeight="Bold"/>
+                <TextBlock Text="Tổng quan doanh thu" FontSize="24" FontWeight="Bold" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -44,14 +44,6 @@
                                        SelectedIndex="0" 
                                        Background="Transparent" 
                                        BorderThickness="0">
-
-                        <toolkit:Segmented.Resources>
-                            <SolidColorBrush x:Key="SegmentedItemForeground" Color="#888" />
-                            <SolidColorBrush x:Key="SegmentedItemForegroundPointerOver" Color="#666" />
-                            <SolidColorBrush x:Key="SegmentedItemForegroundSelected" Color="#555" />
-                            <SolidColorBrush x:Key="SegmentedItemForegroundSelectedPointerOver" Color="#444" />
-                        </toolkit:Segmented.Resources>
-
                         <toolkit:Segmented.ItemContainerStyle>
                             <Style TargetType="toolkit:SegmentedItem">
                                 <Setter Property="FontWeight" Value="SemiBold" />
@@ -66,7 +58,7 @@
                         <toolkit:SegmentedItem Content="Toàn bộ" Tag="All"/>
                     </toolkit:Segmented>
                 </Grid>
-                
+
                 <Grid ColumnSpacing="30">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -84,6 +76,14 @@
                     <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
                             CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                         <StackPanel Spacing="8">
+                            <TextBlock Text="TỔNG DOANH THU" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBlock Text="{x:Bind ViewModel.Stats.TotalIncome, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Style="{StaticResource TitleTextBlockStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                            CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <StackPanel Spacing="8">
                             <TextBlock Text="TỔNG ĐƠN HÀNG MỚI" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
                             <TextBlock Text="{x:Bind ViewModel.Stats.TotalNewOrders, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0}'}" Style="{StaticResource TitleTextBlockStyle}"/>
                         </StackPanel>
@@ -98,7 +98,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                        CornerRadius="8" Padding="16"
+                        CornerRadius="8" Padding="16" 
                         MaxHeight="400"
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                         BorderThickness="1">
@@ -107,7 +107,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        
+
                         <TextBlock Text="Sản phẩm sắp hết hàng" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
 
                         <ScrollViewer Grid.Row="1" Padding="20">
@@ -121,11 +121,11 @@
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
                                                 <Grid Tapped="ToggleDetails_Tapped" Background="Transparent">
-                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="#444"/>
-                                                    <FontIcon Glyph="&#xE70D;" FontSize="12" Foreground="#444" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                    <FontIcon Glyph="&#xE70D;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 </Grid>
                                                 <StackPanel Visibility="Collapsed" Grid.Row="1" Margin="0,7,0,0" Orientation="Vertical">
-                                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource StringFormatConverter}, ConverterParameter='Số lượng còn: {0}'}" FontSize="12" Foreground="#444"/>
+                                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource StringFormatConverter}, ConverterParameter='Số lượng còn: {0}'}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -147,11 +147,11 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        
+
                         <TextBlock Text="Sản phẩm bán chạy" 
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                    FontSize="13" FontWeight="SemiBold"/>
-                        
+
                         <ScrollViewer Grid.Row="1" Padding="20">
                             <ItemsControl ItemsSource="{x:Bind ViewModel.Stats.BestSellingProducts, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
@@ -163,12 +163,12 @@
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
                                                 <Grid Tapped="ToggleDetails_Tapped" Background="Transparent">
-                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="#555"/>
-                                                    <FontIcon Glyph="&#xE70D;" FontSize="12" Foreground="#444" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                    <FontIcon Glyph="&#xE70D;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 </Grid>
                                                 <StackPanel Visibility="Collapsed" Grid.Row="1" Margin="0,7,0,0" Orientation="Vertical">
-                                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource StringFormatConverter}, ConverterParameter='Số lượng đặt: {0}'}" FontSize="12" Foreground="#444"/>
-                                                    <TextBlock Text="{Binding LastOrder, Converter={StaticResource StringFormatConverter}, ConverterParameter='Lần đặt hàng gần nhất: {0:dd/MM/yyyy HH:mm}'}" FontSize="12" Foreground="#444"/>
+                                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource StringFormatConverter}, ConverterParameter='Số lượng đặt: {0}'}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding LastOrder, Converter={StaticResource StringFormatConverter}, ConverterParameter='Lần đặt hàng gần nhất: {0:dd/MM/yyyy HH:mm}'}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -181,10 +181,10 @@
             </Grid>
 
             <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                            CornerRadius="12" Padding="30" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    CornerRadius="12" Padding="30" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                 <StackPanel>
-                    <TextBlock Text="Biểu đồ doanh thu" FontSize="20" FontWeight="SemiBold" Foreground="#333"/>
-                    <TextBlock Text="(Đơn vị: Nghìn VNĐ)" FontSize="12" Foreground="#888" Margin="0,4,0,15"/>
+                    <TextBlock Text="Biểu đồ doanh thu" FontSize="20" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="(Đơn vị: Nghìn VNĐ)" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,15"/>
 
                     <Grid Height="300">
                         <lvc:CartesianChart 
