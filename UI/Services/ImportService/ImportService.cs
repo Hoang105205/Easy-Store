@@ -33,9 +33,22 @@ public class ImportService
     }
 
     // 2. Dành cho ImportViewModel (Danh sách, Summary)
-    public async Task<IOperationResult<IGetImportHistoryResult>> GetImportHistoryAsync(int first, string? after)
+    public async Task<IOperationResult<IGetImportHistoryResult>> GetImportHistoryAsync(
+        int first,
+        string? after,
+        string? searchKeyword,
+        DateTime? fromDate,
+        DateTime? toDate,
+        ImportStatus? status)
     {
-        return await _client.GetImportHistory.ExecuteAsync(first, after);
+        return await _client.GetImportHistory.ExecuteAsync(
+            first,
+            after,
+            searchKeyword,
+            fromDate,
+            toDate,
+            status
+        );
     }
 
     public async Task<IOperationResult<IGetImportSummaryResult>> GetImportSummaryAsync()

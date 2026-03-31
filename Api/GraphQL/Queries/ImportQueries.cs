@@ -1,5 +1,6 @@
 ﻿using Core.Data;
 using Core.Models;
+using HotChocolate.Execution.Processing;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.GraphQL.Queries;
@@ -25,14 +26,53 @@ public class ImportQueries
         return autoSaveLog;
     }
 
-    [UsePaging(IncludeTotalCount = true, DefaultPageSize = 20)]
-    public IQueryable<ImportLog> GetImportHistory([Service] AppDbContext context)
+    [UsePaging(IncludeTotalCount = true, DefaultPageSize = 20, MaxPageSize = 20)]
+    public IQueryable<ImportLog> GetImportHistory(
+        [Service] AppDbContext context,
+        string? searchKeyword,
+        DateTime? fromDate,
+        DateTime? toDate,
+        ImportStatus? status)
     {
-        return context.ImportLogs
-                .Include(i => i.Details)
-                    .ThenInclude(d => d.Product)
+        // 1. Phải Include Details và Product để có data tìm kiếm theo SKU
+        var query = context.ImportLogs
+            .Include(i => i.Details)
+                .ThenInclude(d => d.Product)
             .Where(i => i.IsAutoSaved == false)
-            .OrderByDescending(i => i.CreatedAt);
+            .AsQueryable();
+
+        // 2. Lọc theo Keyword (Mã phiếu hoặc Mã SKU)
+        if (!string.IsNullOrEmpty(searchKeyword))
+        {
+            var keyword = searchKeyword.Trim().ToLower();
+
+            query = query.Where(i =>
+                i.Id.ToString().ToLower().Contains(keyword) ||
+                i.Details.Any(d => d.Product!.SKU.ToLower().Contains(keyword))
+            );
+        }
+
+        // 3. Lọc theo Ngày (Lấy từ đầu ngày FromDate)
+        if (fromDate.HasValue)
+        {
+            var startOfDay = fromDate.Value.Date;
+            query = query.Where(i => i.CreatedAt >= startOfDay);
+        }
+
+        // 4. Lọc theo Ngày (Lấy đến cuối ngày ToDate)
+        if (toDate.HasValue)
+        {
+            var endOfDay = toDate.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(i => i.CreatedAt <= endOfDay);
+        }
+
+        // 5. Lọc theo Trạng thái
+        if (status.HasValue)
+        {
+            query = query.Where(i => i.Status == status.Value);
+        }
+
+        return query.OrderByDescending(i => i.CreatedAt);
     }
 
     public async Task<ImportLog?> GetImportByIdAsync(

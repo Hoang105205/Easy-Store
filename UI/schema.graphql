@@ -5,7 +5,7 @@ schema {
 
 type Query {
   activeAutoSave: ImportLog
-  importHistory("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): ImportHistoryConnection
+  importHistory(searchKeyword: String fromDate: DateTime toDate: DateTime status: ImportStatus "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): ImportHistoryConnection
   importById(id: UUID!): ImportLog
   importSummary: ImportSummary!
   dashboardStats(days: Int = 7): StoreStatistics!
@@ -163,14 +163,6 @@ type OrdersPaginationEdge {
   node: Order!
 }
 
-input CreateProductInput {
-  sku: String!
-  name: String!
-  categoryId: UUID!
-  minimumStockQuantity: Int!
-  imagePaths: [String!]!
-}
-
 type LoginResultDTO {
   success: Boolean!
   message: String!
@@ -212,14 +204,19 @@ type Order {
   orderItems: [OrderItem]
 }
 
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime
-
 type ImportSummary {
   totalCount: Int!
   totalAmount: Decimal!
   draftCount: Int!
 }
+
+enum ImportStatus {
+  DRAFT
+  COMPLETED
+}
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
 
 type ImportLog {
   id: UUID!
@@ -261,6 +258,14 @@ type User {
   username: String!
   passwordHash: String!
   hasCompletedOnboarding: Boolean!
+}
+
+input CreateProductInput {
+  sku: String!
+  name: String!
+  categoryId: UUID!
+  minimumStockQuantity: Int!
+  imagePaths: [String!]!
 }
 
 input UpdateProductInput {
@@ -313,11 +318,6 @@ type ImportLogDetail {
   actualImportPrice: Long!
   importLog: ImportLog
   product: Product
-}
-
-enum ImportStatus {
-  DRAFT
-  COMPLETED
 }
 
 "The `Decimal` scalar type represents a decimal floating-point number."
