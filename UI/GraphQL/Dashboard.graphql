@@ -1,7 +1,13 @@
 query GetDashboardStats($days: Int) {
   dashboardStats(days: $days) {
-    totalIncome
+    actualGrossRevenue
+    actualRevenue
+    totalPercentIncreaseRevenue
+    actualGrossProfit
+    actualProfit
+    totalPercentIncreaseProfit
     totalNewOrders
+    totalPaidOrders
     nearlyOutOfStock { 
       name 
       quantity 
@@ -11,7 +17,7 @@ query GetDashboardStats($days: Int) {
       quantity
       lastOrder
     }
-    totalRevenue { 
+    totalRevenueGraph { 
       date 
       revenue 
     }
