@@ -25,10 +25,10 @@
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="BrandPurpleBrush" Color="#A760EB"/>
                     <SolidColorBrush x:Key="LightPurpleBrush" Color="#BC86F0"/>
-                    <SolidColorBrush x:Key="BackgroundBrush" Color="#CCA8F0"/>
+                    <SolidColorBrush x:Key="BackgroundBrush" Color="#2B2336"/>
                     <Color x:Key="SystemAccentColor">#A760EB</Color>
                     <Color x:Key="SystemAccentLightColor">#BC86F0</Color>
-                        <Color x:Key="SystemButtonColor">#CCA8F0</Color>
+                    <Color x:Key="SystemButtonColor">#2B2336</Color>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>

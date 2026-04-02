@@ -20,6 +20,9 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private IGetDashboardStats_DashboardStats? stats;
 
+    [ObservableProperty]
+    private bool isPanelVisible = false;
+
     public ObservableCollection<IGetDashboardStats_DashboardStats_NearlyOutOfStock> OutOfStockList { get; } = new();
 
     [ObservableProperty]
@@ -52,6 +55,15 @@ public partial class DashboardViewModel : ObservableObject
 
         IsLoading = false;
 
+        if (days == null)
+        {
+            IsPanelVisible = false;
+        }
+        else
+        {
+            IsPanelVisible = true;
+        }
+
         OutOfStockList.Clear();
         if (Stats?.NearlyOutOfStock != null)
         {
@@ -72,7 +84,7 @@ public partial class DashboardViewModel : ObservableObject
             DateRangeText = "Đang hiển thị toàn bộ dữ liệu hệ thống";
         }
 
-        UpdateChartData(Stats.TotalRevenue);
+        UpdateChartData(Stats.TotalRevenueGraph);
     }
 
     private void SetupChart()
@@ -94,7 +106,7 @@ public partial class DashboardViewModel : ObservableObject
         });
     }
 
-    private void UpdateChartData(IReadOnlyList<IGetDashboardStats_DashboardStats_TotalRevenue>? data)
+    private void UpdateChartData(IReadOnlyList<IGetDashboardStats_DashboardStats_TotalRevenueGraph>? data)
     {
         if (data == null || data.Count == 0) return;
 

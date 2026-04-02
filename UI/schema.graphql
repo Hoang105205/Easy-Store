@@ -163,11 +163,6 @@ type OrdersPaginationEdge {
   node: Order!
 }
 
-type LoginResultDTO {
-  success: Boolean!
-  message: String!
-}
-
 type ProductStat {
   id: UUID!
   name: String!
@@ -184,9 +179,16 @@ type DailyRevenue {
 scalar Long
 
 type StoreStatistics {
-  totalIncome: Long!
+  previousDate: DateTime
+  actualGrossRevenue: Long!
+  actualRevenue: Long!
+  totalPercentIncreaseRevenue: Float!
+  actualGrossProfit: Long!
+  actualProfit: Long!
+  totalPercentIncreaseProfit: Float!
   totalNewOrders: Int!
-  totalRevenue: [DailyRevenue!]!
+  totalPaidOrders: Int!
+  totalRevenueGraph: [DailyRevenue!]!
   bestSellingProducts: [ProductStat!]!
   nearlyOutOfStock: [ProductStat!]!
 }
@@ -258,6 +260,11 @@ type User {
   username: String!
   passwordHash: String!
   hasCompletedOnboarding: Boolean!
+}
+
+type LoginResultDTO {
+  success: Boolean!
+  message: String!
 }
 
 input CreateProductInput {
