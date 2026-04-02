@@ -36,9 +36,12 @@ public class Product
 
     // Navigation properties (Liên kết khóa ngoại)
     [ForeignKey(nameof(CategoryId))]
+    [Required]
     public Category Category { get; set; }
 
     public ICollection<ImportLogDetail> ImportLogs { get; set; } = new List<ImportLogDetail>();
 
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+
+    public ICollection<Product> PairProducts { get; set; } = new List<Product>();
 }
