@@ -11,6 +11,8 @@
         <converters:StatusColorConverter x:Key="StatusColorConverter"/>
         <converters:StatusIconConverter x:Key="StatusIconConverter"/>
         <converters:StatusTextConverter x:Key="StatusTextConverter"/>
+
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Page.Resources>
 
     <Grid Padding="30">
@@ -39,10 +41,29 @@
                 </Border>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" 
-                        Visibility="{x:Bind ViewModel.IsActionVisible, Mode=OneWay}">
-                <Button Content="Thanh toán" Background="Green" Foreground="White" Width="120" Command="{x:Bind ViewModel.PayOrderCommand}"/>
-                <Button Content="Xóa đơn" Background="DarkRed" Foreground="White" Width="100" Command="{x:Bind ViewModel.DeleteOrderCommand}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+
+                <Button Content="Thanh toán" Background="Green" Foreground="White" Width="120" 
+                        Visibility="{x:Bind ViewModel.IsActionVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Command="{x:Bind ViewModel.PayOrderCommand}"/>
+
+                <Button Content="Xóa đơn" Background="DarkRed" Foreground="White" Width="100" 
+                        Visibility="{x:Bind ViewModel.IsActionVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Command="{x:Bind ViewModel.DeleteOrderCommand}"/>
+
+                <Button Content="In hóa đơn" Width="120" 
+                        Visibility="{x:Bind ViewModel.IsPrintVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Command="{x:Bind ViewModel.ExportPdfCommand}">
+                    <Button.ContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE749;" FontSize="14"/>
+                                <TextBlock Text="In hóa đơn"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </Button.ContentTemplate>
+                </Button>
+
             </StackPanel>
         </Grid>
 
