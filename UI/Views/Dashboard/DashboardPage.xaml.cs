@@ -1,4 +1,5 @@
 using Core.Models;
+using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,7 +9,8 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using SkiaSharp;
-using LiveChartsCore.SkiaSharpView.Painting;
+using System;
+using UI.Utils;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -31,6 +33,29 @@ namespace UI.Views.Dashboard
             base.OnNavigatedTo(e);
 
             await ViewModel.LoadDataAsync(7);
+        }
+
+        private void QuickAction_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem invokedItem && invokedItem.Tag != null)
+            {
+                string targetTag = invokedItem.Tag.ToString();
+
+                Type pageType = PageHelper.GetPageTypeByTag(targetTag);
+
+                if (pageType != null)
+                {
+                    this.Frame.Navigate(pageType);
+                }
+
+                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                bool isRestoreEnabled = localSettings.Values["RestoreSession"] as bool? ?? false;
+
+                if (isRestoreEnabled)
+                {
+                    localSettings.Values["LastVisitedPage"] = targetTag;
+                }
+            }
         }
 
         private void ToggleDetails_Tapped(object sender, TappedRoutedEventArgs e)
