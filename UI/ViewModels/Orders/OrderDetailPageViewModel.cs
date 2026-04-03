@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UI.Services.OrderService;
+using UI.Services.PrintService;
 using Microsoft.UI.Xaml; // nhận XamlRoot
 using Microsoft.UI.Xaml.Controls; // gọi ContentDialog
 
@@ -43,11 +44,13 @@ public class OrderItemDetailModel
 public partial class OrderDetailPageViewModel : ObservableObject
 {
     private readonly OrderService _orderService;
+    private readonly PdfService _pdfService;
     private readonly DispatcherQueue _dispatcherQueue;
 
     [ObservableProperty] private OrderDetailModel? orderDetail = new OrderDetailModel();
     [ObservableProperty] private bool isLoading;
     [ObservableProperty] private bool isActionVisible;
+    [ObservableProperty] private bool isPrintVisible;
 
     // --- Xử lý giao tiếp với View ---
     public Func<Task<bool>>? ConfirmPayAction { get; set; }
@@ -60,6 +63,7 @@ public partial class OrderDetailPageViewModel : ObservableObject
     public OrderDetailPageViewModel()
     {
         _orderService = App.Current.Services.GetRequiredService<OrderService>();
+        _pdfService = App.Current.Services.GetRequiredService<PdfService>();
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
@@ -74,6 +78,9 @@ public partial class OrderDetailPageViewModel : ObservableObject
                 OrderDetail = data;
                 // Chỉ hiện nút Pay/Delete khi Status là "Created"
                 IsActionVisible = data?.Status == OrderUIStatuses.Created;
+
+                // Chỉ hiện nút khi Status là "Paid"
+                IsPrintVisible = data?.Status == OrderUIStatuses.Paid;
             });
         }
         catch (Exception ex)
@@ -117,6 +124,7 @@ public partial class OrderDetailPageViewModel : ObservableObject
                 _dispatcherQueue.TryEnqueue(() => {
                     OrderDetail.Status = OrderUIStatuses.Paid;
                     IsActionVisible = false;
+                    IsPrintVisible = true;
                     OnPropertyChanged(nameof(OrderDetail)); // Notify UI update
                 });
             }
@@ -157,6 +165,30 @@ public partial class OrderDetailPageViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[LỖI XÓA ĐƠN] {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportPdfAsync()
+    {
+        if (OrderDetail == null) return;
+
+        IsLoading = true;
+        try
+        {
+            var document = new OrderReceiptDocument(OrderDetail);
+            string fileName = $"HoaDon_{OrderDetail.ReceiptNumber}.pdf";
+
+            bool success = await _pdfService.GenerateAndOpenPdfAsync(document, fileName);
+
+            if (!success)
+            {
+                System.Diagnostics.Debug.WriteLine("Có lỗi khi tạo PDF Hóa đơn");
+            }
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 }
