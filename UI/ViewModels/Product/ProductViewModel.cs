@@ -33,6 +33,9 @@ namespace UI.ViewModels.Product
         [ObservableProperty]
         private int? availableStockQuantity;
         public long? SalePrice { get; set; }
+
+        public ObservableCollection<ProductModel> PairProducts { get; set; } = new();
+        public bool HasPairProducts => PairProducts != null && PairProducts.Count > 0; // de lam nut dropdown hien thi san pham kem theo
     }
 
     public partial class ProductViewModel : ObservableObject

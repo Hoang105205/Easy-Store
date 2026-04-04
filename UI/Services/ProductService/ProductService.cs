@@ -2,6 +2,7 @@
 using StrawberryShake;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using UI.ViewModels.Product; // Để dùng chung ProductModel
@@ -20,7 +21,7 @@ namespace UI.Services.ProductService
 
         // Trả về một Tuple chứa Danh sách sản phẩm, EndCursor và trạng thái HasNextPage
         public async Task<List<ProductModel>> GetProductsAsync(
-            string? searchText = null, 
+            string? searchText = null,
             Guid? categoryId = null
         )
         {
@@ -45,7 +46,20 @@ namespace UI.Services.ProductService
                 ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
                 StockQuantity = x.StockQuantity,
                 SalePrice = x.SalePrice,
-                AvailableStockQuantity = x.AvailableStockQuantity
+                AvailableStockQuantity = x.AvailableStockQuantity,
+                // Map thêm danh sách PairProducts
+                PairProducts = new ObservableCollection<ProductModel>(
+                    x.PairProducts?.Select(pp => new ProductModel
+                    {
+                        Id = pp.Id,
+                        Name = pp.Name,
+                        Sku = pp.Sku,
+                        ImagePath = pp.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
+                        StockQuantity = pp.StockQuantity,
+                        SalePrice = pp.SalePrice,
+                        AvailableStockQuantity = pp.AvailableStockQuantity
+                    }) ?? Array.Empty<ProductModel>()
+                )
             }).ToList() ?? new List<ProductModel>();
 
             return mappedData;
@@ -85,7 +99,20 @@ namespace UI.Services.ProductService
                 ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
                 StockQuantity = x.StockQuantity,
                 SalePrice = x.SalePrice,
-                AvailableStockQuantity = x.AvailableStockQuantity
+                AvailableStockQuantity = x.AvailableStockQuantity,
+                // Map thêm danh sách PairProducts
+                PairProducts = new ObservableCollection<ProductModel>(
+                    x.PairProducts?.Select(pp => new ProductModel
+                    {
+                        Id = pp.Id,
+                        Name = pp.Name,
+                        Sku = pp.Sku,
+                        ImagePath = pp.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
+                        StockQuantity = pp.StockQuantity,
+                        SalePrice = pp.SalePrice,
+                        AvailableStockQuantity = pp.AvailableStockQuantity
+                    }) ?? Array.Empty<ProductModel>()
+                )
             }).ToList() ?? new List<ProductModel>();
 
             var pageInfo = result.Data?.ProductsPagination?.PageInfo;
