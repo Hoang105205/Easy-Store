@@ -253,6 +253,7 @@ type Product {
   category: Category!
   importLogs: [ImportLogDetail!]!
   images: [ProductImage!]!
+  pairProducts: [Product!]!
 }
 
 type User {

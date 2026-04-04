@@ -19,6 +19,18 @@
       imagePath
       isPrimary
     }
+    pairProducts {
+      id
+      name
+      sku
+      salePrice
+      stockQuantity
+      availableStockQuantity
+      images {
+        imagePath
+        isPrimary
+      }
+    }
   }
 }
 
@@ -57,6 +69,18 @@ query GetProductsPagination(
       images {
         imagePath
         isPrimary
+      }
+      pairProducts {
+        id
+        name
+        sku
+        salePrice
+        stockQuantity
+        availableStockQuantity
+        images {
+          imagePath
+          isPrimary
+        }
       }
     }
   }
