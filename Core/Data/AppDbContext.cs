@@ -1,5 +1,6 @@
 ﻿using Core.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Core.Data;
 
@@ -75,5 +76,17 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Category>()
             .HasIndex(p => p.Name)
             .IsUnique();
+
+        // =========================================================================
+        // CẤU HÌNH BẢNG TRUNG GIAN CHO SẢN PHẨM GỢI Ý (MANY-TO-MANY)
+        // =========================================================================
+        modelBuilder.Entity<Product>()
+            .HasMany(p => p.PairProducts)
+            .WithMany() 
+            .UsingEntity<Dictionary<string, object>>(
+                "ProductRecommendations", // bảng trung gian tên này
+                j => j.HasOne<Product>().WithMany().HasForeignKey("PairProductId"), // Cột trỏ đến SP được gợi ý
+                j => j.HasOne<Product>().WithMany().HasForeignKey("ProductId")      // Cột trỏ đến SP gốc
+            );
     }
 }
