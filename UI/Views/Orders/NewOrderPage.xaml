@@ -83,7 +83,7 @@
                         <controls:DataGridTemplateColumn Header="" Width="60">
                             <controls:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="productModels:ProductModel">
-                                    <Button FontFamily="Segoe Fluent Icons" 
+                                    <Button FontFamily="Segoe MDL2 Assets" 
                                         Content="&#xE70D;" 
                                         Background="Transparent" 
                                         BorderThickness="0"
