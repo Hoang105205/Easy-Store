@@ -86,6 +86,8 @@ public class OrderMutation
             order = await context.Orders.FirstOrDefaultAsync(o => o.Id == input.OrderId.Value);
             if (order == null) throw new Exception("Không tìm thấy đơn nháp");
 
+            if (!order.IsDraft) throw new Exception("Không thể chỉnh sửa giỏ hàng của đơn đã hoàn tất");
+
             order.Note = input.Note;
             order.TotalAmount = totalAmount;
             order.UpdatedAt = DateTime.UtcNow;
@@ -181,6 +183,11 @@ public class OrderMutation
 
             if (item.Product != null)
             {
+                if (item.Product.StockQuantity < item.Quantity)
+                {
+                    throw new Exception($"Sản phẩm '{item.Product.Name}' không đủ tồn kho thực tế để thanh toán (Kho thực: {item.Product.StockQuantity}).");
+                }
+
                 // chỉ trừ StockQuantity, không trừ AvailableStockQuantity nữa vì đã trừ lúc autosave rồi
                 item.Product.StockQuantity -= item.Quantity;
             }

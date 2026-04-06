@@ -115,7 +115,16 @@ namespace UI.ViewModels.Orders
         // Nhận Item từ Container khi Double Click
         public async void HandleAddProductFromGlobal(ProductModel product)
         {
-            if (product.AvailableStockQuantity <= 0) return;
+            // Lấy tồn kho an toàn: Nếu Khả dụng ảo bị lớn hơn Kho thực, ta lấy Kho thực làm chuẩn
+            int safeAvailableStock = Math.Min(product.AvailableStockQuantity ?? 0, product.StockQuantity ?? 0);
+
+            // Kiểm tra với con số an toàn thay vì con số DB trả về
+            if (safeAvailableStock <= 0)
+            {
+                await ShowSimpleDialog("Cảnh báo", $"Sản phẩm {product.Name} có dữ liệu kho bất thường hoặc đã hết hàng.");
+                return;
+            }
+
             if (CartItems.Any(c => c.ProductId == product.Id)) return; // Đã có thì không làm gì thêm
 
             var newItem = new CartItemModel
@@ -125,7 +134,7 @@ namespace UI.ViewModels.Orders
                 ProductName = product.Name ?? "",
                 UnitPrice = product.SalePrice ?? 0,
                 Quantity = 1,
-                MaxQuantity = product.AvailableStockQuantity ?? 0
+                MaxQuantity = safeAvailableStock
             };
             newItem.RemoveAction = this.RemoveItem;
 
