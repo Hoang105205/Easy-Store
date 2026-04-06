@@ -22,6 +22,12 @@ namespace UI.Views.Orders
             {
                 if (Frame.CanGoBack) Frame.GoBack();
             };
+
+            // Trung gian để chuyển hướng sang trang chi tiết khi hoàn thành đơn hàng
+            ViewModel.NavigateToOrderDetailAction = (orderId) =>
+            {
+                this.Frame.Navigate(typeof(OrderDetailPage), orderId);
+            };
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)

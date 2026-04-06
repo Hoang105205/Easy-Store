@@ -73,6 +73,7 @@ namespace UI.ViewModels.Orders
         // --- UI Interaction ---
         public XamlRoot? XamlRoot { get; set; }
         public Action? RequestCloseTabAction { get; set; } // Gọi ngược ra View để đóng tab
+        public Action<Guid>? NavigateToOrderDetailAction { get; set; } // Gọi ngược ra View để điều hướng đến trang chi tiết đơn hàng sau khi tạo thành công
 
         // quản lý trạng thái Dialog
         private bool _isShowingDialog = false;
@@ -230,12 +231,28 @@ namespace UI.ViewModels.Orders
 
             try
             {
+                var orderIdToNavigate = CurrentDraftOrderId.Value;
                 bool isSuccess = await _orderService.FinalizeOrderAsync(CurrentDraftOrderId.Value);
+
                 if (isSuccess)
                 {
-                    await ShowSimpleDialog("Thành công", "Tạo đơn hàng thành công!");
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Thành công",
+                        Content = "Tạo đơn hàng thành công!",
+                        PrimaryButtonText = "Xem chi tiết", // Nút chính
+                        CloseButtonText = "Đóng",           // Nút đóng
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    var result = await dialog.ShowAsync();
 
                     RequestCloseTabAction?.Invoke(); // Đóng Tab
+
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        NavigateToOrderDetailAction?.Invoke(orderIdToNavigate);
+                    }
                 }
             }
             catch (Exception ex) { await ShowSimpleDialog("Lỗi", ex.Message); }

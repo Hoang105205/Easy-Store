@@ -42,6 +42,7 @@ namespace UI.ViewModels.Orders
         [ObservableProperty] private OrderTabItemModel? selectedTab;
 
         public Action? NavigateBackAction { get; set; }
+        public Action<Guid>? NavigateToOrderDetailAction { get; set; } // Trung gian để chuyển hướng sang trang chi tiết khi hoàn thành đơn hàng
 
         public NewOrderContainerViewModel()
         {
@@ -89,6 +90,7 @@ namespace UI.ViewModels.Orders
                         };
                         newTab.RequestCloseAction = () => CloseTab(newTab);
                         tabVm.RequestCloseTabAction = () => CloseTab(newTab);
+                        tabVm.NavigateToOrderDetailAction = (orderId) => this.NavigateToOrderDetailAction?.Invoke(orderId);
                         Tabs.Add(newTab);
 
                         // Load chi tiết cho Tab
@@ -158,6 +160,7 @@ namespace UI.ViewModels.Orders
                     // Đăng ký sự kiện đóng tab
                     tabVm.RequestCloseTabAction = () => CloseTab(newTab);
                     newTab.RequestCloseAction = () => CloseTab(newTab);
+                    tabVm.NavigateToOrderDetailAction = (orderId) => this.NavigateToOrderDetailAction?.Invoke(orderId);
 
                     Tabs.Add(newTab);
                     SelectedTab = newTab;
