@@ -7,82 +7,150 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid Margin="24">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
-            <FlipView x:Name="OnboardingFlipView"
-                      PointerPressed="OnboardingFlipView_PointerPressed"
-                      PointerReleased="OnboardingFlipView_PointerReleased"
-                      PointerCanceled="OnboardingFlipView_PointerCanceled">
+        <Ellipse Width="800" Height="800" 
+                 HorizontalAlignment="Left" VerticalAlignment="Top" 
+                 Margin="-300,-300,0,0" Opacity="0.15" 
+                 IsHitTestVisible="False" Grid.RowSpan="2">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="{ThemeResource SystemAccentColor}" Offset="0.0" />
+                    <GradientStop Color="Transparent" Offset="1.0" />
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
 
-                <FlipViewItem>
-                    <Grid MaxWidth="800" VerticalAlignment="Center">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+        <Ellipse Width="1000" Height="1000" 
+                 HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+                 Margin="0,0,-400,-400" Opacity="0.1" 
+                 IsHitTestVisible="False" Grid.RowSpan="2">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Color="#0078D7" Offset="0.0" />
+                    <GradientStop Color="Transparent" Offset="1.0" />
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
 
-                        <Image Grid.Row="0" Source="ms-appx:///Assets/onboarding1.png" MaxHeight="500" Stretch="Uniform" Margin="0,0,0,24"/>
-                        <TextBlock Grid.Row="1" Text="Chào mừng đến với EasyStore!" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,0,0,12"/>
-                        <TextBlock Grid.Row="2" Text="Giải pháp quản lý bán hàng toàn diện, giúp bạn tối ưu hóa quy trình và tăng trưởng doanh thu vượt bậc một cách dễ dàng." 
-                                   FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center"/>
-                    </Grid>
-                </FlipViewItem>
 
-                <FlipViewItem>
-                    <Grid MaxWidth="800" VerticalAlignment="Center">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+        <FlipView x:Name="OnboardingFlipView"
+                  Grid.Row="0"
+                  PointerPressed="OnboardingFlipView_PointerPressed"
+                  PointerReleased="OnboardingFlipView_PointerReleased"
+                  PointerCanceled="OnboardingFlipView_PointerCanceled"
+                  Background="Transparent">
 
-                        <Image Grid.Row="0" Source="ms-appx:///Assets/onboarding1.png" MaxHeight="500" Stretch="Uniform" Margin="0,0,0,24"/>
-                        <TextBlock Grid.Row="1" Text="Quản lý kho dễ dàng" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,0,0,12"/>
-                        <TextBlock Grid.Row="2" Text="Kiểm soát số lượng tồn kho, giá nhập và giá bán chính xác đến từng chi tiết. Không còn nỗi lo thất thoát hàng hóa." 
-                                   FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center"/>
-                    </Grid>
-                </FlipViewItem>
+            <FlipViewItem>
+                <Grid x:Name="ContentGrid1" MaxWidth="1200" Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="12*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
 
-                <FlipViewItem>
-                    <Grid MaxWidth="800" VerticalAlignment="Center">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                    <Image Grid.Row="0" Source="ms-appx:///Assets/onboarding1.png" 
+                           Stretch="Uniform" Margin="0,24,0,32" VerticalAlignment="Bottom"/>
 
-                        <Image Grid.Row="0" Source="ms-appx:///Assets/onboarding1.png" MaxHeight="500" Stretch="Uniform" Margin="0,0,0,24"/>
-                        <TextBlock Grid.Row="1" Text="Thống kê thông minh" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,0,0,12"/>
-                        <TextBlock Grid.Row="2" Text="Theo dõi doanh thu, lợi nhuận và xu hướng bán hàng qua các biểu đồ trực quan, giúp bạn ra quyết định kinh doanh chuẩn xác." 
-                                   FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Text="Chào mừng đến với EasyStore!" 
+                               FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" 
+                               TextAlignment="Center" Margin="0,0,0,16"/>
 
-                        <Button Grid.Row="3"
-                                x:Name="BtnGetStarted" 
-                                Content="Bắt đầu sử dụng" 
-                                Click="BtnGetStarted_Click" 
-                                Style="{StaticResource AccentButtonStyle}" 
-                                Width="250" Height="50" 
-                                CornerRadius="25" 
-                                FontSize="18" FontWeight="SemiBold" 
-                                HorizontalAlignment="Center" 
-                                Margin="0,32,0,0"/>
-                    </Grid>
-                </FlipViewItem>
-            </FlipView>
-        </Grid>
+                    <TextBlock Grid.Row="2" Text="Giải pháp quản lý bán hàng toàn diện, giúp bạn tối ưu hóa quy trình và tăng trưởng doanh thu vượt bậc một cách dễ dàng." 
+                               FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                               TextWrapping="Wrap" TextAlignment="Center" MaxWidth="600"/>
+                </Grid>
+            </FlipViewItem>
+
+            <FlipViewItem>
+                <Grid x:Name="ContentGrid2" MaxWidth="1000" Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="12*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+
+                    <Image Grid.Row="0" Source="ms-appx:///Assets/onboarding2.png" 
+                           Stretch="Uniform" Margin="0,24,0,32" VerticalAlignment="Bottom"/>
+
+                    <TextBlock Grid.Row="1" Text="Quản lý kho dễ dàng" 
+                               FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" 
+                               TextAlignment="Center" Margin="0,0,0,16"/>
+
+                    <TextBlock Grid.Row="2" Text="Kiểm soát số lượng tồn kho, giá nhập và giá bán chính xác đến từng chi tiết. Không còn nỗi lo thất thoát hàng hóa." 
+                               FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                               TextWrapping="Wrap" TextAlignment="Center" MaxWidth="600"/>
+                </Grid>
+            </FlipViewItem>
+
+            <FlipViewItem>
+                <Grid x:Name="ContentGrid3" MaxWidth="1200" Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="12*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+
+                    <Image Grid.Row="0" Source="ms-appx:///Assets/onboarding3.png" 
+                           Stretch="Uniform" Margin="0,24,0,32" VerticalAlignment="Bottom"/>
+
+                    <TextBlock Grid.Row="1" Text="Thống kê thông minh" 
+                               FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" 
+                               TextAlignment="Center" Margin="0,0,0,16"/>
+
+                    <TextBlock Grid.Row="2" Text="Theo dõi doanh thu, lợi nhuận và xu hướng bán hàng qua các biểu đồ trực quan, giúp bạn ra quyết định kinh doanh chuẩn xác." 
+                               FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                               TextWrapping="Wrap" TextAlignment="Center" MaxWidth="600" Margin="0,0,0,32"/>
+
+                    <Button Grid.Row="3"
+                            x:Name="BtnGetStarted" 
+                            Content="Bắt đầu sử dụng" 
+                            Click="BtnGetStarted_Click" 
+                            Style="{StaticResource AccentButtonStyle}" 
+                            Width="250" Height="50" 
+                            CornerRadius="25" 
+                            FontSize="18" FontWeight="SemiBold" 
+                            HorizontalAlignment="Center"/>
+                </Grid>
+            </FlipViewItem>
+        </FlipView>
 
         <PipsPager x:Name="SlidePager"
                    Grid.Row="1"
                    NumberOfPages="3" 
                    SelectedPageIndex="{x:Bind OnboardingFlipView.SelectedIndex, Mode=TwoWay}"
                    HorizontalAlignment="Center" 
-                   Margin="0,20,0,10"/>
+                   Margin="0,0,0,32"/>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="WideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="800"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContentGrid1.Margin" Value="64,24"/>
+                        <Setter Target="ContentGrid2.Margin" Value="64,24"/>
+                        <Setter Target="ContentGrid3.Margin" Value="64,24"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="NarrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SlidePager.Margin" Value="0,0,0,16"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>
