@@ -35,6 +35,7 @@
     <None Remove="Assets\Images\indomie.jpg" />
     <None Remove="Assets\Images\muoi.jpg" />
     <None Remove="Assets\LoginIllustration.jpg" />
+    <None Remove="Assets\onboarding2.png" />
     <None Remove="Assets\onboarding3.png" />
     <None Remove="Dialog\NewCategoryDialog.xaml" />
     <None Remove="GraphQL\Auth.graphql" />
