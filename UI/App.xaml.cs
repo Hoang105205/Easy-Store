@@ -1,5 +1,6 @@
 ﻿using Core.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -13,10 +14,12 @@ using UI.Services.ImportService;
 using UI.Services.OrderService;
 using UI.Services.PrintService;
 using UI.Services.ProductService;
+using UI.Services.StatisticsService;
 using UI.ViewModels;
 using UI.ViewModels.Import;
 using UI.ViewModels.Orders;
 using UI.ViewModels.Product;
+using UI.ViewModels.Statistics;
 using UI.Views;
 using UI.Views.Import;
 
@@ -64,6 +67,7 @@ public partial class App : Application
         services.AddSingleton<ImportService>();
         services.AddSingleton<DashboardService>();
         services.AddSingleton<PdfService>();
+        services.AddSingleton<StatisticsService>();
 
         services.AddEasyStoreClient()
             .ConfigureHttpClient(client =>
@@ -85,6 +89,7 @@ public partial class App : Application
         services.AddTransient<OrderDetailPageViewModel>();
         services.AddTransient<NewOrderContainerViewModel>();
         services.AddTransient<DashboardViewModel>();
+        services.AddTransient<StatisticsViewModel>();
 
         // Bạn có thể đăng ký thêm các Service khác tại đây (ví dụ: NavigationService, DialogService)
     }

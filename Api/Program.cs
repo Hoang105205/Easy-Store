@@ -44,6 +44,7 @@ builder.Services
     .AddTypeExtension<ImportQueries>()
     .AddTypeExtension<OrderQueries>()
     .AddTypeExtension<DashboardQueries>()
+    .AddTypeExtension<StatisticsQuery>()
     .AddTypeExtension<StoreStatisticsResolvers>()
     .AddMutationType<Mutation>()
     .AddTypeExtension<AuthMutation>()

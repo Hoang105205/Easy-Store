@@ -79,7 +79,7 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Thống kê" Tag="Reports">
+                <NavigationViewItem Content="Thống kê" Tag="Statistics">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Library"/>
                     </NavigationViewItem.Icon>
