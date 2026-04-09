@@ -1,0 +1,22 @@
+﻿query GetStatistics($fromDate: DateTime!, $toDate: DateTime!) {
+  statistics(fromDate: $fromDate, toDate: $toDate) {
+    summary {
+      totalRevenue
+      totalProfit
+      totalOrders
+      lowStockProducts
+    }
+    chartData {
+      label
+      revenue
+      profit
+    }
+    topProducts {
+      productName
+      sku
+      quantitySold
+      revenue
+      profit
+    }
+  }
+}

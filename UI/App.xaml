@@ -17,6 +17,10 @@
                     <SolidColorBrush x:Key="BrandPurpleBrush" Color="#5C2D91"/>
                     <SolidColorBrush x:Key="LightPurpleBrush" Color="#8246C7"/>
                     <SolidColorBrush x:Key="BackgroundBrush" Color="#f6e8ff"/>
+                    <SolidColorBrush x:Key="DashboardSuccessBrush" Color="#0E700E"/>
+                    <SolidColorBrush x:Key="DashboardRevenueBrush" Color="#5C2D91"/>
+                    <SolidColorBrush x:Key="ChartAxisLabelBrush" Color="#555555"/>
+                    <SolidColorBrush x:Key="ChartGridLineBrush" Color="#11000000"/>
                     <Color x:Key="SystemAccentColor">#5C2D91</Color>
                     <Color x:Key="SystemAccentLightColor">#8246C7</Color>
                     <Color x:Key="SystemButtonColor">#f6e8ff</Color>
@@ -26,6 +30,10 @@
                     <SolidColorBrush x:Key="BrandPurpleBrush" Color="#A760EB"/>
                     <SolidColorBrush x:Key="LightPurpleBrush" Color="#BC86F0"/>
                     <SolidColorBrush x:Key="BackgroundBrush" Color="#2B2336"/>
+                    <SolidColorBrush x:Key="DashboardSuccessBrush" Color="#6CCB5F"/>
+                    <SolidColorBrush x:Key="DashboardRevenueBrush" Color="#60CDFF"/>
+                    <SolidColorBrush x:Key="ChartAxisLabelBrush" Color="#E5E5E5"/>
+                    <SolidColorBrush x:Key="ChartGridLineBrush" Color="#33FFFFFF"/>
                     <Color x:Key="SystemAccentColor">#A760EB</Color>
                     <Color x:Key="SystemAccentLightColor">#BC86F0</Color>
                     <Color x:Key="SystemButtonColor">#2B2336</Color>
