@@ -56,15 +56,9 @@ public partial class StatisticsViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadStatisticsAsync()
     {
-        if (FromDate > ToDate)
-        {
-            DateErrorMessage = "Ngày bắt đầu không được lớn hơn ngày kết thúc!";
-            IsDateErrorVisible = true;
-            return;
-        }
+        // 1. Kiểm tra điều kiện đầu vào
+        if (!ValidateInput()) return;
 
-        IsDateErrorVisible = false;
-        if (IsLoading || FromDate == null || ToDate == null) return;
         IsLoading = true;
 
         try
@@ -73,75 +67,18 @@ public partial class StatisticsViewModel : ObservableObject
             if (result.IsSuccessResult() && result.Data?.Statistics != null)
             {
                 var data = result.Data.Statistics;
+
+                // 2. Cập nhật trạng thái dữ liệu
                 HasData = data.ChartData.Any(x => x.Revenue > 0 || x.Profit > 0);
 
-                // --- LOGIC MÀU SẮC ĐƠN GIẢN ---
-                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-                bool isDark = App.Current.RequestedTheme == ApplicationTheme.Dark;
+                // 3. Cấu hình giao diện biểu đồ (Màu sắc + Trục)
+                ConfigureChart(data.ChartData);
 
-                // 2. Nếu có cài đặt riêng trong LocalSettings thì ghi đè lên
-                if (localSettings.Values["IsDarkMode"] is bool isUserPref)
-                {
-                    isDark = isUserPref;
-                }
+                // 4. Cập nhật các thông số tổng hợp (Summary)
+                UpdateSummary(data.Summary);
 
-                var textColor = isDark ? SKColors.White : SKColor.Parse("#2D2D2D");
-                var separatorColor = isDark ? SKColor.Parse("#22FFFFFF") : SKColor.Parse("#11000000");
-                var revenueColor = isDark ? SKColor.Parse("#60CDFF") : SKColor.Parse("#0078D4"); // Xanh dương
-                var profitColor = isDark ? SKColor.Parse("#6CCB5F") : SKColor.Parse("#107C10");  // Xanh lá
-
-                var textPaint = new SolidColorPaint(textColor);
-                var separatorPaint = new SolidColorPaint(separatorColor) { StrokeThickness = 1 };
-
-                LegendTextPaint = textPaint;
-
-                // 1. Cấu hình Series (Thêm Rx, Ry cho cột bo góc hiện đại)
-                Series = new ISeries[]
-                {
-                    new ColumnSeries<long> {
-                        Name = "Doanh thu",
-                        Values = data.ChartData.Select(x => x.Revenue).ToArray(),
-                        Fill = new SolidColorPaint(revenueColor),
-                        Rx = 6, Ry = 6, MaxBarWidth = 35
-                    },
-                    new ColumnSeries<long> {
-                        Name = "Lợi nhuận",
-                        Values = data.ChartData.Select(x => x.Profit).ToArray(),
-                        Fill = new SolidColorPaint(profitColor),
-                        Rx = 6, Ry = 6, MaxBarWidth = 35
-                    }
-                };
-
-                // 2. Cấu hình Trục X
-                XAxes = new Axis[] {
-                    new Axis {
-                        Labels = data.ChartData.Select(x => x.Label).ToArray(),
-                        LabelsPaint = textPaint,
-                        SeparatorsPaint = separatorPaint, // Thêm đường kẻ dọc mờ
-                        TextSize = 12
-                    }
-                };
-
-                // 3. Cấu hình Trục Y
-                YAxes = new Axis[] {
-                    new Axis {
-                        LabelsPaint = textPaint,
-                        SeparatorsPaint = separatorPaint, // Thêm đường kẻ ngang mờ
-                        TextSize = 12,
-                        Labeler = val => val >= 1000000
-                            ? (val/1000000.0).ToString("N1") + "M"
-                            : (val >= 1000 ? (val/1000.0).ToString("N0") + "k" : val.ToString())
-                    }
-                };
-
-                // Summary Data
-                TotalRevenueText = data.Summary.TotalRevenue.ToString("N0") + " đ";
-                TotalProfitText = data.Summary.TotalProfit.ToString("N0") + " đ";
-                TotalOrders = data.Summary.TotalOrders;
-                LowStockCount = data.Summary.LowStockProducts;
-
-                TopProducts.Clear();
-                foreach (var item in data.TopProducts) TopProducts.Add(item);
+                // 5. Cập nhật danh sách Top Products
+                UpdateTopProducts(data.TopProducts);
             }
         }
         catch (Exception ex) 
@@ -152,6 +89,108 @@ public partial class StatisticsViewModel : ObservableObject
         { 
             IsLoading = false; 
         }
+    }
+
+    private bool ValidateInput()
+    {
+        if (FromDate > ToDate)
+        {
+            DateErrorMessage = "Ngày bắt đầu không được lớn hơn ngày kết thúc!";
+            IsDateErrorVisible = true;
+            return false;
+        }
+
+        IsDateErrorVisible = false;
+        return !IsLoading && FromDate != null && ToDate != null;
+    }
+
+    private void UpdateSummary(IGetStatistics_Statistics_Summary summary)
+    {
+        TotalRevenueText = summary.TotalRevenue.ToString("N0") + " đ";
+        TotalProfitText = summary.TotalProfit.ToString("N0") + " đ";
+        TotalOrders = summary.TotalOrders;
+        LowStockCount = summary.LowStockProducts;
+    }
+
+    private void UpdateTopProducts(IEnumerable<IGetStatistics_Statistics_TopProducts> products)
+    {
+        TopProducts.Clear();
+        foreach (var item in products)
+        {
+            TopProducts.Add(item);
+        }
+    }
+
+    private void ConfigureChart(IReadOnlyList<IGetStatistics_Statistics_ChartData> chartData)
+    {
+        // Tách logic xác định Theme
+        bool isDark = GetCurrentTheme();
+
+        // Tách logic lấy bảng màu
+        var colors = GetChartColors(isDark);
+        var textPaint = new SolidColorPaint(colors.Text);
+        var separatorPaint = new SolidColorPaint(colors.Separator) { StrokeThickness = 1 };
+
+        LegendTextPaint = textPaint;
+
+        // Cấu hình Series
+        Series = new ISeries[]
+        {
+            new ColumnSeries<long> {
+                Name = "Doanh thu",
+                Values = chartData.Select(x => x.Revenue).ToArray(),
+                Fill = new SolidColorPaint(colors.Revenue),
+                Rx = 6, Ry = 6, MaxBarWidth = 35
+            },
+            new ColumnSeries<long> {
+                Name = "Lợi nhuận",
+                Values = chartData.Select(x => x.Profit).ToArray(),
+                Fill = new SolidColorPaint(colors.Profit),
+                Rx = 6, Ry = 6, MaxBarWidth = 35
+            }
+        };
+
+        // Cấu hình các trục
+        XAxes = new Axis[] {
+            new Axis {
+                Labels = chartData.Select(x => x.Label).ToArray(),
+                LabelsPaint = textPaint,
+                SeparatorsPaint = separatorPaint,
+                TextSize = 12
+            }
+        };
+
+        YAxes = new Axis[] {
+            new Axis {
+                LabelsPaint = textPaint,
+                SeparatorsPaint = separatorPaint,
+                TextSize = 12,
+                Labeler = val => val >= 1000000
+                    ? (val/1000000.0).ToString("N1") + "M"
+                    : (val >= 1000 ? (val/1000.0).ToString("N0") + "k" : val.ToString())
+            }
+        };
+    }
+
+    private bool GetCurrentTheme()
+    {
+        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+        if (localSettings.Values["IsDarkMode"] is bool isUserPref)
+        {
+            return isUserPref;
+        }
+        return App.Current.RequestedTheme == ApplicationTheme.Dark;
+    }
+
+    // Record hoặc Tuple để quản lý bảng màu cho gọn
+    private (SKColor Text, SKColor Separator, SKColor Revenue, SKColor Profit) GetChartColors(bool isDark)
+    {
+        return (
+            Text: isDark ? SKColors.White : SKColor.Parse("#2D2D2D"),
+            Separator: isDark ? SKColor.Parse("#22FFFFFF") : SKColor.Parse("#11000000"),
+            Revenue: isDark ? SKColor.Parse("#60CDFF") : SKColor.Parse("#0078D4"),
+            Profit: isDark ? SKColor.Parse("#6CCB5F") : SKColor.Parse("#107C10")
+        );
     }
 }
 
