@@ -42,8 +42,34 @@ public class OrderMutation
 
     public async Task<bool> DeleteOrderAsync(Guid id, [Service] AppDbContext context)
     {
-        var order = await context.Orders.FindAsync(id);
+        var order = await context.Orders
+        .Include(o => o.OrderItems)
+        .FirstOrDefaultAsync(o => o.Id == id);
+
         if (order == null) return false;
+
+        // Nếu hủy một đơn nháp, hoàn trả lại AvailableStockQuantity
+        if (order.IsDraft)
+        {
+            foreach (var item in order.OrderItems)
+            {
+                var product = await context.Products.FindAsync(item.ProductId);
+                if (product != null)
+                {
+                    if (order.IsDraft)
+                    {
+                        // Nếu xóa đơn nháp, chỉ hoàn trả khóa mềm (AvailableStockQuantity)
+                        product.AvailableStockQuantity += item.Quantity;
+                    }
+                    //else
+                    //{
+                    //    // Nếu xóa đơn thật, phải hoàn trả cả kho thực (StockQuantity) và kho mềm (Available)
+                    //    product.StockQuantity += item.Quantity;
+                    //    product.AvailableStockQuantity += item.Quantity;
+                    //}
+                }
+            }
+        }
 
         context.Orders.Remove(order);
         await context.SaveChangesAsync();
@@ -60,12 +86,22 @@ public class OrderMutation
             order = await context.Orders.FirstOrDefaultAsync(o => o.Id == input.OrderId.Value);
             if (order == null) throw new Exception("Không tìm thấy đơn nháp");
 
+            if (!order.IsDraft) throw new Exception("Không thể chỉnh sửa giỏ hàng của đơn đã hoàn tất");
+
             order.Note = input.Note;
             order.TotalAmount = totalAmount;
             order.UpdatedAt = DateTime.UtcNow;
 
-            // Lấy trực tiếp danh sách item cũ từ DbSet và xóa
+            // Lấy trực tiếp danh sách item cũ và trả lại AvailableStockQuantity trước khi xóa
             var oldItems = await context.OrderItems.Where(i => i.OrderId == order.Id).ToListAsync();
+            foreach (var oldItem in oldItems)
+            {
+                var productToRestore = await context.Products.FindAsync(oldItem.ProductId);
+                if (productToRestore != null)
+                {
+                    productToRestore.AvailableStockQuantity += oldItem.Quantity;
+                }
+            }
             context.OrderItems.RemoveRange(oldItems);
         }
         else
@@ -84,17 +120,33 @@ public class OrderMutation
             await context.Orders.AddAsync(order);
         }
 
-        // Tạo mới các Items và Add trực tiếp vào DbSet
-        var newItems = input.Items.Select(item => new OrderItem
+        // Kiểm tra và trừ AvailableStockQuantity khi thêm items mới
+        var newItems = new List<OrderItem>();
+        foreach (var item in input.Items)
         {
-            Id = Guid.NewGuid(),
-            OrderId = order.Id,
-            ProductId = item.ProductId,
-            Quantity = item.Quantity,
-            UnitImportPrice = null,
-            UnitSalePrice = item.UnitSalePrice,
-            TotalPrice = item.Quantity * item.UnitSalePrice,
-        }).ToList();
+            var product = await context.Products.FindAsync(item.ProductId);
+            if (product == null) throw new Exception("Không tìm thấy sản phẩm");
+
+            // Validate số lượng
+            if (product.AvailableStockQuantity < item.Quantity)
+            {
+                throw new Exception($"Sản phẩm '{product.Name}' chỉ còn {product.AvailableStockQuantity} sản phẩm khả dụng.");
+            }
+
+            // Trừ soft lock
+            product.AvailableStockQuantity -= item.Quantity;
+
+            newItems.Add(new OrderItem
+            {
+                Id = Guid.NewGuid(),
+                OrderId = order.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitImportPrice = null,
+                UnitSalePrice = item.UnitSalePrice,
+                TotalPrice = item.Quantity * item.UnitSalePrice,
+            });
+        }
 
         await context.OrderItems.AddRangeAsync(newItems);
 
@@ -123,11 +175,22 @@ public class OrderMutation
 
         if (order == null) throw new Exception("Không tìm thấy hóa đơn");
         if (!order.IsDraft) throw new Exception("Hóa đơn này đã được tạo từ trước");
-
-        // Cập nhật giá ImportPrice cho từng item
+        
         foreach (var item in order.OrderItems)
         {
+            // Cập nhật giá ImportPrice cho từng item
             item.UnitImportPrice = item.Product?.ImportPrice ?? 0;
+
+            if (item.Product != null)
+            {
+                if (item.Product.StockQuantity < item.Quantity)
+                {
+                    throw new Exception($"Sản phẩm '{item.Product.Name}' không đủ tồn kho thực tế để thanh toán (Kho thực: {item.Product.StockQuantity}).");
+                }
+
+                // chỉ trừ StockQuantity, không trừ AvailableStockQuantity nữa vì đã trừ lúc autosave rồi
+                item.Product.StockQuantity -= item.Quantity;
+            }
         }
 
         order.TotalProfit = OrderHelper.CalculateTotalProfit(order.OrderItems);

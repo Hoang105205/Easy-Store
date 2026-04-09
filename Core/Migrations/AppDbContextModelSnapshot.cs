@@ -36,6 +36,9 @@ namespace Core.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Categories");
                 });
 
@@ -174,6 +177,9 @@ namespace Core.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
+                    b.Property<int>("AvailableStockQuantity")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid");
 
@@ -185,6 +191,9 @@ namespace Core.Migrations
 
                     b.Property<bool>("IsDraft")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("MinimumStockQuantity")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -208,6 +217,9 @@ namespace Core.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("SKU")
+                        .IsUnique();
 
                     b.ToTable("Products");
                 });
@@ -259,6 +271,21 @@ namespace Core.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("ProductRecommendations", b =>
+                {
+                    b.Property<Guid>("PairProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("PairProductId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductRecommendations");
                 });
 
             modelBuilder.Entity("Core.Models.ImportLogDetail", b =>
@@ -319,6 +346,21 @@ namespace Core.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("ProductRecommendations", b =>
+                {
+                    b.HasOne("Core.Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("PairProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Core.Models.Category", b =>

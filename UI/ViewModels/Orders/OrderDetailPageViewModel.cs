@@ -1,10 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UI.Services.OrderService;
+using UI.Services.PrintService;
+using Microsoft.UI.Xaml; // nhận XamlRoot
+using Microsoft.UI.Xaml.Controls; // gọi ContentDialog
 
 namespace UI.ViewModels.Orders;
 
@@ -34,20 +38,32 @@ public class OrderItemDetailModel
     public string ProductName { get; set; } = string.Empty;
     public string ProductSku { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
+    public int AvailableStockQuantity { get; set; }
 }
 
 public partial class OrderDetailPageViewModel : ObservableObject
 {
     private readonly OrderService _orderService;
+    private readonly PdfService _pdfService;
     private readonly DispatcherQueue _dispatcherQueue;
 
     [ObservableProperty] private OrderDetailModel? orderDetail = new OrderDetailModel();
     [ObservableProperty] private bool isLoading;
     [ObservableProperty] private bool isActionVisible;
+    [ObservableProperty] private bool isPrintVisible;
+
+    // --- Xử lý giao tiếp với View ---
+    public Func<Task<bool>>? ConfirmPayAction { get; set; }
+    public Func<Task<bool>>? ConfirmDeleteAction { get; set; }
+
+    // --- Vẽ Dialog và chuyển trang ---
+    public XamlRoot? XamlRoot { get; set; }
+    public Action? NavigateBackAction { get; set; }
 
     public OrderDetailPageViewModel()
     {
         _orderService = App.Current.Services.GetRequiredService<OrderService>();
+        _pdfService = App.Current.Services.GetRequiredService<PdfService>();
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
@@ -62,6 +78,9 @@ public partial class OrderDetailPageViewModel : ObservableObject
                 OrderDetail = data;
                 // Chỉ hiện nút Pay/Delete khi Status là "Created"
                 IsActionVisible = data?.Status == OrderUIStatuses.Created;
+
+                // Chỉ hiện nút khi Status là "Paid"
+                IsPrintVisible = data?.Status == OrderUIStatuses.Paid;
             });
         }
         catch (Exception ex)
@@ -74,9 +93,29 @@ public partial class OrderDetailPageViewModel : ObservableObject
         }
     }
 
-    public async Task<bool> PayOrderAsync()
+    [RelayCommand]
+    public void GoBack()
     {
-        if (OrderDetail == null) return false;
+        NavigateBackAction?.Invoke();
+    }
+
+    [RelayCommand]
+    public async Task PayOrderAsync()
+    {
+        if (OrderDetail == null || XamlRoot == null) return;
+
+        ContentDialog dialog = new ContentDialog
+        {
+            Title = "Xác nhận thanh toán",
+            Content = "Bạn có chắc chắn muốn xác nhận thanh toán cho đơn hàng này?",
+            PrimaryButtonText = "Thanh toán",
+            CloseButtonText = "Hủy",
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+
         try
         {
             var success = await _orderService.PayOrderAsync(OrderDetail.Id);
@@ -85,21 +124,71 @@ public partial class OrderDetailPageViewModel : ObservableObject
                 _dispatcherQueue.TryEnqueue(() => {
                     OrderDetail.Status = OrderUIStatuses.Paid;
                     IsActionVisible = false;
+                    IsPrintVisible = true;
                     OnPropertyChanged(nameof(OrderDetail)); // Notify UI update
                 });
             }
-            return success;
         }
-        catch { return false; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LỖI THANH TOÁN] {ex.Message}");
+        }
     }
 
-    public async Task<bool> DeleteOrderAsync()
+    [RelayCommand]
+    public async Task DeleteOrderAsync()
     {
-        if (OrderDetail == null) return false;
+        if (OrderDetail == null || XamlRoot == null) return;
+
+        ContentDialog dialog = new ContentDialog
+        {
+            Title = "Xác nhận xóa",
+            Content = "Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa đơn hàng này?",
+            PrimaryButtonText = "Xóa",
+            CloseButtonText = "Hủy",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary) return;
+
         try
         {
-            return await _orderService.DeleteOrderAsync(OrderDetail.Id);
+            bool success = await _orderService.DeleteOrderAsync(OrderDetail.Id);
+            if (success)
+            {
+                // Nếu xóa thành công, tự động quay về trang trước
+                NavigateBackAction?.Invoke();
+            }
         }
-        catch { return false; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LỖI XÓA ĐƠN] {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportPdfAsync()
+    {
+        if (OrderDetail == null) return;
+
+        IsLoading = true;
+        try
+        {
+            var document = new OrderReceiptDocument(OrderDetail);
+            string fileName = $"HoaDon_{OrderDetail.ReceiptNumber}.pdf";
+
+            bool success = await _pdfService.GenerateAndOpenPdfAsync(document, fileName);
+
+            if (!success)
+            {
+                System.Diagnostics.Debug.WriteLine("Có lỗi khi tạo PDF Hóa đơn");
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 }

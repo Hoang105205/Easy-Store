@@ -1,5 +1,6 @@
 ﻿using Core.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,12 +9,17 @@ using System.Diagnostics;
 using System.IO;
 using UI.Services.AuthService;
 using UI.Services.CategoryService;
+using UI.Services.ExcelService;
+using UI.Services.ImportService;
 using UI.Services.OrderService;
+using UI.Services.PrintService;
 using UI.Services.ProductService;
+using UI.Services.StatisticsService;
 using UI.ViewModels;
 using UI.ViewModels.Import;
 using UI.ViewModels.Orders;
 using UI.ViewModels.Product;
+using UI.ViewModels.Statistics;
 using UI.Views;
 using UI.Views.Import;
 
@@ -22,6 +28,8 @@ namespace UI;
 public partial class App : Application
 {
     private MainWindow? _window;
+
+    public static Window? ActiveWindow;
 
     public Process? ApiProcess { get; private set; }
 
@@ -37,8 +45,16 @@ public partial class App : Application
         // 3. Cấu hình các dịch vụ cho App
         ConfigureServices(serviceCollection);
 
-        // 4. "Đóng gói" các dịch vụ lại để sẵn sàng sử dụng
+        // 4. Cấu hình giấy phép 
+        ConfigureLicenses();
+
+        // 5. "Đóng gói" các dịch vụ lại để sẵn sàng sử dụng
         Services = serviceCollection.BuildServiceProvider();
+    }
+
+    private void ConfigureLicenses()
+    {
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
     }
 
     private void ConfigureServices(IServiceCollection services)
@@ -47,7 +63,11 @@ public partial class App : Application
         services.AddSingleton<CategoryService>();
         services.AddSingleton<ProductService>();
         services.AddSingleton<OrderService>();
+        services.AddSingleton<ExcelService>();
+        services.AddSingleton<ImportService>();
         services.AddSingleton<DashboardService>();
+        services.AddSingleton<PdfService>();
+        services.AddSingleton<StatisticsService>();
 
         services.AddEasyStoreClient()
             .ConfigureHttpClient(client =>
@@ -59,15 +79,17 @@ public partial class App : Application
 
         services.AddTransient<ImportViewModel>();
         services.AddTransient<ImportEditorViewModel>();
+        services.AddTransient<CreateImportViewModel>();
         services.AddTransient<ProductViewModel>();
         services.AddTransient<ProductDetailViewModel>();
         services.AddTransient<CreateProductViewModel>();
         services.AddTransient<CategoryViewModel>();
-        services.AddTransient<CreateImportViewModel>();
         services.AddTransient<OrderPageViewModel>();
         services.AddTransient<NewOrderPageViewModel>();
         services.AddTransient<OrderDetailPageViewModel>();
+        services.AddTransient<NewOrderContainerViewModel>();
         services.AddTransient<DashboardViewModel>();
+        services.AddTransient<StatisticsViewModel>();
 
         // Bạn có thể đăng ký thêm các Service khác tại đây (ví dụ: NavigationService, DialogService)
     }
@@ -80,6 +102,7 @@ public partial class App : Application
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         _window = new MainWindow();
+        ActiveWindow = _window;
 
         // Tìm cái RootFrame mà chúng ta vừa định nghĩa ở MainWindow
         Frame rootFrame = _window.RootFrame;

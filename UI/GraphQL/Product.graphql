@@ -11,12 +11,25 @@
     sku
     salePrice
     stockQuantity
+    availableStockQuantity
     category {
       name
     }
     images {
       imagePath
       isPrimary
+    }
+    pairProducts {
+      id
+      name
+      sku
+      salePrice
+      stockQuantity
+      availableStockQuantity
+      images {
+        imagePath
+        isPrimary
+      }
     }
   }
 }
@@ -49,12 +62,25 @@ query GetProductsPagination(
       sku
       salePrice
       stockQuantity
+      availableStockQuantity
       category {
         name
       }
       images {
         imagePath
         isPrimary
+      }
+      pairProducts {
+        id
+        name
+        sku
+        salePrice
+        stockQuantity
+        availableStockQuantity
+        images {
+          imagePath
+          isPrimary
+        }
       }
     }
   }
@@ -75,6 +101,7 @@ query GetProductById($id: UUID!) {
     importPrice
     salePrice
     stockQuantity
+    minimumStockQuantity
     createdAt
     categoryId
     category {
@@ -85,6 +112,14 @@ query GetProductById($id: UUID!) {
       imagePath
       isPrimary
     }
+  }
+}
+
+query GetProductBySku($sku: String!) {
+  productBySku(sku: $sku) {
+    id
+    name
+    sku
   }
 }
 

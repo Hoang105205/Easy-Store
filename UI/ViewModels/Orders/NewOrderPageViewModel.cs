@@ -1,15 +1,33 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Xaml; // Chứa DispatcherTimer
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using UI.Services.OrderService;
+using UI.ViewModels.Product;
 
 namespace UI.ViewModels.Orders
 {
+    public class CartStockUpdateMessage
+    {
+        public Guid TabId { get; }
+        public Guid ProductId { get; }
+        public int StockChange { get; } // Dương = trả hàng về kho, Âm = lấy hàng khỏi kho
+
+        public CartStockUpdateMessage(Guid tabId, Guid productId, int stockChange)
+        {
+            TabId = tabId;
+            ProductId = productId;
+            StockChange = stockChange;
+        }
+    }
+
     // Model đại diện cho 1 dòng sản phẩm trong giỏ hàng
     public partial class CartItemModel : ObservableObject
     {
@@ -18,209 +36,277 @@ namespace UI.ViewModels.Orders
         public string ProductName { get; set; }
         public long UnitPrice { get; set; }
 
+        // Giới hạn số lượng tối đa có thể chọn
+        [ObservableProperty] private int maxQuantity;
+
         // Khi số lượng thay đổi, cần báo cho UI biết TotalPrice cũng thay đổi theo
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(TotalPrice))]
         private int quantity = 1;
 
         public long TotalPrice => Quantity * UnitPrice;
+        public Action<CartItemModel>? RemoveAction { get; set; }
+
+        [RelayCommand]
+        private void Remove() => RemoveAction?.Invoke(this);
     }
 
     public partial class NewOrderPageViewModel : ObservableObject
     {
+        // Mỗi Tab sẽ có một instance của NewOrderPageViewModel, dùng TabId để phân biệt khi gửi tin nhắn cập nhật tồn kho
+        public Guid TabId { get; } = Guid.NewGuid();
+
         private readonly OrderService _orderService;
+        private readonly DispatcherQueue _dispatcherQueue;
         private readonly DispatcherTimer _autoSaveTimer;
 
-        // Danh sách sản phẩm trong giỏ hàng
+        // --- Dữ liệu Giỏ hàng ---
         public ObservableCollection<CartItemModel> CartItems { get; } = new();
-
-        [ObservableProperty] private string receiptNumber = "Hóa đơn mới"; // Hoặc sinh mã random
+        [ObservableProperty] private string receiptNumber = "Hóa đơn mới";
         [ObservableProperty] private DateTimeOffset orderDate = DateTimeOffset.Now;
         [ObservableProperty] private string note = string.Empty;
-
-        // Biến lưu ID của đơn nháp hiện tại
         public Guid? CurrentDraftOrderId { get; private set; } = null;
-
-        // Tổng tiền (Lấy tổng của tất cả TotalPrice)
         public long TotalAmount => CartItems.Sum(x => x.TotalPrice);
-        // Cờ để tránh gọi lưu nháp liên tục khi đã đang trong quá trình lưu
+
         private bool _isSaving = false;
 
-        public NewOrderPageViewModel()
-        {
-            _orderService = App.Current.Services.GetRequiredService<OrderService>();
+        // --- UI Interaction ---
+        public XamlRoot? XamlRoot { get; set; }
+        public Action? RequestCloseTabAction { get; set; } // Gọi ngược ra View để đóng tab
+        public Action<Guid>? NavigateToOrderDetailAction { get; set; } // Gọi ngược ra View để điều hướng đến trang chi tiết đơn hàng sau khi tạo thành công
 
-            // Thiết lập Timer: Chờ 1 giây sau thao tác cuối cùng mới gọi API lưu nháp
+        // quản lý trạng thái Dialog
+        private bool _isShowingDialog = false;
+
+        public NewOrderPageViewModel(OrderService orderService)
+        {
+            _orderService = orderService;
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
             _autoSaveTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _autoSaveTimer.Tick += async (s, e) => await ExecuteAutoSaveAsync();
-        }
 
-        // Bắt sự kiện khi người dùng gõ Ghi chú để kích hoạt Auto-save
-        partial void OnNoteChanged(string value) => TriggerAutoSave();
-
-        private void AddAndTrackItem(CartItemModel newItem)
-        {
-            newItem.PropertyChanged += (s, e) =>
+            // Nhận Messenger từ TAB KHÁC để chỉnh lại MaxQuantity của chính mình (nếu tab khác mua mất hàng)
+            WeakReferenceMessenger.Default.Register<CartStockUpdateMessage>(this, (r, m) =>
             {
-                if (e.PropertyName == nameof(CartItemModel.Quantity))
+                if (m.TabId != this.TabId)
                 {
-                    UpdateCartTotal(); // Kích hoạt tính lại tổng tiền UI & AutoSave
+                    var cartItem = CartItems.FirstOrDefault(x => x.ProductId == m.ProductId);
+                    if (cartItem != null)
+                    {
+                        _dispatcherQueue.TryEnqueue(() =>
+                        {
+                            cartItem.MaxQuantity += m.StockChange;
+                            if (cartItem.MaxQuantity <= 0) RemoveItem(cartItem);
+                            else if (cartItem.Quantity > cartItem.MaxQuantity) cartItem.Quantity = cartItem.MaxQuantity;
+                        });
+                    }
                 }
-            };
-            CartItems.Add(newItem);
+            });
         }
 
-        public void AddProductToCart(Guid productId, string name, long price)
+        public void Initialize(OrderModel draftOrder)
         {
-            var existingItem = CartItems.FirstOrDefault(x => x.ProductId == productId);
-            if (existingItem != null)
-            {
-                // Nếu đã có trong giỏ, cộng dồn số lượng
-                existingItem.Quantity++;
-
-                // cập nhật lại giá mới nhất (Đề phòng giá thay đổi khi app đang mở)
-                existingItem.UnitPrice = price;
-            }
-            else
-            {
-                // Nếu chưa có, thêm dòng mới
-                AddAndTrackItem(new CartItemModel
-                {
-                    Stt = CartItems.Count + 1,
-                    ProductId = productId,
-                    ProductName = name,
-                    UnitPrice = price,
-                    Quantity = 1
-                });
-                UpdateCartTotal(); // Gọi thủ công lần đầu khi add món mới
-            }
+            CurrentDraftOrderId = draftOrder.Id;
+            ReceiptNumber = "Hóa đơn #" + draftOrder.ReceiptNumber;
+            OrderDate = draftOrder.OrderDate ?? DateTimeOffset.Now;
         }
 
-        public void RemoveItem(CartItemModel item)
+        // Nhận Item từ Container khi Double Click
+        public async void HandleAddProductFromGlobal(ProductModel product)
         {
-            CartItems.Remove(item);
-            // Cập nhật lại STT cho các item còn lại
-            for (int i = 0; i < CartItems.Count; i++)
+            // Lấy tồn kho an toàn: Nếu Khả dụng ảo bị lớn hơn Kho thực, ta lấy Kho thực làm chuẩn
+            int safeAvailableStock = Math.Min(product.AvailableStockQuantity ?? 0, product.StockQuantity ?? 0);
+
+            // Kiểm tra với con số an toàn thay vì con số DB trả về
+            if (safeAvailableStock <= 0)
             {
-                CartItems[i].Stt = i + 1;
-            }
-            UpdateCartTotal();
-        }
-
-        public void UpdateCartTotal()
-        {
-            // Kích hoạt cập nhật giao diện cho thuộc tính TotalAmount
-            OnPropertyChanged(nameof(TotalAmount));
-            TriggerAutoSave(); // Gọi auto-save mỗi khi có thay đổi về giỏ hàng
-        }
-
-        private void TriggerAutoSave()
-        {
-            // Mỗi khi có thay đổi, reset lại Timer
-            _autoSaveTimer.Stop();
-            // Chỉ bắt đầu đếm giờ lưu nháp nếu có ít nhất 1 sản phẩm
-            if (CartItems.Count > 0) _autoSaveTimer.Start();
-        }
-
-        // hàm map Data để tái sử dụng
-        private List<DraftOrderItemInput> GetCartItemInputs() =>
-            CartItems.Select(c => new DraftOrderItemInput
-            {
-                ProductId = c.ProductId,
-                Quantity = c.Quantity,
-                UnitSalePrice = c.UnitPrice
-            }).ToList();
-
-        private async Task ExecuteAutoSaveAsync()
-        {
-            if (_isSaving) return;
-
-            _isSaving = true;
-
-            _autoSaveTimer.Stop(); // Dừng timer để tránh gọi lặp
-
-            if (CartItems.Count == 0)
-            {
-                _isSaving = false;
+                await ShowSimpleDialog("Cảnh báo", $"Sản phẩm {product.Name} có dữ liệu kho bất thường hoặc đã hết hàng.");
                 return;
             }
 
-            try
-            {
-                var result = await _orderService.UpsertDraftOrderAsync(CurrentDraftOrderId, Note, GetCartItemInputs());
+            if (CartItems.Any(c => c.ProductId == product.Id)) return; // Đã có thì không làm gì thêm
 
-                if (result != null)
-                {
-                    CurrentDraftOrderId = result.Id;
-                    // Cập nhật mã hóa đơn từ Server trả về (nếu là đơn mới tạo), cái này xài thấy hơi kỳ, có gì ko cần thì xóa sau
-                    ReceiptNumber = "Hóa đơn #" + result.ReceiptNumber;
-                }
-            }
-            catch (Exception ex)
+            var newItem = new CartItemModel
             {
-                System.Diagnostics.Debug.WriteLine($"[AUTO-SAVE LỖI]: {ex.Message}");
-            }
-            finally
-            {
-                _isSaving = false;
-            }
+                Stt = CartItems.Count + 1,
+                ProductId = product.Id,
+                ProductName = product.Name ?? "",
+                UnitPrice = product.SalePrice ?? 0,
+                Quantity = 1,
+                MaxQuantity = safeAvailableStock
+            };
+            newItem.RemoveAction = this.RemoveItem;
+
+            CartItems.Add(newItem);
+            UpdateCartTotal();
+
+            // Trừ kho Global
+            WeakReferenceMessenger.Default.Send(new CartStockUpdateMessage(this.TabId, product.Id, -1));
         }
 
-        public async Task<(bool IsSuccess, string Message)> FinalizeOrderAsync()
+        // Xử lý khi đổi số lượng bằng NumberBox
+        public async Task<int> HandleQuantityChangedAsync(CartItemModel item, int newQuantity)
         {
-            if (CartItems.Count == 0) return (false, "Giỏ hàng đang trống!");
+            if (newQuantity < 1) newQuantity = 1;
 
-            try
+            // Kiểm tra vượt quá tồn kho
+            if (newQuantity > item.MaxQuantity)
             {
-                // Nếu Timer đang chạy (người dùng vừa gõ xong bấm Tạo luôn), ép lưu nháp ngay lập tức
-                if (_autoSaveTimer.IsEnabled) await ExecuteAutoSaveAsync();
-
-                if (CurrentDraftOrderId == null) return (false, "Chưa tạo được đơn nháp để thanh toán.");
-
-                bool isSuccess = await _orderService.FinalizeOrderAsync(CurrentDraftOrderId.Value);
-                if (isSuccess)
+                if (!_isShowingDialog)
                 {
-                    ResetCart(); // Thành công thì dọn giỏ hàng
-                    return (true, "Tạo đơn hàng thành công!");
+                    _isShowingDialog = true;
+                    try
+                    {
+                        await ShowLimitWarningDialogAsync(item.ProductName, item.MaxQuantity);
+                    }
+                    finally { _isShowingDialog = false; }
                 }
-                return (false, "Lỗi khi tạo đơn hàng.");
+
+                // Trả về mức tối đa cho phép để UI biết đường tự Rollback
+                return item.MaxQuantity;
             }
-            catch (Exception ex)
+
+            // Nếu số lượng hợp lệ và có sự thay đổi -> Tiến hành trừ kho và lưu Data
+            if (item.Quantity != newQuantity)
             {
-                return (false, ex.Message);
+                int diff = item.Quantity - newQuantity; // cũ 1, mới 3 => diff = -2 (trừ 2 kho global)
+                item.Quantity = newQuantity;
+                UpdateCartTotal();
+
+                WeakReferenceMessenger.Default.Send(new CartStockUpdateMessage(this.TabId, item.ProductId, diff));
+                TriggerAutoSave();
             }
+
+            // Trả về số lượng đã được chấp nhận
+            return newQuantity;
         }
 
+        // Bấm icon Thùng rác
+        public void RemoveItem(CartItemModel item)
+        {
+            if (item == null) return;
+
+            // Hoàn trả kho Global
+            WeakReferenceMessenger.Default.Send(new CartStockUpdateMessage(this.TabId, item.ProductId, item.Quantity));
+
+            CartItems.Remove(item);
+            for (int i = 0; i < CartItems.Count; i++) CartItems[i].Stt = i + 1;
+            UpdateCartTotal();
+            TriggerAutoSave();
+        }
+
+        partial void OnNoteChanged(string value) => TriggerAutoSave();
+
+        public void UpdateCartTotal()
+        {
+            OnPropertyChanged(nameof(TotalAmount));
+        }
+
+        // hủy đơn hàng: trả toàn bộ hàng về kho global, xóa draft order nếu có, đóng tab
+        [RelayCommand]
         public async Task CancelOrderAsync()
         {
+            if (XamlRoot == null) return;
+
+            var dialog = new ContentDialog { Title = "Xác nhận hủy", Content = "Hủy đơn hàng này? Dữ liệu sẽ bị xóa.", PrimaryButtonText = "Đồng ý", CloseButtonText = "Không", XamlRoot = this.XamlRoot };
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                // Trả toàn bộ hàng lại kho Global
+                foreach (var item in CartItems)
+                {
+                    WeakReferenceMessenger.Default.Send(new CartStockUpdateMessage(this.TabId, item.ProductId, item.Quantity));
+                }
+
+                _autoSaveTimer.Stop();
+                if (CurrentDraftOrderId.HasValue) await _orderService.DeleteOrderAsync(CurrentDraftOrderId.Value);
+
+                RequestCloseTabAction?.Invoke(); // Đóng Tab
+            }
+        }
+
+        // tạo đơn hàng: cập nhật lại thông tin đầy đủ của đơn hàng, lưu lại, sau đó đóng tab
+        [RelayCommand]
+        public async Task FinalizeOrderAsync()
+        {
+            if (XamlRoot == null) return;
+            if (CartItems.Count == 0) { await ShowSimpleDialog("Lỗi", "Giỏ hàng trống!"); return; }
+
+            _autoSaveTimer.Stop();
+            while (_isSaving) await Task.Delay(50); // Chờ lưu ngầm xong
+            await ExecuteAutoSaveAsync(); // Ép lưu lần cuối
+
+            if (CurrentDraftOrderId == null) return;
+
             try
             {
-                _autoSaveTimer.Stop();
-                // Nếu đã lưu nháp trên server thì gọi API xóa
-                if (CurrentDraftOrderId.HasValue)
+                var orderIdToNavigate = CurrentDraftOrderId.Value;
+                bool isSuccess = await _orderService.FinalizeOrderAsync(CurrentDraftOrderId.Value);
+
+                if (isSuccess)
                 {
-                    await _orderService.DeleteOrderAsync(CurrentDraftOrderId.Value);
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Thành công",
+                        Content = "Tạo đơn hàng thành công!",
+                        PrimaryButtonText = "Xem chi tiết", // Nút chính
+                        CloseButtonText = "Đóng",           // Nút đóng
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    var result = await dialog.ShowAsync();
+
+                    RequestCloseTabAction?.Invoke(); // Đóng Tab
+
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        NavigateToOrderDetailAction?.Invoke(orderIdToNavigate);
+                    }
                 }
-                ResetCart();
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[LỖI HỦY ĐƠN]: {ex.Message}");
-            }
+            catch (Exception ex) { await ShowSimpleDialog("Lỗi", ex.Message); }
         }
 
-        // Dọn dẹp giao diện về trạng thái ban đầu
-        private void ResetCart()
+        public async Task ShowLimitWarningDialogAsync(string productName, int maxQuantity)
         {
-            CurrentDraftOrderId = null;
-            CartItems.Clear();
-            ReceiptNumber = "Hóa đơn mới";
-            Note = string.Empty;
-            OrderDate = DateTimeOffset.Now;
-            UpdateCartTotal();
+            await ShowSimpleDialog("Vượt giới hạn", $"Sản phẩm '{productName}' chỉ còn tối đa {maxQuantity} sản phẩm khả dụng.");
         }
 
-        // Đổ dữ liệu từ đơn nháp đã lưu lên giao diện để người dùng tiếp tục chỉnh sửa
+        private async Task ShowSimpleDialog(string title, string content)
+        {
+            if (XamlRoot == null) return;
+            var dialog = new ContentDialog { Title = title, Content = content, CloseButtonText = "Đóng", XamlRoot = this.XamlRoot };
+            await dialog.ShowAsync();
+        }
+
+        // --- AutoSave ---
+        private void TriggerAutoSave()
+        {
+            _autoSaveTimer.Stop();
+            if (CartItems.Count >= 0) _autoSaveTimer.Start();
+        }
+
+        private async Task ExecuteAutoSaveAsync()
+        {
+            if (_isSaving || !CurrentDraftOrderId.HasValue) return;
+            _isSaving = true;
+            _autoSaveTimer.Stop();
+
+            try
+            {
+                var inputs = CartItems.Select(c => new DraftOrderItemInput { 
+                    ProductId = c.ProductId, 
+                    Quantity = c.Quantity, 
+                    UnitSalePrice = c.UnitPrice 
+                }).ToList();
+                await _orderService.UpsertDraftOrderAsync(CurrentDraftOrderId, Note, inputs);
+            }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"[AutoSave Error]: {ex.Message}");
+            }
+            finally { _isSaving = false; }
+        }
+
         public async Task LoadExistingDraftOrderAsync(Guid draftOrderId)
         {
             try
@@ -228,60 +314,51 @@ namespace UI.ViewModels.Orders
                 var draftDetail = await _orderService.GetOrderByIdAsync(draftOrderId);
                 if (draftDetail == null) return;
 
-                // Tạm tắt auto-save để tránh bị gọi đè xuống DB khi đang load UI
                 _autoSaveTimer.Stop();
+                _dispatcherQueue.TryEnqueue(() => {
+                    CurrentDraftOrderId = draftDetail.Id;
+                    ReceiptNumber = "Hóa đơn #" + draftDetail.ReceiptNumber;
+                    Note = draftDetail.Note != "Không có ghi chú" ? draftDetail.Note : string.Empty;
+                    OrderDate = draftDetail.OrderDate;
 
-                CurrentDraftOrderId = draftDetail.Id;
-                ReceiptNumber = "Hóa đơn #" + draftDetail.ReceiptNumber;
-                Note = draftDetail.Note != "Không có ghi chú" ? draftDetail.Note : string.Empty;
-                OrderDate = draftDetail.OrderDate;
-
-                CartItems.Clear();
-                foreach (var item in draftDetail.OrderItems)
-                {
-                    // Tái sử dụng hàm AddAndTrackItem để gắn Event PropertyChanged
-                    AddAndTrackItem(new CartItemModel
+                    CartItems.Clear();
+                    foreach (var item in draftDetail.OrderItems)
                     {
-                        Stt = item.STT,
-                        ProductId = item.ProductId,
-                        ProductName = item.ProductName,
-                        UnitPrice = item.UnitSalePrice,
-                        Quantity = item.Quantity
-                    });
-                }
-                UpdateCartTotal();
+                        var cartItem = new CartItemModel
+                        {
+                            Stt = item.STT,
+                            ProductId = item.ProductId,
+                            ProductName = item.ProductName,
+                            UnitPrice = item.UnitSalePrice,
+                            Quantity = item.Quantity,
+                            MaxQuantity = item.Quantity + item.AvailableStockQuantity,
+                        };
+                        cartItem.RemoveAction = this.RemoveItem;
+                        CartItems.Add(cartItem);
+                    }
+                    UpdateCartTotal();
+                });
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[LỖI LOAD ĐƠN NHÁP]: {ex.Message}");
-            }
+            catch { }
         }
 
         public void ForceSaveIfNeeded()
         {
-            if (_autoSaveTimer.IsEnabled)
+            if (_autoSaveTimer.IsEnabled && CurrentDraftOrderId.HasValue)
             {
                 _autoSaveTimer.Stop();
-                if (CartItems.Count == 0) return;
-
-                // Trích xuất dữ liệu ngay lập tức trên UI Thread
                 var currentOrderId = CurrentDraftOrderId;
                 var note = Note;
-                var inputs = GetCartItemInputs();
+                var inputs = CartItems.Select(c => new DraftOrderItemInput { ProductId = c.ProductId, Quantity = c.Quantity, UnitSalePrice = c.UnitPrice }).ToList();
 
-                // Ném việc gọi mạng sang Thread Pool để UI Unload thoải mái không bị ngắt Request
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        await _orderService.UpsertDraftOrderAsync(currentOrderId, note, inputs);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[AUTO-SAVE LỖI]: {ex.Message}");
-                    }
-                });
+                Task.Run(async () => await _orderService.UpsertDraftOrderAsync(currentOrderId, note, inputs));
             }
+        }
+
+        public void Cleanup()
+        {
+            _autoSaveTimer.Stop();
+            WeakReferenceMessenger.Default.UnregisterAll(this); // Ngắt kết nối để tránh memory leak
         }
     }
 }

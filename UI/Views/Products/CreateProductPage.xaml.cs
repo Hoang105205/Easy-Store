@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using UI.ViewModels;
 using UI.ViewModels.Import;
@@ -21,6 +22,10 @@ namespace UI.Views.Products
 
             // Đăng ký sự kiện: Cứ mỗi khi danh sách ảnh thay đổi (thêm, xóa, reset), hàm bên dưới sẽ chạy
             ViewModel.SelectedImages.CollectionChanged += SelectedImages_CollectionChanged;
+
+            ViewModel.GoBackAction = () => Frame.GoBack();
+            ViewModel.ShowAlertAction = async (title, content) => await ShowDialog(title, content);
+            ViewModel.ShowConfirmAction = async (title, content) => await ShowConfirmDialog(title, content);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -55,32 +60,6 @@ namespace UI.Views.Products
             {
                 ViewModel.SelectedImages.Add(file.Path); // Tạm lưu path cục bộ
             }
-        }
-
-        private async void SaveBtn_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                await ViewModel.SaveProductAsync();
-                await ShowDialog("Thành công", "Sản phẩm được tạo mới thành công");
-                Frame.GoBack(); // Trở về trang danh sách
-            }
-            catch (Exception ex)
-            {
-                await ShowDialog("Lỗi", ex.Message);
-            }
-        }
-
-        private async void CancelBtn_Click(object sender, RoutedEventArgs e)
-        {
-            var result = await ShowConfirmDialog("Xác nhận", "Bạn có chắc muốn hủy? Các thông tin đã nhập trước đó sẽ bị xóa.");
-            if (result) Frame.GoBack();
-        }
-
-        private async void ResetBtn_Click(object sender, RoutedEventArgs e)
-        {
-            var result = await ShowConfirmDialog("Xác nhận", "Bạn có muốn nhập lại? Các thông tin đã nhập trước đó sẽ bị xóa.");
-            if (result) ViewModel.ResetForm();
         }
 
         private void ImageDragOver(object sender, DragEventArgs e)
@@ -133,14 +112,9 @@ namespace UI.Views.Products
 
         private void RemoveImage_Click(object sender, RoutedEventArgs e)
         {
-            // Lấy đối tượng Button vừa được click
-            if (sender is Button btn)
+            if (sender is Button btn && btn.DataContext is string imagePath)
             {
-                // Mặc định DataContext của DataTemplate chính là object item của danh sách (ở đây là đường dẫn string)
-                if (btn.DataContext is string imagePath)
-                {
-                    ViewModel.SelectedImages.Remove(imagePath);
-                }
+                ViewModel.RemoveImageCommand.Execute(imagePath);
             }
         }
 
@@ -155,6 +129,34 @@ namespace UI.Views.Products
             var dialog = new ContentDialog { Title = title, Content = content, PrimaryButtonText = "Có", CloseButtonText = "Không", XamlRoot = this.XamlRoot, RequestedTheme = this.ActualTheme };
             var result = await dialog.ShowAsync();
             return result == ContentDialogResult.Primary;
+        }
+
+        private void NumberTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox && !string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                string rawNumber = new string(textBox.Text.Where(char.IsDigit).ToArray());
+                textBox.Text = rawNumber;
+                textBox.Select(textBox.Text.Length, 0);
+            }
+        }
+
+        private void NumberTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox && !string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                string rawNumber = new string(textBox.Text.Where(char.IsDigit).ToArray());
+
+                if (long.TryParse(rawNumber, out long value))
+                {
+                    string formatString = textBox.Tag?.ToString() ?? "{0:N0}";
+                    textBox.Text = string.Format(new System.Globalization.CultureInfo("vi-VN"), formatString, value);
+                }
+                else
+                {
+                    textBox.Text = string.Empty;
+                }
+            }
         }
     }
 }

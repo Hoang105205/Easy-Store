@@ -25,6 +25,8 @@ public class Product
     public long ?ImportPrice { get; set; } // Giá MAC
     public long ?SalePrice { get; set; }
     public int StockQuantity { get; set; } = 0;
+    public int AvailableStockQuantity { get; set; } = 0;
+    public int MinimumStockQuantity { get; set; } = 0;
 
     // Cờ Auto-save
     public bool IsDraft { get; set; } = true;
@@ -34,9 +36,12 @@ public class Product
 
     // Navigation properties (Liên kết khóa ngoại)
     [ForeignKey(nameof(CategoryId))]
+    [Required]
     public Category Category { get; set; }
 
     public ICollection<ImportLogDetail> ImportLogs { get; set; } = new List<ImportLogDetail>();
 
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+
+    public ICollection<Product> PairProducts { get; set; } = new List<Product>();
 }

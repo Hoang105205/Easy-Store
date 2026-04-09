@@ -106,4 +106,11 @@ public class ProductQueries
     {
         return dbContext.Products.Where(p => p.Id == id);
     }
+
+    [UseFirstOrDefault] 
+    [UseProjection]     
+    public IQueryable<Product> GetProductBySku(string sku, [Service] AppDbContext context)
+    {
+        return context.Products.Where(p => p.SKU == sku);
+    }
 }

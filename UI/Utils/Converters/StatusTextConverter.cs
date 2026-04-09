@@ -14,6 +14,8 @@ public class StatusTextConverter : IValueConverter
         // Dùng switch expression (C# 8+) cho gọn và dễ đọc
         return status switch
         {
+            "Created" => "Mới tạo",
+            "Paid" => "Đã thanh toán",
             "Completed" => "Hoàn thành",
             "Draft" => "Phiếu tạm",
             "Cancelled" => "Đã hủy", // Cứ làm dư ra một cái phòng hờ sau này bạn cần

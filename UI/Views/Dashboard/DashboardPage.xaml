@@ -19,18 +19,77 @@
         <converters:StatusTextConverter x:Key="StatusTextConverter"/>
     </Page.Resources>
 
-    <ScrollViewer Background="#F8F9FA" Padding="40">
+    <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="40">
         <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,5">
-                <TextBlock Text="Tổng quan doanh thu" FontSize="24" FontWeight="Bold"/>
-
                 <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Tổng quan doanh thu" FontSize="24" FontWeight="Bold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <DropDownButton 
+                            Style="{StaticResource AccentButtonStyle}" 
+                            Background="{ThemeResource BrandPurpleBrush}" 
+                            CornerRadius="6" Padding="16,8"
+                            ToolTipService.ToolTip="Thao tác nhanh">
+
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE710;" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="Tạo mới" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <DropDownButton.Flyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+
+                                    <MenuFlyoutItem 
+                                        Text="Đơn hàng" 
+                                        Tag="CreateOrder" ToolTipService.ToolTip="Tạo đơn hàng mới cho khách"
+                                        Click="QuickAction_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Document"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+
+                                    <MenuFlyoutSeparator />
+
+                                    <MenuFlyoutItem 
+                                        Text="Nhập hàng"
+                                        Tag="CreateImport" ToolTipService.ToolTip="Tạo đơn nhập hàng mới"
+                                        Click="QuickAction_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE7B8;"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+
+                                    <MenuFlyoutSeparator />
+
+                                    <MenuFlyoutItem 
+                                        Text="Thêm sản phẩm" 
+                                        Tag="CreateProduct" ToolTipService.ToolTip="Tạo sản phẩm mới"
+                                        Click="QuickAction_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Shop"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0,10,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
@@ -44,14 +103,6 @@
                                        SelectedIndex="0" 
                                        Background="Transparent" 
                                        BorderThickness="0">
-
-                        <toolkit:Segmented.Resources>
-                            <SolidColorBrush x:Key="SegmentedItemForeground" Color="#888" />
-                            <SolidColorBrush x:Key="SegmentedItemForegroundPointerOver" Color="#666" />
-                            <SolidColorBrush x:Key="SegmentedItemForegroundSelected" Color="#555" />
-                            <SolidColorBrush x:Key="SegmentedItemForegroundSelectedPointerOver" Color="#444" />
-                        </toolkit:Segmented.Resources>
-
                         <toolkit:Segmented.ItemContainerStyle>
                             <Style TargetType="toolkit:SegmentedItem">
                                 <Setter Property="FontWeight" Value="SemiBold" />
@@ -66,39 +117,139 @@
                         <toolkit:SegmentedItem Content="Toàn bộ" Tag="All"/>
                     </toolkit:Segmented>
                 </Grid>
-                
-                <Grid ColumnSpacing="30">
+
+                <Grid ColumnSpacing="20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-
+                    
                     <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                            CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="TỔNG DOANH THU" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
-                            <TextBlock Text="{x:Bind ViewModel.Stats.TotalIncome, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Style="{StaticResource TitleTextBlockStyle}"/>
+                            CornerRadius="8" Padding="20" 
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="DOANH THU THỰC TẾ" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+
+                            <TextBlock Text="{x:Bind ViewModel.Stats.ActualRevenue, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
+                                        FontSize="24" FontWeight="Bold" 
+                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                        Margin="0,4,0,2"/>
+
+                            <TextBlock Text="{x:Bind ViewModel.Stats.ActualGrossRevenue, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Tổng doanh thu dự kiến: {0:N0} đ'}" 
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                        FontSize="12" Margin="0,0,0,10"/>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsPanelVisible, Mode=OneWay}">
+                                <Border Padding="6,4" CornerRadius="6" 
+                                        Background="{x:Bind ViewModel.Stats.TotalPercentIncreaseRevenue, Mode=OneWay, Converter={StaticResource StatusColorConverter}, ConverterParameter='Background'}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <FontIcon Glyph="{x:Bind ViewModel.Stats.TotalPercentIncreaseRevenue, Mode=OneWay, Converter={StaticResource StatusIconConverter}}" 
+                                                    FontSize="11" 
+                                                    Foreground="{x:Bind ViewModel.Stats.TotalPercentIncreaseRevenue, Mode=OneWay, Converter={StaticResource StatusColorConverter}}"/>
+
+                                        <TextBlock Text="{x:Bind ViewModel.Stats.TotalPercentIncreaseRevenue, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N1}%'}" 
+                                                    Foreground="{x:Bind ViewModel.Stats.TotalPercentIncreaseRevenue, Mode=OneWay, Converter={StaticResource StatusColorConverter}}" 
+                                                    FontWeight="Bold" FontSize="12" 
+                                                    Margin="0,1,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="so với kỳ trước" 
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                            FontSize="12" VerticalAlignment="Center"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                            CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="TỔNG ĐƠN HÀNG MỚI" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
-                            <TextBlock Text="{x:Bind ViewModel.Stats.TotalNewOrders, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0}'}" Style="{StaticResource TitleTextBlockStyle}"/>
+                            CornerRadius="8" Padding="20" 
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="LỢI NHUẬN THỰC TẾ" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+
+                            <TextBlock Text="{x:Bind ViewModel.Stats.ActualProfit, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
+                                        FontSize="24" FontWeight="Bold" 
+                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                        Margin="0,4,0,2"/>
+
+                            <TextBlock Text="{x:Bind ViewModel.Stats.ActualGrossProfit, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Lợi nhuận dự kiến: {0:N0} đ'}" 
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                        FontSize="12" Margin="0,0,0,10"/>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.IsPanelVisible, Mode=OneWay}">
+                                <Border Padding="6,4" CornerRadius="6" 
+                                        Background="{x:Bind ViewModel.Stats.TotalPercentIncreaseProfit, Mode=OneWay, Converter={StaticResource StatusColorConverter}, ConverterParameter='Background'}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <FontIcon Glyph="{x:Bind ViewModel.Stats.TotalPercentIncreaseProfit, Mode=OneWay, Converter={StaticResource StatusIconConverter}}" 
+                                                    FontSize="11" 
+                                                    Foreground="{x:Bind ViewModel.Stats.TotalPercentIncreaseProfit, Mode=OneWay, Converter={StaticResource StatusColorConverter}}"/>
+
+                                        <TextBlock Text="{x:Bind ViewModel.Stats.TotalPercentIncreaseProfit, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N1}%'}" 
+                                                    Foreground="{x:Bind ViewModel.Stats.TotalPercentIncreaseProfit, Mode=OneWay, Converter={StaticResource StatusColorConverter}}" 
+                                                    FontWeight="Bold" FontSize="12" 
+                                                    Margin="0,1,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="so với kỳ trước" 
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                            FontSize="12" VerticalAlignment="Center"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
                 </Grid>
             </StackPanel>
 
-            <Grid Grid.Row="1" ColumnSpacing="30" Margin="0,0,0,15">
+            <Grid Grid.Row="1" ColumnSpacing="20" Margin="0,0,0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                        CornerRadius="8" Padding="20" 
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="TỔNG SỐ ĐƠN HÀNG" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+
+                        <TextBlock Text="{x:Bind ViewModel.Stats.TotalNewOrders, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0}'}" 
+                                   FontSize="24" FontWeight="Bold" 
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                   Margin="0,4,0,2"/>
+
+                        <TextBlock Text="Bao gồm tất cả trạng thái" 
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                   FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                        CornerRadius="8" Padding="20" 
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="ĐƠN ĐÃ THANH TOÁN" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+
+                        <TextBlock Text="{x:Bind ViewModel.Stats.TotalPaidOrders, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0}'}" 
+                                   FontSize="24" FontWeight="Bold" 
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
+                                   Margin="0,4,0,2"/>
+
+                        <TextBlock 
+                            Text="Đã đối soát &amp; ghi nhận doanh thu" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                            FontSize="12"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="2" ColumnSpacing="20" Margin="0,0,0,15">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                        CornerRadius="8" Padding="16"
+                        CornerRadius="8" Padding="16" 
                         MaxHeight="400"
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
                         BorderThickness="1">
@@ -107,7 +258,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        
+
                         <TextBlock Text="Sản phẩm sắp hết hàng" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
 
                         <ScrollViewer Grid.Row="1" Padding="20">
@@ -121,11 +272,11 @@
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
                                                 <Grid Tapped="ToggleDetails_Tapped" Background="Transparent">
-                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="#444"/>
-                                                    <FontIcon Glyph="&#xE70D;" FontSize="12" Foreground="#444" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                    <FontIcon Glyph="&#xE70D;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 </Grid>
                                                 <StackPanel Visibility="Collapsed" Grid.Row="1" Margin="0,7,0,0" Orientation="Vertical">
-                                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource StringFormatConverter}, ConverterParameter='Số lượng còn: {0}'}" FontSize="12" Foreground="#444"/>
+                                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource StringFormatConverter}, ConverterParameter='Số lượng còn: {0}'}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -147,11 +298,11 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        
+
                         <TextBlock Text="Sản phẩm bán chạy" 
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                    FontSize="13" FontWeight="SemiBold"/>
-                        
+
                         <ScrollViewer Grid.Row="1" Padding="20">
                             <ItemsControl ItemsSource="{x:Bind ViewModel.Stats.BestSellingProducts, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
@@ -163,12 +314,12 @@
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
                                                 <Grid Tapped="ToggleDetails_Tapped" Background="Transparent">
-                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="#555"/>
-                                                    <FontIcon Glyph="&#xE70D;" FontSize="12" Foreground="#444" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                    <FontIcon Glyph="&#xE70D;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                                 </Grid>
                                                 <StackPanel Visibility="Collapsed" Grid.Row="1" Margin="0,7,0,0" Orientation="Vertical">
-                                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource StringFormatConverter}, ConverterParameter='Số lượng đặt: {0}'}" FontSize="12" Foreground="#444"/>
-                                                    <TextBlock Text="{Binding LastOrder, Converter={StaticResource StringFormatConverter}, ConverterParameter='Lần đặt hàng gần nhất: {0:dd/MM/yyyy HH:mm}'}" FontSize="12" Foreground="#444"/>
+                                                    <TextBlock Text="{Binding Quantity, Converter={StaticResource StringFormatConverter}, ConverterParameter='Số lượng đặt: {0}'}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding LastOrder, Converter={StaticResource StringFormatConverter}, ConverterParameter='Lần đặt hàng gần nhất: {0:dd/MM/yyyy HH:mm}'}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -180,11 +331,11 @@
                 </Border>
             </Grid>
 
-            <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                            CornerRadius="12" Padding="30" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                    CornerRadius="12" Padding="30" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                 <StackPanel>
-                    <TextBlock Text="Biểu đồ doanh thu" FontSize="20" FontWeight="SemiBold" Foreground="#333"/>
-                    <TextBlock Text="(Đơn vị: Nghìn VNĐ)" FontSize="12" Foreground="#888" Margin="0,4,0,15"/>
+                    <TextBlock Text="Biểu đồ doanh thu" FontSize="20" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="(Đơn vị: Nghìn VNĐ)" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,15"/>
 
                     <Grid Height="300">
                         <lvc:CartesianChart 

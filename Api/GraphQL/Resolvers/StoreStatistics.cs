@@ -18,6 +18,7 @@ public class StoreStatistics
 {
     [GraphQLIgnore]
     public DateTime? StartDate { get; }
+    public DateTime? PreviousDate { get; }
 
     // Nhận tham số days từ Root Query
     public StoreStatistics(int? days)
@@ -25,10 +26,12 @@ public class StoreStatistics
         if (days.HasValue)
         {
             StartDate = DateTime.UtcNow.Date.AddDays(-days.Value);
+            PreviousDate = DateTime.UtcNow.Date.AddDays(-2 * days.Value);
         }
         else
         {
             StartDate = null;
+            PreviousDate = null;
         }
     }
 }

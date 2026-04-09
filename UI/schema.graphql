@@ -3,22 +3,94 @@ schema {
   mutation: Mutation
 }
 
-type Query {
-  activeAutoSave: ImportLog
-  importHistory("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): ImportHistoryConnection
-  importById(id: UUID!): ImportLog
-  importSummary: ImportSummary!
-  dashboardStats(days: Int = 7): StoreStatistics!
-  users: [User!]!
-  products(searchTerm: String categoryId: UUID order: [ProductSortInput!]): [Product!]!
-  productsPagination(searchTerm: String categoryId: UUID minPrice: Long maxPrice: Long "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ProductSortInput!]): ProductsPaginationConnection
-  productById(id: UUID!): Product
-  categories: [Category!]!
-  orders("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [OrderSortInput!]): OrdersConnection
-  ordersPagination(receiptNumber: String startDate: DateTime endDate: DateTime "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [OrderSortInput!]): OrdersPaginationConnection
-  orderById(id: UUID!): Order
-  draftOrders: [Order!]!
+type Order {
+  id: UUID!
+  receiptNumber: Int!
+  status: String!
+  note: String
+  totalAmount: Long!
+  totalProfit: Long!
+  isDraft: Boolean!
+  orderDate: DateTime!
+  updatedAt: DateTime!
+  orderItems: [OrderItem]
 }
+
+"A connection to a list of items."
+type ImportHistoryConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [ImportHistoryEdge!]
+  "A flattened list of the nodes."
+  nodes: [ImportLog!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+type ChartDataDto {
+  label: String
+  revenue: Long!
+  profit: Long!
+}
+
+input OrderSortInput {
+  id: SortEnumType
+  receiptNumber: SortEnumType
+  status: SortEnumType
+  note: SortEnumType
+  totalAmount: SortEnumType
+  totalProfit: SortEnumType
+  isDraft: SortEnumType
+  orderDate: SortEnumType
+  updatedAt: SortEnumType
+}
+
+type ProductStat {
+  id: UUID!
+  name: String!
+  quantity: Int!
+  lastOrder: DateTime!
+}
+
+input CategorySortInput {
+  id: SortEnumType
+  name: SortEnumType
+}
+
+scalar UUID
+
+enum ImportStatus {
+  DRAFT
+  COMPLETED
+}
+
+type User {
+  id: UUID!
+  username: String!
+  passwordHash: String!
+  hasCompletedOnboarding: Boolean!
+}
+
+type ImportLog {
+  id: UUID!
+  createdAt: DateTime!
+  totalAmount: Long!
+  status: ImportStatus!
+  isAutoSaved: Boolean!
+  details: [ImportLogDetail!]!
+}
+
+"An edge in a connection."
+type OrdersEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Order!
+}
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
 
 type Mutation {
   completeImport(input: CompleteImportInput!): ImportLog!
@@ -36,52 +108,50 @@ type Mutation {
   finalizeOrder(orderId: UUID!): Order!
 }
 
-input ProductSortInput {
-  id: SortEnumType
-  categoryId: SortEnumType
-  sku: SortEnumType
-  name: SortEnumType
-  importPrice: SortEnumType
-  salePrice: SortEnumType
-  stockQuantity: SortEnumType
-  isDraft: SortEnumType
-  createdAt: SortEnumType
-  updatedAt: SortEnumType
-  category: CategorySortInput
+input CreateProductInput {
+  sku: String!
+  name: String!
+  categoryId: UUID!
+  minimumStockQuantity: Int!
+  imagePaths: [String!]!
 }
 
-"A connection to a list of items."
-type ProductsPaginationConnection {
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "A list of edges."
-  edges: [ProductsPaginationEdge!]
-  "A flattened list of the nodes."
-  nodes: [Product!]
+"An edge in a connection."
+type ProductsPaginationEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Product!
 }
 
-"A connection to a list of items."
-type ImportHistoryConnection {
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "A list of edges."
-  edges: [ImportHistoryEdge!]
-  "A flattened list of the nodes."
-  nodes: [ImportLog!]
-  "Identifies the total count of items in the connection."
-  totalCount: Int!
+input ImportLogDetailInput {
+  productId: UUID!
+  quantityAdded: Int!
+  actualImportPrice: Long!
 }
 
-input OrderSortInput {
-  id: SortEnumType
-  receiptNumber: SortEnumType
-  status: SortEnumType
-  note: SortEnumType
-  totalAmount: SortEnumType
-  totalProfit: SortEnumType
-  isDraft: SortEnumType
-  orderDate: SortEnumType
-  updatedAt: SortEnumType
+input DraftOrderItemInput {
+  productId: UUID!
+  quantity: Int!
+  unitSalePrice: Long!
+}
+
+type OrderItem {
+  id: UUID!
+  orderId: UUID!
+  productId: UUID!
+  quantity: Int!
+  unitSalePrice: Long!
+  unitImportPrice: Long
+  totalPrice: Long!
+  order: Order
+  product: Product
+}
+
+input CompleteImportInput {
+  details: [ImportLogDetailInput!]!
+  isDraft: Boolean!
+  isAutoSave: Boolean!
 }
 
 "A connection to a list of items."
@@ -94,26 +164,26 @@ type OrdersConnection {
   nodes: [Order!]
 }
 
-"A connection to a list of items."
-type OrdersPaginationConnection {
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "A list of edges."
-  edges: [OrdersPaginationEdge!]
-  "A flattened list of the nodes."
-  nodes: [Order!]
-  "Identifies the total count of items in the connection."
-  totalCount: Int!
-}
+"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
+scalar Long
 
-enum SortEnumType {
-  ASC
-  DESC
-}
-
-input CategorySortInput {
-  id: SortEnumType
-  name: SortEnumType
+type Query {
+  activeAutoSave: ImportLog
+  importHistory(searchKeyword: String fromDate: DateTime toDate: DateTime status: ImportStatus "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): ImportHistoryConnection
+  importById(id: UUID!): ImportLog
+  importSummary: ImportSummary!
+  dashboardStats(days: Int = 7): StoreStatistics!
+  users: [User!]!
+  products(searchTerm: String categoryId: UUID order: [ProductSortInput!]): [Product!]!
+  productsPagination(searchTerm: String categoryId: UUID minPrice: Long maxPrice: Long "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ProductSortInput!]): ProductsPaginationConnection
+  productById(id: UUID!): Product
+  productBySku(sku: String!): Product
+  categories: [Category!]!
+  orders("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [OrderSortInput!]): OrdersConnection
+  ordersPagination(receiptNumber: String startDate: DateTime endDate: DateTime "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [OrderSortInput!]): OrdersPaginationConnection
+  orderById(id: UUID!): Order
+  draftOrders: [Order!]!
+  statistics(fromDate: DateTime! toDate: DateTime!): StatisticsResultDto!
 }
 
 "Information about pagination in a connection."
@@ -128,174 +198,6 @@ type PageInfo {
   endCursor: String
 }
 
-"An edge in a connection."
-type ProductsPaginationEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: Product!
-}
-
-"An edge in a connection."
-type ImportHistoryEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: ImportLog!
-}
-
-"An edge in a connection."
-type OrdersEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: Order!
-}
-
-"An edge in a connection."
-type OrdersPaginationEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: Order!
-}
-
-input CreateProductInput {
-  sku: String!
-  name: String!
-  categoryId: UUID!
-  imagePaths: [String!]!
-}
-
-type LoginResultDTO {
-  success: Boolean!
-  message: String!
-}
-
-type ProductStat {
-  id: UUID!
-  name: String!
-  quantity: Int!
-  lastOrder: DateTime!
-}
-
-type DailyRevenue {
-  date: DateTime!
-  revenue: Long!
-}
-
-"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
-scalar Long
-
-type StoreStatistics {
-  totalIncome: Long!
-  totalNewOrders: Int!
-  totalRevenue: [DailyRevenue!]!
-  bestSellingProducts: [ProductStat!]!
-  nearlyOutOfStock: [ProductStat!]!
-}
-
-type Order {
-  id: UUID!
-  receiptNumber: Int!
-  status: String!
-  note: String
-  totalAmount: Long!
-  totalProfit: Long!
-  isDraft: Boolean!
-  orderDate: DateTime!
-  updatedAt: DateTime!
-  orderItems: [OrderItem]
-}
-
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime
-
-type ImportSummary {
-  totalCount: Int!
-  totalAmount: Decimal!
-  draftCount: Int!
-}
-
-type ImportLog {
-  id: UUID!
-  createdAt: DateTime!
-  totalAmount: Long!
-  status: ImportStatus!
-  isAutoSaved: Boolean!
-  details: [ImportLogDetail!]!
-}
-
-type Category {
-  id: UUID!
-  name: String!
-  products: [Product]
-}
-
-scalar UUID
-
-type Product {
-  id: UUID!
-  categoryId: UUID!
-  sku: String!
-  name: String!
-  importPrice: Long
-  salePrice: Long
-  stockQuantity: Int!
-  isDraft: Boolean!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  category: Category!
-  importLogs: [ImportLogDetail!]!
-  images: [ProductImage!]!
-}
-
-type User {
-  id: UUID!
-  username: String!
-  passwordHash: String!
-  hasCompletedOnboarding: Boolean!
-}
-
-input UpsertDraftOrderInput {
-  orderId: UUID
-  note: String
-  items: [DraftOrderItemInput!]!
-}
-
-input DraftOrderItemInput {
-  productId: UUID!
-  quantity: Int!
-  unitSalePrice: Long!
-input UpdateProductInput {
-  id: UUID!
-  sku: String!
-  name: String!
-  categoryId: UUID!
-  salePrice: Long!
-  imagePaths: [String!]!
-}
-
-input CompleteImportInput {
-  details: [ImportLogDetailInput!]!
-  isDraft: Boolean!
-  isAutoSave: Boolean!
-}
-
-input ImportLogDetailInput {
-  productId: UUID!
-  quantityAdded: Int!
-  actualImportPrice: Long!
-}
-
-type ProductImage {
-  id: UUID!
-  productId: UUID!
-  product: Product
-  imagePath: String!
-  isPrimary: Boolean!
-}
-
 type ImportLogDetail {
   id: UUID!
   importLogId: UUID!
@@ -306,24 +208,167 @@ type ImportLogDetail {
   product: Product
 }
 
-enum ImportStatus {
-  DRAFT
-  COMPLETED
-}
-
 "The `Decimal` scalar type represents a decimal floating-point number."
 scalar Decimal
 
-type OrderItem {
+"A connection to a list of items."
+type OrdersPaginationConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [OrdersPaginationEdge!]
+  "A flattened list of the nodes."
+  nodes: [Order!]
+  "Identifies the total count of items in the connection."
+  totalCount: Int!
+}
+
+type ProductImage {
   id: UUID!
-  orderId: UUID!
   productId: UUID!
-  quantity: Int!
-  unitSalePrice: Long!
-  unitImportPrice: Long
-  totalPrice: Long!
-  order: Order
   product: Product
+  imagePath: String!
+  isPrimary: Boolean!
+}
+
+type LoginResultDTO {
+  success: Boolean!
+  message: String!
+}
+
+enum SortEnumType {
+  ASC
+  DESC
+}
+
+type Category {
+  id: UUID!
+  name: String!
+  products: [Product]
+}
+
+"An edge in a connection."
+type OrdersPaginationEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: Order!
+}
+
+type Product {
+  id: UUID!
+  categoryId: UUID!
+  sku: String!
+  name: String!
+  importPrice: Long
+  salePrice: Long
+  stockQuantity: Int!
+  availableStockQuantity: Int!
+  minimumStockQuantity: Int!
+  isDraft: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  category: Category!
+  importLogs: [ImportLogDetail!]!
+  images: [ProductImage!]!
+  pairProducts: [Product!]!
+}
+
+type DashboardSummaryDto {
+  totalRevenue: Long!
+  totalProfit: Long!
+  totalOrders: Int!
+  lowStockProducts: Int!
+}
+
+"A connection to a list of items."
+type ProductsPaginationConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [ProductsPaginationEdge!]
+  "A flattened list of the nodes."
+  nodes: [Product!]
+}
+
+type StoreStatistics {
+  previousDate: DateTime
+  actualGrossRevenue: Long!
+  actualRevenue: Long!
+  totalPercentIncreaseRevenue: Float!
+  actualGrossProfit: Long!
+  actualProfit: Long!
+  totalPercentIncreaseProfit: Float!
+  totalNewOrders: Int!
+  totalPaidOrders: Int!
+  totalRevenueGraph: [DailyRevenue!]!
+  bestSellingProducts: [ProductStat!]!
+  nearlyOutOfStock: [ProductStat!]!
+}
+
+type TopProductStatsDto {
+  productName: String
+  sku: String
+  quantitySold: Int!
+  revenue: Long!
+  profit: Long!
+}
+
+input UpsertDraftOrderInput {
+  orderId: UUID
+  note: String
+  items: [DraftOrderItemInput!]!
+}
+
+"An edge in a connection."
+type ImportHistoryEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: ImportLog!
+}
+
+input UpdateProductInput {
+  id: UUID!
+  sku: String!
+  name: String!
+  categoryId: UUID!
+  salePrice: Long!
+  minimumStockQuantity: Int!
+  imagePaths: [String!]!
+}
+
+type StatisticsResultDto {
+  summary: DashboardSummaryDto
+  chartData: [ChartDataDto]
+  topProducts: [TopProductStatsDto]
+}
+
+type ImportSummary {
+  totalCount: Int!
+  totalAmount: Decimal!
+  draftCount: Int!
+}
+
+type DailyRevenue {
+  date: DateTime!
+  revenue: Long!
+}
+
+input ProductSortInput {
+  id: SortEnumType
+  categoryId: SortEnumType
+  sku: SortEnumType
+  name: SortEnumType
+  importPrice: SortEnumType
+  salePrice: SortEnumType
+  stockQuantity: SortEnumType
+  availableStockQuantity: SortEnumType
+  minimumStockQuantity: SortEnumType
+  isDraft: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
+  category: CategorySortInput
 }
 
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."

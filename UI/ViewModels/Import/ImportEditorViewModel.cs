@@ -9,12 +9,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UI.Services.ImportService;
+using UI.Services.PrintService;
 
 namespace UI.ViewModels.Import;
 
 public partial class ImportEditorViewModel : ObservableObject
 {
-    private readonly IEasyStoreClient _client;
+    private readonly ImportService _importService;
+    private readonly PdfService _pdfService;
     private Guid _currentImportId; // Lưu lại ID của phiếu đang xem
 
     // === CÁC BIẾN BINDING RA GIAO DIỆN ===
@@ -40,9 +43,10 @@ public partial class ImportEditorViewModel : ObservableObject
     // Danh sách phẳng hóa để đổ ra DataGrid
     public ObservableCollection<ImportDetailItemDto> Details { get; } = new();
 
-    public ImportEditorViewModel(IEasyStoreClient client)
+    public ImportEditorViewModel(ImportService importService, PdfService pdfService)
     {
-        _client = client;
+        _importService = importService;
+        _pdfService = pdfService;
     }
 
     // === HÀM KHỞI TẠO DỮ LIỆU (Được gọi từ XAML.cs) ===
@@ -55,7 +59,7 @@ public partial class ImportEditorViewModel : ObservableObject
         try
         {
             // Gọi hàm GraphQL lấy chi tiết 1 phiếu
-            var result = await _client.GetImportById.ExecuteAsync(importId);
+            var result = await _importService.GetImportByIdAsync(importId);
 
             if (result.IsSuccessResult() && result.Data?.ImportById != null)
             {
@@ -136,7 +140,7 @@ public partial class ImportEditorViewModel : ObservableObject
             {
                 IsLoading = true;
 
-                var result = await _client.MarkImportCompleted.ExecuteAsync(_currentImportId);
+                var result = await _importService.MarkImportCompletedAsync(_currentImportId);
 
                 if (result.IsSuccessResult())
                 {
@@ -181,7 +185,7 @@ public partial class ImportEditorViewModel : ObservableObject
                 IsLoading = true;
 
                 // 4. Gọi API Mutation xóa phiếu từ Strawberry Shake
-                var result = await _client.DeleteImport.ExecuteAsync(_currentImportId);
+                var result = await _importService.DeleteImportAsync(_currentImportId);
 
                 if (result.IsSuccessResult())
                 {
@@ -205,6 +209,42 @@ public partial class ImportEditorViewModel : ObservableObject
             {
                 IsLoading = false;
             }
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportPdfAsync()
+    {
+        IsLoading = true;
+
+        try
+        {
+            // 1. Chuẩn bị dữ liệu từ các biến Bindings hiện có
+            var data = new ImportReceiptData
+            {
+                ImportId = ImportIdText,
+                CreatedAt = CreatedAtText,
+                Status = StatusText,
+                TotalAmount = Details.Sum(x => x.TotalPrice).ToString("N0") + " VNĐ", // Tính tổng tiền
+                Details = Details.ToList()
+            };
+
+            // 2. Nhét dữ liệu vào Template
+            var document = new ImportReceiptDocument(data);
+
+            // 3. Gọi Service để xuất và mở file
+            string fileName = $"PhieuNhap_{data.ImportId.Substring(0, 8)}.pdf";
+            bool success = await _pdfService.GenerateAndOpenPdfAsync(document, fileName);
+
+            if (!success)
+            {
+                // Báo lỗi (Dùng cách hiện dialog mà bạn đã biết)
+                Debug.WriteLine("Có lỗi khi tạo PDF");
+            }
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 }

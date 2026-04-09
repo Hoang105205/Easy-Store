@@ -1,8 +1,7 @@
 <Page x:Class="UI.Views.Products.ProductDetailPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:converters="using:UI.Utils.Converters"
-      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+      xmlns:converters="using:UI.Utils.Converters">
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
@@ -25,7 +24,7 @@
                 <Grid Grid.Column="1" VerticalAlignment="Center">
 
                     <StackPanel Orientation="Horizontal" Spacing="10" Visibility="{x:Bind ViewModel.ViewVisibility, Mode=OneWay}">
-                        <Button Click="BtnEdit_Click" Style="{StaticResource AccentButtonStyle}" Background="{ThemeResource BrandPurpleBrush}" Height="40">
+                        <Button Command="{x:Bind ViewModel.EnableEditModeCommand}" Style="{StaticResource AccentButtonStyle}" Background="{ThemeResource BrandPurpleBrush}" Height="40">
                             <Button.ContentTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -35,7 +34,7 @@
                                 </DataTemplate>
                             </Button.ContentTemplate>
                         </Button>
-                        <Button Click="BtnDelete_Click" Background="#E74C3C" Foreground="White" Height="40">
+                        <Button Command="{x:Bind ViewModel.DeleteCommand}" Background="#E74C3C" Foreground="White" Height="40">
                             <Button.ContentTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -48,7 +47,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Spacing="10" Visibility="{x:Bind ViewModel.EditVisibility, Mode=OneWay}">
-                        <Button Click="BtnSave_Click" Style="{StaticResource AccentButtonStyle}" Background="#2ECC71" Foreground="White" Height="40" FontWeight="SemiBold">
+                        <Button Command="{x:Bind ViewModel.SaveChangesCommand}" Style="{StaticResource AccentButtonStyle}" Background="#2ECC71" Foreground="White" Height="40" FontWeight="SemiBold">
                             <Button.ContentTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -58,7 +57,7 @@
                                 </DataTemplate>
                             </Button.ContentTemplate>
                         </Button>
-                        <Button Click="BtnCancel_Click" Background="#E74C3C" Foreground="White" Height="40" FontWeight="SemiBold">
+                        <Button Command="{x:Bind ViewModel.CancelEditModeCommand}" Background="#E74C3C" Foreground="White" Height="40" FontWeight="SemiBold">
                             <Button.ContentTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -141,21 +140,66 @@
                 <StackPanel Grid.Column="1" Spacing="20">
                     <TextBlock Text="Thông tin chi tiết" FontWeight="SemiBold" FontSize="18"/>
 
-                    <TextBox Header="Tên sản phẩm" Text="{x:Bind ViewModel.ProductName, Mode=TwoWay}" IsReadOnly="{x:Bind ViewModel.IsReadOnly, Mode=OneWay}" Height="65"/>
+                    <TextBox Header="Tên sản phẩm" 
+                             Text="{x:Bind ViewModel.ProductName, Mode=TwoWay}" 
+                             IsReadOnly="{x:Bind ViewModel.IsReadOnly, Mode=OneWay}" 
+                             Height="65"/>
 
-                    <TextBox Header="Mã SKU" Text="{x:Bind ViewModel.Sku, Mode=TwoWay}" IsReadOnly="{x:Bind ViewModel.IsReadOnly, Mode=OneWay}" Height="65"/>
+                    <TextBox Header="Mã SKU" 
+                             Text="{x:Bind ViewModel.Sku, Mode=TwoWay}" 
+                             IsReadOnly="{x:Bind ViewModel.IsReadOnly, Mode=OneWay}" 
+                             Height="65"/>
 
-                    <ComboBox Header="Danh mục sản phẩm" ItemsSource="{x:Bind ViewModel.Categories}" SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}" DisplayMemberPath="Name" IsEnabled="{x:Bind ViewModel.IsEditable, Mode=OneWay}" HorizontalAlignment="Stretch" Height="65"/>
+                    <ComboBox Header="Danh mục sản phẩm" 
+                              ItemsSource="{x:Bind ViewModel.Categories}" 
+                              SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}" 
+                              DisplayMemberPath="Name" IsEnabled="{x:Bind ViewModel.IsEditable, Mode=OneWay}" HorizontalAlignment="Stretch" Height="65"/>
 
-                    <TextBox Header="Giá bán (VNĐ)" Text="{x:Bind ViewModel.SalePrice, Mode=TwoWay}" IsReadOnly="{x:Bind ViewModel.IsReadOnly, Mode=OneWay}" Height="65" LostFocus="TxtPrice_LostFocus" GotFocus="TxtPrice_GotFocus"/>
+                    <TextBox Header="Giá bán (VNĐ)" 
+                             Tag="{}{0:N0} đ"
+                             PlaceholderText="Mặc định là 0"
+                             Text="{x:Bind ViewModel.SalePrice, Mode=TwoWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ', UpdateSourceTrigger=LostFocus}" 
+                             IsReadOnly="{x:Bind ViewModel.IsReadOnly, Mode=OneWay}" 
+                             GotFocus="NumberTextBox_GotFocus"
+                             LostFocus="NumberTextBox_LostFocus"
+                             Height="65" />
 
-                    <TextBox Header="Giá nhập (VNĐ)" Text="{x:Bind ViewModel.ImportPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" IsReadOnly="True" IsEnabled="False" Height="65" Background="{ThemeResource LayerFillColorDefaultBrush}"/>
+                    <TextBox Header="Giá nhập (VNĐ)" 
+                             Text="{x:Bind ViewModel.ImportPrice, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
+                             IsReadOnly="True" 
+                             IsEnabled="False"
+                             Height="65" 
+                             Background="{ThemeResource LayerFillColorDefaultBrush}"/>
 
-                    <TextBox Header="Số lượng tồn kho" Text="{x:Bind ViewModel.StockQuantity, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0}'}" IsReadOnly="True" IsEnabled="False" Height="65" Background="{ThemeResource LayerFillColorDefaultBrush}"/>
+                    <TextBox Header="Số lượng tồn kho" 
+                             Text="{x:Bind ViewModel.StockQuantity, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0}'}" 
+                             IsReadOnly="True" 
+                             IsEnabled="False" 
+                             Height="65" 
+                             Background="{ThemeResource LayerFillColorDefaultBrush}"/>
 
-                    <TextBox Header="ID Sản phẩm" Text="{x:Bind ViewModel.ProductId, Mode=OneWay}" IsReadOnly="True" IsEnabled="False" Height="65" Foreground="Gray"/>
+                    <TextBox Header="Số lượng tồn kho tối thiểu" 
+                             PlaceholderText="Mặc định là 0"
+                             Text="{x:Bind ViewModel.MinimumStockQuantity, Mode=TwoWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0}', UpdateSourceTrigger=LostFocus}" 
+                             IsReadOnly="{x:Bind ViewModel.IsReadOnly, Mode=OneWay}" 
+                             GotFocus="NumberTextBox_GotFocus"
+                             LostFocus="NumberTextBox_LostFocus"
+                             Height="65" 
+                             Background="{ThemeResource LayerFillColorDefaultBrush}"/>
 
-                    <TextBox Header="Ngày tạo" Text="{x:Bind ViewModel.CreatedAtText, Mode=OneWay}" IsReadOnly="True" IsEnabled="False" Height="65" Foreground="Gray"/>
+                    <TextBox Header="ID Sản phẩm" 
+                             Text="{x:Bind ViewModel.ProductId, Mode=OneWay}" 
+                             IsReadOnly="True" 
+                             IsEnabled="False" 
+                             Height="65" 
+                             Foreground="Gray"/>
+
+                    <TextBox Header="Ngày tạo" 
+                             Text="{x:Bind ViewModel.CreatedAtText, Mode=OneWay}" 
+                             IsReadOnly="True" 
+                             IsEnabled="False" 
+                             Height="65" 
+                             Foreground="Gray"/>
                 </StackPanel>
                 
             </Grid>

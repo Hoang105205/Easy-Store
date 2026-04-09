@@ -33,22 +33,17 @@ public sealed partial class ImportPage : Page
     {
         InitializeComponent();
 
-        ViewModel = (App.Current as App)!.Services.GetService<ImportViewModel>();
+        ViewModel = (App.Current as App)!.Services!.GetService<ImportViewModel>()!;
+
+        ViewModel.NavigateToCreateImportAction = (excelFile) =>
+        {
+            Frame.Navigate(typeof(CreateImportPage), excelFile);
+        };
     }
 
     private void OnCreateNewImportClicked(object sender, RoutedEventArgs e)
     {
         Frame.Navigate(typeof(CreateImportPage));
-    }
-
-    private void OnDownloadTemplateClicked(object sender, RoutedEventArgs e)
-    {
-        // TODO: Implement download template logic
-    }
-
-    private void OnUploadExcelClicked(object sender, RoutedEventArgs e)
-    {
-        // TODO: Implement upload Excel logic
     }
 
     private async void OnRefreshClicked(object sender, RoutedEventArgs e)

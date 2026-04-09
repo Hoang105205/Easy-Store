@@ -57,11 +57,24 @@ public class ImportMutation
 
         long totalAmount = 0;
 
-        foreach (var item in input.Details)
+        // BỨC TƯỜNG LỬA: Gom nhóm các sản phẩm trùng ID lại thành 1 dòng duy nhất
+        var groupedDetails = input.Details
+            .GroupBy(d => d.ProductId)
+            .Select(g => new ImportLogDetailInput(
+                ProductId: g.Key,
+                QuantityAdded: g.Sum(x => x.QuantityAdded),    // Cộng dồn toàn bộ số lượng
+                ActualImportPrice: g.First().ActualImportPrice // Lấy giá nhập của dòng đầu tiên
+            ))
+            .ToList();
+
+        foreach (var item in groupedDetails)
         {
             var product = await context.Products.FindAsync(item.ProductId);
 
-            if (product == null) continue;
+            if (product == null)
+            {
+                throw new GraphQLException($"Sản phẩm có ID {item.ProductId} không tồn tại hoặc đã bị xóa khỏi hệ thống. Vui lòng tải lại trang!");
+            }
 
             // 4. CHỐT SỔ: Chỉ duy nhất trạng thái Hoàn Thành mới được phép đụng vào DB Products
             if (isCompleted)
@@ -76,6 +89,7 @@ public class ImportMutation
 
                 // Cộng kho & Cập nhật giá
                 product.StockQuantity = product.StockQuantity + item.QuantityAdded;
+                product.AvailableStockQuantity = product.AvailableStockQuantity + item.QuantityAdded;
                 product.ImportPrice = newMacPrice;
                 product.UpdatedAt = DateTime.UtcNow;
             }
@@ -150,7 +164,11 @@ public class ImportMutation
         foreach (var item in importLog.Details)
         {
             var product = await context.Products.FindAsync(item.ProductId);
-            if (product == null) continue;
+
+            if (product == null)
+            {
+                throw new GraphQLException($"Sản phẩm có ID {item.ProductId} trong phiếu nhập không còn tồn tại trong hệ thống!");
+            }
 
             // Tính giá MAC (Tái sử dụng lại Helper cực xịn của bạn)
             long newMacPrice = ImportHelper.CalculateNewMacPrice(
@@ -162,6 +180,7 @@ public class ImportMutation
 
             // Cộng kho & Cập nhật giá
             product.StockQuantity = product.StockQuantity + item.QuantityAdded;
+            product.AvailableStockQuantity = product.AvailableStockQuantity + item.QuantityAdded;
             product.ImportPrice = newMacPrice;
             product.UpdatedAt = DateTime.UtcNow;
         }

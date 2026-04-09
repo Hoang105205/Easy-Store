@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using StrawberryShake;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using UI.ViewModels.Product; // Để dùng chung ProductModel
@@ -19,7 +21,7 @@ namespace UI.Services.ProductService
 
         // Trả về một Tuple chứa Danh sách sản phẩm, EndCursor và trạng thái HasNextPage
         public async Task<List<ProductModel>> GetProductsAsync(
-            string? searchText = null, 
+            string? searchText = null,
             Guid? categoryId = null
         )
         {
@@ -43,7 +45,21 @@ namespace UI.Services.ProductService
                 CategoryName = x.Category?.Name ?? "Chưa có danh mục",
                 ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
                 StockQuantity = x.StockQuantity,
-                SalePrice = x.SalePrice
+                SalePrice = x.SalePrice,
+                AvailableStockQuantity = x.AvailableStockQuantity,
+                // Map thêm danh sách PairProducts
+                PairProducts = new ObservableCollection<ProductModel>(
+                    x.PairProducts?.Select(pp => new ProductModel
+                    {
+                        Id = pp.Id,
+                        Name = pp.Name,
+                        Sku = pp.Sku,
+                        ImagePath = pp.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
+                        StockQuantity = pp.StockQuantity,
+                        SalePrice = pp.SalePrice,
+                        AvailableStockQuantity = pp.AvailableStockQuantity
+                    }) ?? Array.Empty<ProductModel>()
+                )
             }).ToList() ?? new List<ProductModel>();
 
             return mappedData;
@@ -82,7 +98,21 @@ namespace UI.Services.ProductService
                 CategoryName = x.Category?.Name ?? "Chưa có danh mục",
                 ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
                 StockQuantity = x.StockQuantity,
-                SalePrice = x.SalePrice
+                SalePrice = x.SalePrice,
+                AvailableStockQuantity = x.AvailableStockQuantity,
+                // Map thêm danh sách PairProducts
+                PairProducts = new ObservableCollection<ProductModel>(
+                    x.PairProducts?.Select(pp => new ProductModel
+                    {
+                        Id = pp.Id,
+                        Name = pp.Name,
+                        Sku = pp.Sku,
+                        ImagePath = pp.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
+                        StockQuantity = pp.StockQuantity,
+                        SalePrice = pp.SalePrice,
+                        AvailableStockQuantity = pp.AvailableStockQuantity
+                    }) ?? Array.Empty<ProductModel>()
+                )
             }).ToList() ?? new List<ProductModel>();
 
             var pageInfo = result.Data?.ProductsPagination?.PageInfo;
@@ -90,13 +120,14 @@ namespace UI.Services.ProductService
             return (mappedData, pageInfo?.EndCursor, pageInfo?.HasNextPage ?? false);
         }
 
-        public async Task<bool> CreateProductAsync(string sku, string name, Guid categoryId, List<string> images)
+        public async Task<bool> CreateProductAsync(string sku, string name, Guid categoryId, int minimumStockQuantity, List<string> images)
         {
             var input = new CreateProductInput
             {
                 Sku = sku,
                 Name = name,
                 CategoryId = categoryId,
+                MinimumStockQuantity = minimumStockQuantity,
                 ImagePaths = images
             };
 
@@ -117,7 +148,7 @@ namespace UI.Services.ProductService
             return result.Data?.ProductById;
         }
 
-        public async Task<bool> UpdateProductAsync(Guid id, string sku, string name, Guid categoryId, long salePrice, List<string> images)
+        public async Task<bool> UpdateProductAsync(Guid id, string sku, string name, Guid categoryId, long salePrice, int minimumStockQuantity, List<string> images)
         {
             var input = new UpdateProductInput
             {
@@ -126,6 +157,7 @@ namespace UI.Services.ProductService
                 Name = name,
                 CategoryId = categoryId,
                 SalePrice = salePrice,
+                MinimumStockQuantity = minimumStockQuantity,
                 ImagePaths = images
             };
             var result = await _client.UpdateProduct.ExecuteAsync(input);
@@ -137,6 +169,11 @@ namespace UI.Services.ProductService
             var result = await _client.DeleteProduct.ExecuteAsync(id);
             if (result.Errors.Count > 0) throw new Exception(result.Errors[0].Message);
             return result.Data?.DeleteProduct ?? false;
+        }
+
+        public async Task<IOperationResult<IGetProductBySkuResult>> GetProductBySkuAsync(string sku)
+        {
+            return await _client.GetProductBySku.ExecuteAsync(sku);
         }
     }
 }

@@ -4,12 +4,152 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:UI.Views.Orders"
+    xmlns:productModels="using:UI.ViewModels.Product"
+    xmlns:viewmodels="using:UI.ViewModels.Orders"
+    xmlns:converters="using:UI.Utils.Converters"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <TabView x:Name="OrderTabView" 
-             AddTabButtonClick="OrderTabView_AddTabButtonClick"
-             TabCloseRequested="OrderTabView_TabCloseRequested"
-             IsAddTabButtonVisible="True"
-             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-    </TabView>
+    <UserControl.Resources>
+        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+    </UserControl.Resources>
+
+    <Grid Padding="20" ColumnSpacing="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="6*"/>
+            <ColumnDefinition Width="4*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                    CornerRadius="8" Padding="16" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,16" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="200"/>
+                    </Grid.ColumnDefinitions>
+                    <AutoSuggestBox x:Name="SearchProductBox" Grid.Column="0" 
+                                        PlaceholderText="Tìm kiếm tên sản phẩm, mã SKU..." 
+                                        Text="{x:Bind ViewModel.SearchProductText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        QueryIcon="Find" Height="40" CornerRadius="8"/>
+                    <ComboBox x:Name="CategoryFilter" Grid.Column="1" HorizontalAlignment="Stretch" 
+                                  PlaceholderText="Tất cả danh mục" Height="40" CornerRadius="8" 
+                                  ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"
+                                  DisplayMemberPath="Name"/>
+                </Grid>
+
+                <controls:DataGrid x:Name="ProductsGrid" DoubleTapped="ProductsGrid_DoubleTapped" Grid.Row="1" AutoGenerateColumns="False" 
+                                   IsReadOnly="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" RowHeight="60" 
+                                   ItemsSource="{x:Bind ViewModel.Products, Mode=OneWay}">
+
+                    <controls:DataGrid.Columns>
+                        <controls:DataGridTemplateColumn Header="Sản phẩm" Width="3*">
+                            <controls:DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Padding="8">
+                                        <PersonPicture ProfilePicture="{Binding ImagePath}" Width="40" Height="40" CornerRadius="4" Margin="0,0,12,0"/>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
+                                            <TextBlock Text="{Binding Sku}" FontSize="12" Foreground="Gray"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </controls:DataGridTemplateColumn.CellTemplate>
+                        </controls:DataGridTemplateColumn>
+
+                        <controls:DataGridTextColumn Header="Kho thực" Binding="{Binding StockQuantity}" Width="1*"/>
+
+                        <controls:DataGridTemplateColumn Header="Khả dụng" Width="1*">
+                            <controls:DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding AvailableStockQuantity}" 
+                                           Foreground="{ThemeResource SystemFillColorSuccessBrush}" 
+                                           FontWeight="SemiBold" 
+                                           VerticalAlignment="Center" 
+                                           Margin="12,0,0,0"/>
+                                </DataTemplate>
+                            </controls:DataGridTemplateColumn.CellTemplate>
+                        </controls:DataGridTemplateColumn>
+
+                        <controls:DataGridTextColumn Header="Giá Đơn Vị" Binding="{Binding SalePrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Width="1.5*"/>
+
+                        <!-- Flydropdown -->
+                        <controls:DataGridTemplateColumn Header="" Width="60">
+                            <controls:DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="productModels:ProductModel">
+                                    <Button FontFamily="Segoe MDL2 Assets" 
+                                        Content="&#xE70D;" 
+                                        Background="Transparent" 
+                                        BorderThickness="0"
+                                        HorizontalAlignment="Center"
+                                        IsEnabled="{x:Bind HasPairProducts, Mode=OneWay}"
+                                        Tapped="PairProductsButton_Tapped">
+                                        <FlyoutBase.AttachedFlyout>
+                                            <Flyout Placement="BottomEdgeAlignedRight">
+                                                <ListView ItemsSource="{x:Bind PairProducts}" 
+                                                  DoubleTapped="PairProductListView_DoubleTapped"
+                                                  SelectionMode="Single"
+                                                  IsItemClickEnabled="True">
+                                                    <ListView.ItemTemplate>
+                                                        <DataTemplate x:DataType="productModels:ProductModel">
+                                                            <Grid Padding="8" ColumnSpacing="12" Width="250">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <PersonPicture Grid.Column="0" ProfilePicture="{x:Bind ImagePath}" Width="32" Height="32" CornerRadius="4"/>
+
+                                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                        <TextBlock Text="{x:Bind SalePrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Foreground="{ThemeResource SystemAccentColor}" FontSize="12"/>
+                                                                        <TextBlock Text="|" Foreground="Gray" FontSize="12"/>
+                                                                        <TextBlock Text="{x:Bind AvailableStockQuantity}" Foreground="{ThemeResource SystemFillColorSuccessBrush}" FontSize="12"/>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ListView.ItemTemplate>
+                                                </ListView>
+                                            </Flyout>
+                                        </FlyoutBase.AttachedFlyout>
+                                    </Button>
+                                </DataTemplate>
+                            </controls:DataGridTemplateColumn.CellTemplate>
+                        </controls:DataGridTemplateColumn>
+                    </controls:DataGrid.Columns>
+                </controls:DataGrid>
+            </Grid>
+        </Border>
+
+        <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16" 
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+            <Grid>
+                <TabView x:Name="OrderTabView" TabItemsSource="{x:Bind ViewModel.Tabs, Mode=OneWay}" SelectedItem="{x:Bind ViewModel.SelectedTab, Mode=TwoWay}" 
+                         AddTabButtonCommand="{x:Bind ViewModel.AddEmptyTabCommand}" TabCloseRequested="OrderTabView_TabCloseRequested"
+                         IsAddTabButtonVisible="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+                    <TabView.TabItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:OrderTabItemModel">
+                            <TabViewItem Header="{x:Bind Header, Mode=OneWay}">
+                                <TabViewItem.IconSource>
+                                    <SymbolIconSource Symbol="Document" />
+                                </TabViewItem.IconSource>
+                                <local:OrderTabContentControl DataContext="{x:Bind TabViewModel, Mode=OneWay}" />
+                            </TabViewItem>
+                        </DataTemplate>
+                    </TabView.TabItemTemplate>
+                </TabView>
+
+                <ProgressRing IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Width="50" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
 </Page>

@@ -24,7 +24,7 @@ public class Order
 
     [Required]
     [MaxLength(20)]
-    public string Status { get; set; } = Statuses.Created;
+    public string Status { get; set; } = Statuses.Created; 
 
     [MaxLength(100)]
     public string? Note { get; set; } = null;

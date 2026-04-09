@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using UI.ViewModels;
 
@@ -18,8 +19,12 @@ namespace UI.Views.Products
         {
             this.InitializeComponent();
 
-            ViewModel = (App.Current as App)!.Services.GetService<ProductDetailViewModel>();
+            ViewModel = (App.Current as App)!.Services.GetRequiredService<ProductDetailViewModel>();
             ViewModel.EditImages.CollectionChanged += (s, e) => { UploadIcon.Visibility = ViewModel.EditImages.Count > 0 ? Visibility.Collapsed : Visibility.Visible; };
+
+            ViewModel.GoBackAction = () => Frame.GoBack();
+            ViewModel.ShowConfirmAction = async (title, content, pri, close) => await ShowConfirmDialog(title, content, pri, close);
+            ViewModel.ShowAlertAction = async (title, content) => await ShowDialog(title, content);
         }
 
         // Lấy Id sản phẩm từ tham số khi điều hướng đến trang detail, sau đó gọi ViewModel để load dữ liệu
@@ -41,80 +46,6 @@ namespace UI.Views.Products
             }
         }
 
-        private void BtnEdit_Click(object sender, RoutedEventArgs e) => ViewModel.EnableEditMode();
-
-        private async void BtnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            if (await ShowConfirmDialog("Xác nhận", "Bạn có chắc chắn muốn hủy? Các thay đổi trước đó sẽ bị xóa."))
-            {
-                ViewModel.CancelEditMode();
-            }
-        }
-
-        private async void BtnSave_Click(object sender, RoutedEventArgs e)
-        {
-            if (await ShowConfirmDialog("Xác nhận", "Bạn có chắc chắn muốn lưu các thay đổi này?"))
-            {
-                try
-                {
-                    await ViewModel.SaveChangesAsync();
-                    ViewModel.CancelEditMode(); // Lưu xong thì thoát Edit Mode
-                    await ShowDialog("Thành công", "Đã cập nhật sản phẩm thành công!");
-                }
-                catch (Exception ex) { await ShowDialog("Lỗi", ex.Message); }
-            }
-        }
-
-        private async void BtnDelete_Click(object sender, RoutedEventArgs e)
-        {
-            if (await ShowConfirmDialog("Cảnh báo nguy hiểm", $"Bạn có chắc chắn muốn xóa sản phẩm '{ViewModel.ProductName}' không? Hành động này không thể hoàn tác.", "Xóa", "Hủy"))
-            {
-                try
-                {
-                    await ViewModel.DeleteAsync();
-                    await ShowDialog("Thành công", "Sản phẩm đã bị xóa.");
-                    Frame.GoBack(); // Xóa xong thì tự động quay về trang Danh sách
-                }
-                catch (Exception ex) { await ShowDialog("Không thể xóa", ex.Message); }
-            }
-        }
-
-        private void TxtPrice_LostFocus(object sender, RoutedEventArgs e)
-        {
-            var textBox = sender as TextBox;
-            if (textBox == null) return;
-
-            var raw = textBox.Text;
-
-            raw = raw
-                .Replace(".", "")
-                .Replace(",", "")
-                .Replace("đ", "")
-                .Trim();
-
-            if (long.TryParse(raw, out var number))
-            {
-                textBox.Text = number.ToString("N0", new CultureInfo("vi-VN")) + " đ";
-            }
-        }
-
-        private void TxtPrice_GotFocus(object sender, RoutedEventArgs e)
-        {
-            var textBox = sender as TextBox;
-            if (textBox == null) return;
-
-            var raw = textBox.Text;
-
-            raw = raw
-                .Replace(".", "")
-                .Replace(",", "")
-                .Replace("đ", "")
-                .Trim();
-
-            textBox.Text = raw;
-        }
-
-        // Các hàm xử lý ảnh: Upload, Drag & Drop, Remove
         private async void UploadImages_Click(object sender, RoutedEventArgs e)
         {
             if (ViewModel.EditImages.Count >= 3) { await ShowDialog("Thông báo", "Tối đa 3 ảnh."); return; }
@@ -140,11 +71,12 @@ namespace UI.Views.Products
                 }
             }
         }
+
         private void RemoveImage_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is string imagePath)
             {
-                ViewModel.EditImages.Remove(imagePath);
+                ViewModel.RemoveImageCommand.Execute(imagePath);
             }
         }
 
@@ -159,6 +91,34 @@ namespace UI.Views.Products
         {
             var dialog = new ContentDialog { Title = title, Content = content, PrimaryButtonText = priBtn, CloseButtonText = closeBtn, XamlRoot = this.XamlRoot, RequestedTheme = this.ActualTheme };
             return await dialog.ShowAsync() == ContentDialogResult.Primary;
+        }
+
+        private void NumberTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox && !string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                string rawNumber = new string(textBox.Text.Where(char.IsDigit).ToArray());
+                textBox.Text = rawNumber;
+                textBox.Select(textBox.Text.Length, 0);
+            }
+        }
+
+        private void NumberTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox && !string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                string rawNumber = new string(textBox.Text.Where(char.IsDigit).ToArray());
+
+                if (long.TryParse(rawNumber, out long value))
+                {
+                    string formatString = textBox.Tag?.ToString() ?? "{0:N0}";
+                    textBox.Text = string.Format(new System.Globalization.CultureInfo("vi-VN"), formatString, value);
+                }
+                else
+                {
+                    textBox.Text = string.Empty;
+                }
+            }
         }
     }
 }

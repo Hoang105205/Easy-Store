@@ -7,7 +7,7 @@ using UI.ViewModels.Orders;
 
 namespace UI.Services.OrderService
 {
-    internal class OrderService
+    public class OrderService
     {
         private readonly IEasyStoreClient _client;
 
@@ -101,6 +101,7 @@ namespace UI.Services.OrderService
                         ProductName = item.Product?.Name ?? "Không rõ",
                         ProductSku = item.Product?.Sku ?? string.Empty,
                         CategoryName = item.Product?.Category?.Name ?? "Không rõ danh mục",
+                        AvailableStockQuantity = item.Product?.AvailableStockQuantity ?? 0,
                     });
                 }
             }
