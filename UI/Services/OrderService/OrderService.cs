@@ -90,6 +90,10 @@ namespace UI.Services.OrderService
                     long calcTotalPrice = item.Quantity * currentPrice;
                     totalImport += item.Quantity * (item.UnitImportPrice ?? 0);
 
+                    var images = item.Product?.Images;
+                    var targetImage = images?.FirstOrDefault(img => img.IsPrimary) ?? images?.FirstOrDefault();
+                    string finalImageUrl = targetImage?.ImagePath ?? string.Empty;
+
                     items.Add(new OrderItemDetailModel
                     {
                         STT = sttCounter++,
@@ -99,6 +103,7 @@ namespace UI.Services.OrderService
                         UnitImportPrice = item.UnitImportPrice ?? 0,
                         TotalPrice = calcTotalPrice,
                         ProductName = item.Product?.Name ?? "Không rõ",
+                        ImageUrl = finalImageUrl,
                         ProductSku = item.Product?.Sku ?? string.Empty,
                         CategoryName = item.Product?.Category?.Name ?? "Không rõ danh mục",
                         AvailableStockQuantity = item.Product?.AvailableStockQuantity ?? 0,

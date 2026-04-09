@@ -31,6 +31,7 @@ public class OrderItemDetailModel
 {
     public int STT { get; set; }
     public Guid ProductId { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
     public int Quantity { get; set; }
     public long UnitSalePrice { get; set; }
     public long UnitImportPrice { get; set; }

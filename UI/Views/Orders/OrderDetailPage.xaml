@@ -83,8 +83,22 @@
                                    AutoGenerateColumns="False" IsReadOnly="True"
                                    HeadersVisibility="Column" GridLinesVisibility="Horizontal">
                     <controls:DataGrid.Columns>
-                        <controls:DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="SizeToCells"/>
-                        <controls:DataGridTextColumn Header="Tên SP" Binding="{Binding ProductName}" Width="2*"/>
+                        <controls:DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="Auto" MinWidth="60"/>
+                        <controls:DataGridTemplateColumn Header="Tên SP" Width="2*">
+                            <controls:DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="12" Padding="0,4">
+                                        <Border CornerRadius="4" Width="40" Height="40" Background="#EEEEEE">
+                                            <Image Source="{Binding ImageUrl}" Stretch="UniformToFill" />
+                                        </Border>
+
+                                        <TextBlock Text="{Binding ProductName}" 
+                                           VerticalAlignment="Center" 
+                                           TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </controls:DataGridTemplateColumn.CellTemplate>
+                        </controls:DataGridTemplateColumn>
                         <controls:DataGridTextColumn Header="Danh mục" Binding="{Binding CategoryName}" Width="1.5*"/>
                         <controls:DataGridTextColumn Header="Số lượng" Binding="{Binding Quantity}" Width="1*"/>
                         <controls:DataGridTextColumn Header="Giá nhập" Binding="{Binding UnitImportPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" Width="1.5*"/>
