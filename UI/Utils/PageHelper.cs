@@ -6,6 +6,7 @@ using UI.Views.Dashboard;
 using UI.Views.Import;
 using UI.Views.Orders;
 using UI.Views.Products;
+using UI.Views.Profile;
 using UI.Views.Settings;
 using UI.Views.Statistics;
 using Windows.Networking.NetworkOperators;
@@ -23,7 +24,7 @@ public class PageHelper
             "Import" => typeof(ImportPage),
             "Orders" => typeof(OrderPage),
             "Statistics" => typeof(StatisticsPage),
-            "Profile" => null,
+            "Profile" => typeof(ProfilePage),
             "Settings" => typeof(SettingsPage),
             "CreateProduct" => typeof(CreateProductPage),
             "CreateImport" => typeof(CreateImportPage),

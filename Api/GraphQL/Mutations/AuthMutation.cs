@@ -22,12 +22,7 @@ public class AuthMutation
 
         if (user != null)
         {
-            // Log ra để kiểm tra trong cửa sổ Output của Visual Studio
-            Console.WriteLine($"[DEBUG] DB Hash: {user.PasswordHash}");
-            Console.WriteLine($"[DEBUG] Input Pass: {password}");
-
             bool isValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
-            Console.WriteLine($"[DEBUG] Is Valid: {isValid}");
 
             if (isValid) return new LoginResultDTO(true, "Đăng nhập thành công!");
         }

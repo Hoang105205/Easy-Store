@@ -106,6 +106,7 @@ type Mutation {
   deleteOrder(id: UUID!): Boolean!
   upsertDraftOrder(input: UpsertDraftOrderInput!): Order!
   finalizeOrder(orderId: UUID!): Order!
+  changePassword(currentPassword: String! newPassword: String!): Boolean!
 }
 
 input CreateProductInput {

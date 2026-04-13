@@ -52,6 +52,7 @@ builder.Services
     .AddTypeExtension<CategoryMutation>()
     .AddTypeExtension<ImportMutation>()
     .AddTypeExtension<OrderMutation>()
+    .AddTypeExtension<UserMutation>()
     .AddProjections()
     .AddFiltering()
     .AddSorting()

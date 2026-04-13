@@ -42,6 +42,7 @@
     <None Remove="GraphQL\Dashboard.graphql" />
     <None Remove="GraphQL\Import.graphql" />
     <None Remove="GraphQL\Order.graphql" />
+    <None Remove="GraphQL\User.graphql" />
     <None Remove="Views\ConfigDialog.xaml" />
     <None Remove="Views\Dashboard\DashboardPage.xaml" />
     <None Remove="Views\Import\CreateImportPage.xaml" />
@@ -52,6 +53,7 @@
     <None Remove="Views\Orders\OrderDetailPage.xaml" />
     <None Remove="Views\Products\CreateProductPage.xaml" />
     <None Remove="Views\Products\ProductDetailPage.xaml" />
+    <None Remove="Views\Profile\ProfilePage.xaml" />
     <None Remove="Views\Settings\SettingsPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
     <None Remove="Views\Statistics\StatisticsPage.xaml" />
@@ -226,6 +228,9 @@
     <None Update="appsettings.ui.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Profile\ProfilePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Statistics\StatisticsPage.xaml">
