@@ -2,8 +2,9 @@
   <Folder Name="/db/">
     <File Path="seed_data.sql" />
   </Folder>
-  <Project Path="Core/Core.csproj" />
+  <Project Path="Api.Tests/Api.Tests.csproj" Id="4d25a065-9f45-4b84-abf4-004c00458e09" />
   <Project Path="Api/Api.csproj" Id="e411af42-1f29-46c3-a576-79033f6e1884" />
+  <Project Path="Core/Core.csproj" />
   <Project Path="Shared/Shared.csproj" />
   <Project Path="UI/UI.csproj">
     <Platform Project="x64" />
