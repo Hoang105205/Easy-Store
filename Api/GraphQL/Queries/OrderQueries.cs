@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 namespace Api.GraphQL.Queries;
 
 [ExtendObjectType(typeof(Query))]
-internal class OrderQueries
+public class OrderQueries
 {
     [UsePaging(DefaultPageSize = 20)]
     [UseSorting]
