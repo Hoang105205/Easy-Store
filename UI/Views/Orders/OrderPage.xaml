@@ -104,6 +104,7 @@
                 <controls:DataGrid 
                     x:Name="OrdersGrid"
                     ItemsSource="{x:Bind OrderVM.Orders, Mode=OneWay}"
+                    Sorting="OrdersGrid_Sorting"
                     AutoGenerateColumns="False"
                     IsReadOnly="True"
                     GridLinesVisibility="Horizontal"
@@ -113,18 +114,18 @@
                     DoubleTapped="OrdersGrid_DoubleTapped">
 
                     <controls:DataGrid.Columns>
-                        <controls:DataGridTextColumn Header="Mã hóa đơn" Binding="{Binding ReceiptNumber}" Width="1.5*"/>
+                        <controls:DataGridTextColumn Header="Mã hóa đơn" Tag="ReceiptNumber" Binding="{Binding ReceiptNumber}" Width="1.5*"/>
 
-                        <controls:DataGridTextColumn Header="Ngày tạo" Binding="{Binding OrderDate, Converter={StaticResource StringFormatConverter}, ConverterParameter='dd/MM/yyyy HH:mm'}" 
+                        <controls:DataGridTextColumn Header="Ngày tạo" Tag="OrderDate" Binding="{Binding OrderDate, Converter={StaticResource StringFormatConverter}, ConverterParameter='dd/MM/yyyy HH:mm'}" 
                             Width="1.5*"/>
 
-                        <controls:DataGridTextColumn Header="Doanh thu" Binding="{Binding TotalAmount, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
+                        <controls:DataGridTextColumn Header="Doanh thu" Tag="TotalAmount" Binding="{Binding TotalAmount, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
                             Width="1.5*"/>
 
-                        <controls:DataGridTextColumn Header="Lợi nhuận" Binding="{Binding TotalProfit, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
+                        <controls:DataGridTextColumn Header="Lợi nhuận" Tag="TotalProfit" Binding="{Binding TotalProfit, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N0} đ'}" 
                             Width="1.5*"/>
 
-                        <controls:DataGridTemplateColumn Header="Trạng thái" Width="1.5*">
+                        <controls:DataGridTemplateColumn Header="Trạng thái" Tag="Status" Width="1.5*">
                             <controls:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">

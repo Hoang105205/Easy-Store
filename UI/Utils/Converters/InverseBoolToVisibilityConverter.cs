@@ -10,10 +10,18 @@ public class InverseBoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
+        if (value is string activeColumn)
+        {
+            string currentColumn = parameter?.ToString() ?? string.Empty;
+
+            return activeColumn == currentColumn ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         if (value is bool b)
         {
             return b ? Visibility.Collapsed : Visibility.Visible;
         }
+
         return Visibility.Visible;
     }
 

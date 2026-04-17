@@ -39,15 +39,41 @@ public class ImportService
         string? searchKeyword,
         DateTime? fromDate,
         DateTime? toDate,
-        ImportStatus? status)
+        ImportStatus? status,
+        string? sortColumn = "CreatedAt",
+        bool isAscending = false
+    )
     {
+        var sortInput = new ImportLogSortInput();
+        var sortDirection = isAscending ? SortEnumType.Asc : SortEnumType.Desc;
+
+        switch (sortColumn)
+        {
+            case "Id":
+                sortInput.Id = sortDirection;
+                break;
+            case "TotalAmount":
+                sortInput.TotalAmount = sortDirection;
+                break;
+            case "Status":
+                sortInput.Status = sortDirection;
+                break;
+            case "CreatedAt":
+            default:
+                sortInput.CreatedAt = sortDirection;
+                break;
+        }
+
+        var orderList = new List<ImportLogSortInput> { sortInput };
+
         return await _client.GetImportHistory.ExecuteAsync(
             first,
             after,
             searchKeyword,
             fromDate,
             toDate,
-            status
+            status,
+            orderList
         );
     }
 

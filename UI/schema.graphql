@@ -170,7 +170,7 @@ scalar Long
 
 type Query {
   activeAutoSave: ImportLog
-  importHistory(searchKeyword: String fromDate: DateTime toDate: DateTime status: ImportStatus "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String): ImportHistoryConnection
+  importHistory(searchKeyword: String fromDate: DateTime toDate: DateTime status: ImportStatus "Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String order: [ImportLogSortInput!]): ImportHistoryConnection
   importById(id: UUID!): ImportLog
   importSummary: ImportSummary!
   dashboardStats(days: Int = 7): StoreStatistics!
@@ -313,6 +313,14 @@ type TopProductStatsDto {
   quantitySold: Int!
   revenue: Long!
   profit: Long!
+}
+
+input ImportLogSortInput {
+  id: SortEnumType
+  createdAt: SortEnumType
+  totalAmount: SortEnumType
+  status: SortEnumType
+  isAutoSaved: SortEnumType
 }
 
 input UpsertDraftOrderInput {

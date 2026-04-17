@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using HotChocolate.Data.Sorting;
+using Microsoft.Extensions.DependencyInjection;
 using StrawberryShake;
 using System;
 using System.Collections.Generic;
@@ -71,17 +72,50 @@ namespace UI.Services.ProductService
             string? searchText = null,
             Guid? categoryId = null,
             long? minPrice = null,
-            long? maxPrice = null
+            long? maxPrice = null,
+            string? sortColumn = "CreatedAt",
+            bool isAscending = false
         )
         {
+            var sortInput = new ProductSortInput();
+            var sortDirection = isAscending ? SortEnumType.Asc : SortEnumType.Desc;
+
+            switch (sortColumn)
+            {
+                case "Name":
+                    sortInput.Name = sortDirection;
+                    break;
+                case "SKU":
+                    sortInput.Sku = sortDirection;
+                    break;
+                case "Quantity":
+                    sortInput.StockQuantity = sortDirection;
+                    break;
+                case "Price":
+                    sortInput.SalePrice = sortDirection;
+                    break;
+                case "Category":
+                    sortInput.Category = new CategorySortInput { Name = sortDirection };
+                    break;
+                case "CreatedAt":
+                default:
+                    sortInput.CreatedAt = sortDirection;
+                    break;
+            }
+
+            var orderList = new List<ProductSortInput> { sortInput };
+
             var result = await _client.GetProductsPagination.ExecuteAsync(
                 first: itemsPerPage,
                 after: afterCursor,
                 searchTerm: searchText,
                 categoryId: categoryId,
                 minPrice: minPrice,
-                maxPrice: maxPrice
+                maxPrice: maxPrice,
+                order: orderList
             );
+
+
 
             if (result.Errors?.Count > 0)
             {

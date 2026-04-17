@@ -45,6 +45,8 @@ namespace UI.Views
 
             InitializeComponent();
 
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
+
             ProductVM.NavigateToAddProductAction = () => this.Frame.Navigate(typeof(Products.CreateProductPage));
             ProductVM.NavigateToProductDetailAction = (productId) => this.Frame.Navigate(typeof(Products.ProductDetailPage), productId);
 

@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using UI.ViewModels.Orders;
+using System.Diagnostics;
 
 namespace UI.Views.Orders
 {
@@ -15,14 +16,14 @@ namespace UI.Views.Orders
 
         public OrderPage()
         {
+            OrderVM = (App.Current as App)!.Services.GetRequiredService<OrderPageViewModel>();
+
             InitializeComponent();
 
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
             this.Loaded += (s, e) => _isPageReady = true;
 
             this.Unloaded += OrderPage_Unloaded;
-
-            OrderVM = (App.Current as App)!.Services.GetRequiredService<OrderPageViewModel>();
 
             // Setup Navigation Actions
             OrderVM.NavigateToAddOrderAction = () => this.Frame.Navigate(typeof(NewOrderPage));
@@ -91,6 +92,28 @@ namespace UI.Views.Orders
             {
                 // Thay vì chuyển Frame ở đây, ta dùng Command
                 OrderVM.GoToOrderDetailCommand.Execute(selectedOrder);
+            }
+        }
+
+        private void OrdersGrid_Sorting(object sender, CommunityToolkit.WinUI.UI.Controls.DataGridColumnEventArgs e)
+        {
+            string columnName = e.Column.Tag?.ToString();
+            if (string.IsNullOrEmpty(columnName)) return;
+
+            OrderVM.SortCommand.Execute(columnName);
+
+            foreach (var col in OrdersGrid.Columns)
+            {
+                if (col.Tag?.ToString() == OrderVM.ActiveSortColumn)
+                {
+                    col.SortDirection = OrderVM.IsAscending
+                        ? CommunityToolkit.WinUI.UI.Controls.DataGridSortDirection.Ascending
+                        : CommunityToolkit.WinUI.UI.Controls.DataGridSortDirection.Descending;
+                }
+                else
+                {
+                    col.SortDirection = null;
+                }
             }
         }
     }

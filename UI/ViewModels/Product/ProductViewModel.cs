@@ -62,6 +62,14 @@ namespace UI.ViewModels.Product
 
         private CancellationTokenSource? _loadCts;
 
+        [ObservableProperty] private string activeSortColumn;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SortGlyph))]
+        private bool isAscending = true;
+
+        public string SortGlyph => IsAscending ? "\xE70E" : "\xE70D";
+
         // --- Các biến xử lý logic GraphQL Cursor ---
         private string? currentEndCursor = null;
         private Stack<string> previousCursors = new();
@@ -88,6 +96,9 @@ namespace UI.ViewModels.Product
                 }
                 await LoadProductsAsync();
             });
+
+            ActiveSortColumn = "SKU";
+            IsAscending = false;
         }
 
         [RelayCommand]
@@ -128,7 +139,16 @@ namespace UI.ViewModels.Product
 
             try
             {
-                var result = await _productService.GetProductsPaginationAsync(itemsPerPage, afterCursor, SearchText, CategoryId, MinPrice, MaxPrice);
+                var result = await _productService.GetProductsPaginationAsync(
+                    itemsPerPage,
+                    afterCursor,
+                    SearchText,
+                    CategoryId,
+                    MinPrice,
+                    MaxPrice,
+                    ActiveSortColumn,
+                    IsAscending
+                );
 
                 if (currentToken.IsCancellationRequested) return;
 
@@ -271,6 +291,26 @@ namespace UI.ViewModels.Product
             WeakReferenceMessenger.Default.UnregisterAll(this);
             _debounceCts?.Cancel();
             _loadCts?.Cancel();
+        }
+
+        [RelayCommand]
+        private async Task SortAsync(string columnName)
+        {
+            if (string.IsNullOrEmpty(columnName)) return;
+
+            if (ActiveSortColumn == columnName)
+            {
+                IsAscending = !IsAscending;
+            }
+            else
+            {
+                ActiveSortColumn = columnName;
+                IsAscending = true;
+            }
+
+            pressedButton = false;
+
+            await LoadProductsAsync();
         }
     }
 }
