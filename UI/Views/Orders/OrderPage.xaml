@@ -8,8 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:converters="using:UI.Utils.Converters"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
@@ -18,7 +17,7 @@
         <converters:StatusTextConverter x:Key="StatusTextConverter"/>
     </Page.Resources>
 
-    <Grid Padding="30">
+    <Grid Padding="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -27,7 +26,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Spacing="20" Margin="0,0,0,20">
-            <TextBlock Text="Danh sách hóa đơn" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Danh sách hóa đơn" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
