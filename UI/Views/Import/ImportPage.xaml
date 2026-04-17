@@ -27,7 +27,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Spacing="16" Margin="0,0,0,16">
-            <TextBlock Text="Lịch sử nhập hàng" Style="{StaticResource TitleTextBlockStyle}" FontWeight="SemiBold"/>
+            <TextBlock Text="Lịch sử nhập hàng" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Style="{StaticResource TitleTextBlockStyle}"/>
 
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>

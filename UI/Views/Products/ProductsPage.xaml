@@ -12,19 +12,16 @@
         <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
     </Page.Resources>
 
-    <Grid Padding="30">
+    <Grid Padding="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,20">
-            <FontIcon Glyph="&#xE77B;" FontSize="24" FontWeight="Bold"/>
-            <TextBlock Text="Danh sách sản phẩm" FontSize="24" FontWeight="Bold"/>
-        </StackPanel>
+        <TextBlock Text="Danh sách sản phẩm" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
-        <Grid Grid.Row="1" Margin="0,0,0,20">
+        <Grid Grid.Row="1" Margin="0,20,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="Auto"/>
