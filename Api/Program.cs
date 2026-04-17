@@ -38,7 +38,6 @@ builder.Services.AddPooledDbContextFactory<AppDbContext>(options =>
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<Query>()
-    .AddTypeExtension<UserQueries>()
     .AddTypeExtension<ProductQueries>()
     .AddTypeExtension<CategoryQueries>()
     .AddTypeExtension<ImportQueries>()
