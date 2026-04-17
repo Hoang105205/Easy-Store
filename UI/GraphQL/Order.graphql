@@ -28,14 +28,16 @@ query GetOrdersPagination(
   $after: String,
   $receiptNumber: String,
   $startDate: DateTime,
-  $endDate: DateTime
+  $endDate: DateTime,
+  $order: [OrderSortInput!]
 ) {
   ordersPagination(
     first: $first, 
     after: $after,
     receiptNumber: $receiptNumber,
     startDate: $startDate,
-    endDate: $endDate
+    endDate: $endDate,
+    order: $order
   ) {
     totalCount
     pageInfo {

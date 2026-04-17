@@ -72,11 +72,20 @@ public partial class ImportViewModel : ObservableObject
     private string? _currentCursor = null;
     private string? _nextCursor = null;
 
+    [ObservableProperty] private string activeSortColumn;
+
+    [ObservableProperty]
+    private bool isAscending = true;
+
     public ImportViewModel(ImportService importService, ExcelService excelService)
     {
         _importService = importService;
         _excelService = excelService;
-        _ = LoadDataAsync(null); 
+
+        ActiveSortColumn = "CreatedAt";
+        IsAscending = false;
+
+        _ = LoadDataAsync(null);
     }
 
     // === LỆNH BẤM NÚT LỌC ===
@@ -112,7 +121,7 @@ public partial class ImportViewModel : ObservableObject
         }
     }
 
-    private async Task LoadImportLogs(string? cursor)
+    private async Task LoadImportLogs(string? cursor = null)
     {
         var localSettings = ApplicationData.Current.LocalSettings;
         int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
@@ -134,7 +143,9 @@ public partial class ImportViewModel : ObservableObject
             searchKeyword: SearchKeyword, 
             fromDate: apiFromDate,
             toDate: apiToDate,
-            status: apiStatus
+            status: apiStatus,
+            sortColumn: ActiveSortColumn,
+            isAscending: IsAscending
         );
 
         if (result.IsSuccessResult() && result.Data?.ImportHistory != null)
@@ -261,5 +272,28 @@ public partial class ImportViewModel : ObservableObject
         {
             Debug.WriteLine($"Lỗi chọn file Excel: {ex.Message}");
         }
+    }
+
+
+    [RelayCommand]
+    private async Task SortAsync(string columnName)
+    {
+        if (string.IsNullOrEmpty(columnName)) return;
+
+        if (ActiveSortColumn == columnName)
+        {
+            IsAscending = !IsAscending;
+        }
+        else
+        {
+            ActiveSortColumn = columnName;
+            IsAscending = true;
+        }
+
+        _cursorHistory.Clear();
+        HasPreviousPage = false;
+        _currentCursor = null;
+
+        await LoadImportLogs();
     }
 }

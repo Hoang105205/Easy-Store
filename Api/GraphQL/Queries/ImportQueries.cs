@@ -27,6 +27,7 @@ public class ImportQueries
     }
 
     [UsePaging(IncludeTotalCount = true, DefaultPageSize = 20, MaxPageSize = 20)]
+    [UseSorting]
     public IQueryable<ImportLog> GetImportHistory(
         [Service] AppDbContext context,
         string? searchKeyword,
@@ -72,7 +73,7 @@ public class ImportQueries
             query = query.Where(i => i.Status == status.Value);
         }
 
-        return query.OrderByDescending(i => i.CreatedAt);
+        return query;
     }
 
     public async Task<ImportLog?> GetImportByIdAsync(

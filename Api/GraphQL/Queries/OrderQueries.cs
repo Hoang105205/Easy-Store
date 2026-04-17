@@ -54,8 +54,6 @@ public class OrderQueries
             query = query.Where(o => o.OrderDate <= endOfDay);
         }
 
-        query = query.OrderByDescending(p => p.OrderDate).ThenBy(p => p.Id);
-
         return query;
     }
 
