@@ -12,7 +12,7 @@ public class StoreStatisticsResolvers
     // Field: actualGrossRevenue
     public async Task<long> GetActualGrossRevenue(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var query = context.Orders.AsQueryable();
 
@@ -27,7 +27,7 @@ public class StoreStatisticsResolvers
     // Field: actualRevenue
     public async Task<long> GetActualRevenue(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var query = context.Orders.Where(o => o.Status == Statuses.Paid);
 
@@ -42,7 +42,7 @@ public class StoreStatisticsResolvers
     // Field: totalPercentIncreaseRevenue
     public async Task<double> GetTotalPercentIncreaseRevenue(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         if (parent.StartDate == null || parent.PreviousDate == null)
         {
@@ -68,7 +68,7 @@ public class StoreStatisticsResolvers
     // Field: actualGrossProfit
     public async Task<long> GetActualGrossProfit(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var query = context.Orders.AsQueryable();
 
@@ -83,7 +83,7 @@ public class StoreStatisticsResolvers
     // Field: actualProfit
     public async Task<long> GetActualProfit(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var query = context.Orders.Where(o => o.Status == Statuses.Paid);
 
@@ -98,7 +98,7 @@ public class StoreStatisticsResolvers
     // Field: totalPercentIncreaseProfit
     public async Task<double> GetTotalPercentIncreaseProfit(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         if (parent.StartDate == null || parent.PreviousDate == null)
         {
@@ -124,7 +124,7 @@ public class StoreStatisticsResolvers
     // Field: totalNewOrders
     public async Task<int> GetTotalNewOrders(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var query = context.Orders.AsQueryable();
 
@@ -139,7 +139,7 @@ public class StoreStatisticsResolvers
     // Field: totalPaidOrders
     public async Task<int> GetTotalPaidOrders(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var query = context.Orders.Where(o => o.Status == Statuses.Paid);
 
@@ -154,7 +154,7 @@ public class StoreStatisticsResolvers
     // Field: totalRevenueGraph
     public async Task<List<DailyRevenue>> GetTotalRevenueGraph(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var query = context.Orders.Where(o => o.Status == Statuses.Paid);
 
@@ -176,7 +176,7 @@ public class StoreStatisticsResolvers
     // Field: bestSellingProducts
     public async Task<List<ProductStat>> GetBestSellingProducts(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var query = context.OrderItems.Where(oi => oi.Order.Status == Statuses.Paid);
 
@@ -202,7 +202,7 @@ public class StoreStatisticsResolvers
     // Field: nearlyOutOfStock
     public async Task<List<ProductStat>> GetNearlyOutOfStock(
         [Parent] StoreStatistics parent,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         return await context.Products
             .Where(p => p.StockQuantity <= p.MinimumStockQuantity)

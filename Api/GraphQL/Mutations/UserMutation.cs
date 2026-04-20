@@ -11,7 +11,7 @@ public class UserMutation
     public async Task<bool> ChangePassword(
         string currentPassword,
         string newPassword,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var admin = await context.Users.FirstOrDefaultAsync();
 

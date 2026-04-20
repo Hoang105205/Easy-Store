@@ -33,7 +33,7 @@ public class ProductMutation
 {
     public async Task<Product> CreateProductAsync(
         CreateProductInput input,
-        [Service] AppDbContext dbContext)
+        AppDbContext dbContext)
     {
         // Tạo sản phẩm mới
         var newProduct = new Product
@@ -70,7 +70,7 @@ public class ProductMutation
 
     public async Task<Product> UpdateProductAsync(
         UpdateProductInput input,
-        [Service] AppDbContext dbContext)
+        AppDbContext dbContext)
     {
         var product = await dbContext.Products.FindAsync(input.Id);
         if (product == null) throw new Exception("Không tìm thấy sản phẩm.");
@@ -107,7 +107,7 @@ public class ProductMutation
 
     public async Task<bool> DeleteProductAsync(
         Guid id,
-        [Service] AppDbContext dbContext)
+        AppDbContext dbContext)
     {
         var product = await dbContext.Products.FindAsync(id);
         if (product == null) throw new Exception("Không tìm thấy sản phẩm.");

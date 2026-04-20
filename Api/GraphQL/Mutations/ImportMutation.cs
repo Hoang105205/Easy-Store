@@ -25,7 +25,7 @@ public class ImportMutation
 {
     public async Task<ImportLog> CompleteImportAsync(
         CompleteImportInput input,
-        [Service] AppDbContext context
+        AppDbContext context
     )
     {
         // 1. Phân loại Trạng thái & Cờ Auto-save rõ ràng theo nghiệp vụ
@@ -118,7 +118,7 @@ public class ImportMutation
 
     public async Task<bool> DeleteImportAsync(
         Guid importId,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         // 1. Tìm phiếu trong DB
         var importLog = await context.ImportLogs.FindAsync(importId);
@@ -143,7 +143,7 @@ public class ImportMutation
 
     public async Task<ImportLog> MarkImportCompletedAsync(
         Guid importId,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         // 1. Tìm phiếu kèm theo danh sách sản phẩm bên trong
         var importLog = await context.ImportLogs
