@@ -14,7 +14,7 @@ public class AuthMutation
     public async Task<LoginResultDTO> Login(
         string username,
         string password,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
 
         var user = await context.Users

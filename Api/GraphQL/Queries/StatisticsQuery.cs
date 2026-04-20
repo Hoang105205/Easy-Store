@@ -13,7 +13,7 @@ namespace Api.GraphQL.Queries;
 public class StatisticsQuery
 {
     public async Task<StatisticsResultDto> GetStatistics(
-        [Service] AppDbContext context,
+        AppDbContext context,
         DateTime fromDate,
         DateTime toDate)
     {

@@ -14,7 +14,7 @@ public class OrderQueries
 {
     [UsePaging(DefaultPageSize = 20)]
     [UseSorting]
-    public IQueryable<Order> GetOrders([Service] AppDbContext context)
+    public IQueryable<Order> GetOrders(AppDbContext context)
     {
         var query = context.Orders.Where(o => !o.IsDraft).AsQueryable();
         query = query.OrderByDescending(p => p.OrderDate).ThenBy(p => p.Id);
@@ -26,7 +26,7 @@ public class OrderQueries
     [UseProjection]
     [UseSorting]
     public IQueryable<Order> GetOrdersPagination(
-        [Service] AppDbContext context,
+        AppDbContext context,
         string? receiptNumber = null,
         DateTime? startDate = null,
         DateTime? endDate = null
@@ -59,13 +59,13 @@ public class OrderQueries
 
     [UseSingleOrDefault]
     [UseProjection]
-    public IQueryable<Order> GetOrderById(Guid id, [Service] AppDbContext dbContext)
+    public IQueryable<Order> GetOrderById(Guid id, AppDbContext dbContext)
     { 
         return dbContext.Orders.Where(p => p.Id == id);
     }
 
     [UseProjection]
-    public IQueryable<Order> GetDraftOrders([Service] AppDbContext context)
+    public IQueryable<Order> GetDraftOrders(AppDbContext context)
     {
         return context.Orders.Where(o => o.IsDraft).OrderBy(o => o.OrderDate);
     }

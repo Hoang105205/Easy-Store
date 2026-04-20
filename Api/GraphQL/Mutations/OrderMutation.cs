@@ -26,7 +26,7 @@ public class UpsertDraftOrderInput
 [ExtendObjectType(typeof(Mutation))]
 public class OrderMutation
 {
-    public async Task<Order> PayOrderAsync(Guid id, [Service] AppDbContext context)
+    public async Task<Order> PayOrderAsync(Guid id, AppDbContext context)
     {
         var order = await context.Orders.FindAsync(id);
         if (order == null) throw new Exception("Không tìm thấy đơn hàng");
@@ -40,7 +40,7 @@ public class OrderMutation
         return order;
     }
 
-    public async Task<bool> DeleteOrderAsync(Guid id, [Service] AppDbContext context)
+    public async Task<bool> DeleteOrderAsync(Guid id, AppDbContext context)
     {
         var order = await context.Orders
         .Include(o => o.OrderItems)
@@ -76,7 +76,7 @@ public class OrderMutation
         return true;
     }
 
-    public async Task<Order> UpsertDraftOrderAsync(UpsertDraftOrderInput input, [Service] AppDbContext context)
+    public async Task<Order> UpsertDraftOrderAsync(UpsertDraftOrderInput input, AppDbContext context)
     {
         Order order;
         long totalAmount = OrderHelper.CalculateTotalAmount(input.Items);
@@ -166,7 +166,7 @@ public class OrderMutation
         return savedOrder ?? order;
     }
 
-    public async Task<Order> FinalizeOrderAsync(Guid orderId, [Service] AppDbContext context)
+    public async Task<Order> FinalizeOrderAsync(Guid orderId, AppDbContext context)
     {
         var order = await context.Orders
             .Include(o => o.OrderItems)
