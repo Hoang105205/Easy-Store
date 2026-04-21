@@ -8,11 +8,13 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.12" />
+    <PackageReference Include="HotChocolate.Language" Version="15.1.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.15" />
   </ItemGroup>
   
 </Project>
