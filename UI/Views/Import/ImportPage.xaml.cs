@@ -35,8 +35,6 @@ public sealed partial class ImportPage : Page
 
         InitializeComponent();
 
-        this.NavigationCacheMode = NavigationCacheMode.Enabled;
-
         ViewModel.NavigateToCreateImportAction = (excelFile) =>
         {
             Frame.Navigate(typeof(CreateImportPage), excelFile);
