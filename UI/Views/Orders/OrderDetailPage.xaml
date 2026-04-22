@@ -11,7 +11,7 @@
         <converters:StatusColorConverter x:Key="StatusColorConverter"/>
         <converters:StatusIconConverter x:Key="StatusIconConverter"/>
         <converters:StatusTextConverter x:Key="StatusTextConverter"/>
-
+        <converters:AsyncImageConverter x:Key="AsyncImageConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Page.Resources>
 
@@ -89,7 +89,7 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Spacing="12" Padding="0,4">
                                         <Border CornerRadius="4" Width="40" Height="40" Background="#EEEEEE">
-                                            <Image Source="{Binding ImageUrl}" Stretch="UniformToFill" />
+                                            <Image Source="{Binding ImageUrl, Converter={StaticResource AsyncImageConverter}}" Stretch="UniformToFill" />
                                         </Border>
 
                                         <TextBlock Text="{Binding ProductName}" 

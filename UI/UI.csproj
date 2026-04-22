@@ -37,6 +37,7 @@
     <None Remove="Assets\LoginIllustration.jpg" />
     <None Remove="Assets\onboarding2.png" />
     <None Remove="Assets\onboarding3.png" />
+    <None Remove="Dialog\LoadingDialog.xaml" />
     <None Remove="Dialog\NewCategoryDialog.xaml" />
     <None Remove="GraphQL\Auth.graphql" />
     <None Remove="GraphQL\Dashboard.graphql" />
@@ -229,6 +230,9 @@
     <None Update="appsettings.ui.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Dialog\LoadingDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Profile\ProfilePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
