@@ -78,15 +78,16 @@ public sealed partial class ConfigDialog : ContentDialog
                 using var client = new HttpClient();
                 client.Timeout = TimeSpan.FromSeconds(10);
                 client.DefaultRequestHeaders.Add("apikey", SupabaseApiKey);
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseApiKey}");
+                //client.DefaultRequestHeaders.Add("Authorization", $"Bearer {SupabaseApiKey}");
 
-                var response = await client.GetAsync($"{SupabaseUri.TrimEnd('/')}/rest/v1/");
+                var response = await client.GetAsync($"{SupabaseUri.TrimEnd('/')}/storage/v1/bucket");
 
                 if (response.IsSuccessStatusCode)
                     statusMsg.AppendLine("Supabase API: Xác thực thành công.");
                 else
                 {
-                    statusMsg.AppendLine($"Supabase API: Mã lỗi {response.StatusCode}");
+                    string errorDetail = await response.Content.ReadAsStringAsync();
+                    statusMsg.AppendLine($"Supabase API: Mã lỗi {response.StatusCode} - Chi tiết: {errorDetail}");
                     allTestsPassed = false;
                 }
             }
