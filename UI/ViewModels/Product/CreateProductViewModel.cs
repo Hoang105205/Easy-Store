@@ -38,6 +38,9 @@ public partial class CreateProductViewModel : ObservableObject
     public Func<string, string, Task>? ShowAlertAction { get; set; }
     public Func<string, string, Task<bool>>? ShowConfirmAction { get; set; }
 
+    public Action? ShowLoadingAction { get; set; }
+    public Action? HideLoadingAction { get; set; }
+
     public CreateProductViewModel()
     {
         _productService = App.Current.Services.GetRequiredService<ProductService>();
@@ -72,6 +75,37 @@ public partial class CreateProductViewModel : ObservableObject
         if (SelectedImages.Count < 1) return (false, "Vui lòng chọn ít nhất 1 ảnh.");
 
         return (true, string.Empty);
+    }
+
+    public async Task UploadAndAddImageAsync(Windows.Storage.StorageFile file)
+    {
+        ShowLoadingAction?.Invoke();
+
+        try
+        {
+            string? uploadedFileName = await UI.Services.ImageCacheService.SupabaseUploadService.UploadImageAsync(file);
+
+            if (!string.IsNullOrEmpty(uploadedFileName))
+            {
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    SelectedImages.Add(uploadedFileName);
+                });
+            }
+            else
+            {
+                if (ShowAlertAction != null)
+                    await ShowAlertAction("Lỗi tải ảnh", "Không thể tải ảnh lên máy chủ. Vui lòng thử lại.");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (ShowAlertAction != null) await ShowAlertAction("Lỗi", ex.Message);
+        }
+        finally
+        {
+            HideLoadingAction?.Invoke();
+        }
     }
 
     [RelayCommand]

@@ -12,6 +12,7 @@
 
     <UserControl.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:AsyncImageConverter x:Key="AsyncImageConverter"/>
     </UserControl.Resources>
 
     <Grid Padding="20" ColumnSpacing="20">
@@ -53,7 +54,7 @@
                             <controls:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Padding="8">
-                                        <PersonPicture ProfilePicture="{Binding ImagePath}" Width="40" Height="40" CornerRadius="4" Margin="0,0,12,0"/>
+                                        <PersonPicture ProfilePicture="{Binding ImagePath, Converter={StaticResource AsyncImageConverter}}" Width="40" Height="40" CornerRadius="4" Margin="0,0,12,0"/>
                                         <StackPanel VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
                                             <TextBlock Text="{Binding Sku}" FontSize="12" Foreground="Gray"/>
@@ -104,7 +105,7 @@
                                                                     <ColumnDefinition Width="*"/>
                                                                 </Grid.ColumnDefinitions>
 
-                                                                <PersonPicture Grid.Column="0" ProfilePicture="{x:Bind ImagePath}" Width="32" Height="32" CornerRadius="4"/>
+                                                                <PersonPicture Grid.Column="0" ProfilePicture="{Binding ImagePath, Converter={StaticResource AsyncImageConverter}}" Width="32" Height="32" CornerRadius="4"/>
 
                                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                                     <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
