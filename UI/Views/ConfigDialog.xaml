@@ -2,7 +2,7 @@
     x:Class="UI.Views.ConfigDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Cấu hình máy chủ"
+    Title="Cấu hình hệ thống"
     PrimaryButtonText="Lưu"
     SecondaryButtonText="Kiểm tra"
     CloseButtonText="Hủy"
@@ -16,19 +16,43 @@
         </Style>
     </ContentDialog.PrimaryButtonStyle>
 
-    <StackPanel Spacing="15" Width="350">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="Database URL" FontWeight="SemiBold" FontSize="14"/>
-            <FontIcon Glyph="&#xE946;" FontSize="14" FontFamily="Segoe MDL2 Assets" Foreground="Gray" VerticalAlignment="Center"/>
+    <StackPanel Spacing="15" Width="400">
+        <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Database URL (PostgreSQL)" FontWeight="SemiBold" FontSize="14"/>
+                <FontIcon Glyph="&#xE946;" FontSize="14" FontFamily="Segoe MDL2 Assets" Foreground="Gray" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBox x:Name="UrlInput" 
+                     PlaceholderText="Nhập chuỗi kết nối (vd: Host=...)" 
+                     TextWrapping="Wrap" 
+                     AcceptsReturn="True" 
+                     Height="80"
+                     CornerRadius="4"/>
         </StackPanel>
 
-        <TextBox x:Name="UrlInput" 
-                 PlaceholderText="Nhập chuỗi kết nối (vd: Host=...)" 
-                 TextWrapping="Wrap" 
-                 AcceptsReturn="True" 
-                 Height="200"
-                 CornerRadius="4"/>
+        <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Supabase Project URI" FontWeight="SemiBold" FontSize="14"/>
+                <FontIcon Glyph="&#xE12B;" FontSize="14" FontFamily="Segoe MDL2 Assets" Foreground="Gray" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBox x:Name="SupabaseUriInput" 
+                     PlaceholderText="VD: https://xyz.supabase.co" 
+                     CornerRadius="4"/>
+        </StackPanel>
 
-        <TextBlock x:Name="StatusTextBlock" FontSize="12" Visibility="Collapsed"/>
+        <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Public API Key (anon key)" FontWeight="SemiBold" FontSize="14"/>
+                <FontIcon Glyph="&#xE1F6;" FontSize="14" FontFamily="Segoe MDL2 Assets" Foreground="Gray" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBox x:Name="SupabaseApiKeyInput" 
+                     PlaceholderText="Nhập khóa API công khai..." 
+                     TextWrapping="Wrap" 
+                     AcceptsReturn="True" 
+                     Height="60"
+                     CornerRadius="4"/>
+        </StackPanel>
+
+        <TextBlock x:Name="StatusTextBlock" FontSize="12" Visibility="Collapsed" TextWrapping="Wrap"/>
     </StackPanel>
 </ContentDialog>

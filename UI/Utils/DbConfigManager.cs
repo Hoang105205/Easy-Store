@@ -17,10 +17,12 @@ public class DbConfigManager
     {
         // 1. Lấy URL cũ từ bộ nhớ máy (LocalSettings)
         var settings = ApplicationData.Current.LocalSettings;
-        string savedUrl = settings.Values["DbConnectionString"]?.ToString() ?? "";
+        string savedDbUrl = settings.Values["DbConnectionString"]?.ToString() ?? "";
+        string savedUri = settings.Values["SupabaseUri"]?.ToString() ?? "";
+        string savedApiKey = settings.Values["SupabaseApiKey"]?.ToString() ?? "";
 
         // 2. Khởi tạo và hiển thị Dialog
-        var dialog = new ConfigDialog(savedUrl)
+        var dialog = new ConfigDialog(savedDbUrl, savedUri, savedApiKey)
         {
             XamlRoot = xamlRoot // Truyền XamlRoot vào đây
         };
@@ -36,15 +38,19 @@ public class DbConfigManager
         // 3. Nếu bấm "Lưu" (PrimaryButton), thực hiện lưu vào máy
         if (result == ContentDialogResult.Primary)
         {
-            string newUrl = dialog.DbConnectionString?.Trim() ?? "";
+            string newDbUrl = dialog.DbConnectionString;
+            string newUri = dialog.SupabaseUri;
+            string newApiKey = dialog.SupabaseApiKey;
 
-            if (!string.IsNullOrEmpty(newUrl) && newUrl != savedUrl)
+            if (newDbUrl != savedDbUrl || newUri != savedUri || newApiKey != savedApiKey)
             {
-                settings.Values["DbConnectionString"] = newUrl;
+                settings.Values["DbConnectionString"] = newDbUrl;
+                settings.Values["SupabaseUri"] = newUri;
+                settings.Values["SupabaseApiKey"] = newApiKey;
 
                 // 3. RESTART LOGIC: Dừng cái cũ, bật cái mới
                 App.Current.StopBackendApi(); // Gọi từ biến Current bạn đã setup
-                App.Current.StartBackendApi(newUrl);
+                App.Current.StartBackendApi(newDbUrl);
 
                 Debug.WriteLine("=== Restart API thành công với URL mới ===");
 
