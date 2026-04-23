@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using UI.Messages;
 using UI.Services.AuthService;
 using UI.Services.ProductService;
+using UI.Utils;
 
 
 namespace UI.ViewModels.Product
@@ -123,8 +124,7 @@ namespace UI.ViewModels.Product
             var currentToken = _loadCts.Token;
             IsLoading = true;
 
-            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-            int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
+            int itemsPerPage = AppRuntimeStorage.GetInt("ItemsPerPage", 10);
 
             if (!pressedButton)
             {

@@ -3,8 +3,10 @@ using QuestPDF.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using UI.Utils;
 using Windows.Storage;
 
 namespace UI.Services.PrintService;
@@ -17,12 +19,13 @@ public class PdfService
         try
         {
             // 1. Tạo thư mục tạm để lưu file PDF
-            var tempFolder = ApplicationData.Current.TemporaryFolder;
-            var file = await tempFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
-            var filePath = file.Path;
+            var tempPath = AppRuntimeStorage.GetTemporaryFolderPath();
+            var filePath = Path.Combine(tempPath, fileName);
 
             // 2. QuestPDF render thẳng vào đường dẫn này
             document.GeneratePdf(filePath);
+
+            var file = await StorageFile.GetFileFromPathAsync(filePath);
 
             // 3. Gọi Windows mở file PDF này lên (Sẽ mở bằng Edge hoặc trình đọc PDF mặc định)
             var options = new Windows.System.LauncherOptions { DisplayApplicationPicker = false };

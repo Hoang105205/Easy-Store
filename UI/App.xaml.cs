@@ -22,6 +22,7 @@ using UI.ViewModels.Orders;
 using UI.ViewModels.Product;
 using UI.ViewModels.Profile;
 using UI.ViewModels.Statistics;
+using UI.Utils;
 using UI.Views;
 using UI.Views.Import;
 
@@ -105,26 +106,32 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        _window = new MainWindow();
-        ActiveWindow = _window;
+        try
+        {
+            _window = new MainWindow();
+            ActiveWindow = _window;
 
-        // Tìm cái RootFrame mà chúng ta vừa định nghĩa ở MainWindow
-        Frame rootFrame = _window.RootFrame;
+            Frame rootFrame = _window.RootFrame;
 
-        ConfigTheme();
+            // Đưa toàn bộ logic vào try-catch
+            ConfigTheme();
+            CheckAndStartBackendApi();
+            CheckIsLogedIn();
 
-        CheckAndStartBackendApi();
-
-        CheckIsLogedIn();
-
-        _window.Closed += OnWindowClosed;
-        _window.Activate();
+            _window.Closed += OnWindowClosed;
+            _window.Activate();
+        }
+        catch (Exception ex)
+        {
+            // Nếu crash, ít nhất nó cũng hiện ra thông báo thay vì biến mất
+            Debug.WriteLine($"CRITICAL ERROR: {ex.Message}");
+            // Bạn có thể tạm thời comment các hàm Check... để test xem app trắng có lên không
+        }
     }
 
     private void CheckAndStartBackendApi()
     {
-        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-        string? dbUrl = localSettings.Values["DbConnectionString"] as string;
+        string? dbUrl = AppRuntimeStorage.GetString("DbConnectionString");
         if (!string.IsNullOrEmpty(dbUrl))
         {
             Debug.WriteLine("tìm thấy dbUrl trong LocalSettings");
@@ -134,9 +141,8 @@ public partial class App : Application
 
     private void CheckIsLogedIn()
     {
-        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-        string? dbUrl = localSettings.Values["DbConnectionString"] as string;
-        bool isFirstTime = localSettings.Values["IsFirstTime"] as bool? ?? true;
+        string? dbUrl = AppRuntimeStorage.GetString("DbConnectionString");
+        bool isFirstTime = AppRuntimeStorage.GetBool("IsFirstTime", true);
 
         var authService = Services.GetRequiredService<AuthService>();
 
@@ -162,13 +168,10 @@ public partial class App : Application
 
     private void ConfigTheme()
     {
-        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-        if (localSettings.Values["IsDarkMode"] is bool isDark)
+        var isDark = AppRuntimeStorage.GetBool("IsDarkMode", false);
+        if (_window?.Content is FrameworkElement rootElement)
         {
-            if (_window?.Content is FrameworkElement rootElement)
-            {
-                rootElement.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
-            }
+            rootElement.RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
         }
     }
 
@@ -183,7 +186,12 @@ public partial class App : Application
             ApiProcess = new Process();
 
             // 2. Xác định đường dẫn file EXE
-            String apiPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Api.exe");
+            string apiPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backend", "Api.exe");
+
+            if (!File.Exists(apiPath))
+            {
+                apiPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Api.exe");
+            }
 
             ApiProcess.StartInfo.FileName = apiPath;
 
@@ -192,7 +200,7 @@ public partial class App : Application
 
             // CỰC KỲ QUAN TRỌNG: Đặt thư mục làm việc là nơi chứa Api.exe
             // Điều này giúp Api.exe tìm thấy Api.dll và các file appsettings.json
-            ApiProcess.StartInfo.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            ApiProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(apiPath);
 
             // 4. Cấu hình chạy ngầm (Silent Mode)
             ApiProcess.StartInfo.CreateNoWindow = true;

@@ -34,20 +34,15 @@ namespace UI.Views.Settings
 
         private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-
             // Pagination
-            int savedItemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
+            int savedItemsPerPage = AppRuntimeStorage.GetInt("ItemsPerPage", 10);
             ItemsPerPageComboBox.SelectedItem = savedItemsPerPage.ToString();
 
             // Theme
-            if (localSettings.Values["IsDarkMode"] is bool isDark)
-            {
-                DarkThemeToggle.IsOn = isDark;
-            }
+            DarkThemeToggle.IsOn = AppRuntimeStorage.GetBool("IsDarkMode", false);
 
             // Session
-            bool isRestoreEnabled = localSettings.Values["RestoreSession"] as bool? ?? false;
+            bool isRestoreEnabled = AppRuntimeStorage.GetBool("RestoreSession", false);
             RestoreSessionToggle.IsOn = isRestoreEnabled;
         }
 
@@ -56,7 +51,7 @@ namespace UI.Views.Settings
             if (ItemsPerPageComboBox.SelectedItem is string selectedValue && int.TryParse(selectedValue, out int itemsPerPage))
             {
                 // Ghi đè số mới vào LocalSettings
-                Windows.Storage.ApplicationData.Current.LocalSettings.Values["ItemsPerPage"] = itemsPerPage;
+                AppRuntimeStorage.SetValue("ItemsPerPage", itemsPerPage);
             }
         }
 
@@ -67,7 +62,7 @@ namespace UI.Views.Settings
                 bool isDarkMode = toggleSwitch.IsOn;
 
                 // 1. Lưu cấu hình vào LocalSettings để lần sau mở app lên nó nhớ
-                Windows.Storage.ApplicationData.Current.LocalSettings.Values["IsDarkMode"] = isDarkMode;
+                AppRuntimeStorage.SetValue("IsDarkMode", isDarkMode);
 
                 // 2. Gọi cửa sổ chính (MainWindow) ra và đổi Theme toàn bộ ứng dụng
                 if (App.Current.AppMainWindow?.Content is FrameworkElement rootElement)
@@ -82,15 +77,14 @@ namespace UI.Views.Settings
             if (sender is ToggleSwitch toggleSwitch)
             {
                 bool isEnabled = toggleSwitch.IsOn;
-                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
 
                 // 1. Lưu thiết lập Bật/Tắt mới nhất
-                localSettings.Values["RestoreSession"] = isEnabled;
+                AppRuntimeStorage.SetValue("RestoreSession", isEnabled);
 
                 // 2. Dọn dẹp: Nếu người dùng TẮT, xóa luôn vết tích của trang cũ
                 if (!isEnabled)
                 {
-                    localSettings.Values.Remove("LastVisitedPage");
+                    AppRuntimeStorage.RemoveValue("LastVisitedPage");
                 }
             }
         }

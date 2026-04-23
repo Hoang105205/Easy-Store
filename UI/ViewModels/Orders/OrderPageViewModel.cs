@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using UI.Services.OrderService;
+using UI.Utils;
 
 namespace UI.ViewModels.Orders
 {
@@ -112,8 +113,7 @@ namespace UI.ViewModels.Orders
             var currentToken = _loadCts.Token;
 
             IsLoading = true;
-            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-            int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
+            int itemsPerPage = AppRuntimeStorage.GetInt("ItemsPerPage", 10);
 
             if (!pressedButton)
             {

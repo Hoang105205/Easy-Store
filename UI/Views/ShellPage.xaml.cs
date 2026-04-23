@@ -43,15 +43,14 @@ public sealed partial class ShellPage : Page
 
     private void NavigateInitialPage()
     {
-        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-
         string pageToLoad = "Dashboard"; // Trang mặc định nếu không có gì
-        bool isRestoreEnabled = localSettings.Values["RestoreSession"] as bool? ?? false;
+        bool isRestoreEnabled = AppRuntimeStorage.GetBool("RestoreSession", false);
 
         // Nếu tính năng BẬT và có lưu Tag cũ
-        if (isRestoreEnabled && localSettings.Values["LastVisitedPage"] != null)
+        var lastVisitedPage = AppRuntimeStorage.GetString("LastVisitedPage");
+        if (isRestoreEnabled && !string.IsNullOrEmpty(lastVisitedPage))
         {
-            pageToLoad = localSettings.Values["LastVisitedPage"].ToString();
+            pageToLoad = lastVisitedPage;
         }
 
         // 1. Chuyển Frame tới trang đó
@@ -98,12 +97,11 @@ public sealed partial class ShellPage : Page
 
 
             // 2. Logic "Lưu nháp" phiên làm việc
-            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-            bool isRestoreEnabled = localSettings.Values["RestoreSession"] as bool? ?? false;
+            bool isRestoreEnabled = AppRuntimeStorage.GetBool("RestoreSession", false);
 
             if (isRestoreEnabled)
             {
-                localSettings.Values["LastVisitedPage"] = targetTag;
+                AppRuntimeStorage.SetValue("LastVisitedPage", targetTag);
             }
         }
     }

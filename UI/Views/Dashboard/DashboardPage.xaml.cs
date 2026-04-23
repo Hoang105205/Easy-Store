@@ -48,12 +48,11 @@ namespace UI.Views.Dashboard
                     this.Frame.Navigate(pageType);
                 }
 
-                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-                bool isRestoreEnabled = localSettings.Values["RestoreSession"] as bool? ?? false;
+                bool isRestoreEnabled = AppRuntimeStorage.GetBool("RestoreSession", false);
 
                 if (isRestoreEnabled)
                 {
-                    localSettings.Values["LastVisitedPage"] = targetTag;
+                    AppRuntimeStorage.SetValue("LastVisitedPage", targetTag);
                 }
             }
         }

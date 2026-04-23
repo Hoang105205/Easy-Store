@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using UI.Views;
-using Windows.Storage;
 
 namespace UI.Utils;
 
@@ -16,8 +15,7 @@ public class DbConfigManager
     public static async Task ShowConfigDialogAsync(XamlRoot xamlRoot)
     {
         // 1. Lấy URL cũ từ bộ nhớ máy (LocalSettings)
-        var settings = ApplicationData.Current.LocalSettings;
-        string savedUrl = settings.Values["DbConnectionString"]?.ToString() ?? "";
+        string savedUrl = AppRuntimeStorage.GetString("DbConnectionString", "") ?? "";
 
         // 2. Khởi tạo và hiển thị Dialog
         var dialog = new ConfigDialog(savedUrl)
@@ -40,7 +38,7 @@ public class DbConfigManager
 
             if (!string.IsNullOrEmpty(newUrl) && newUrl != savedUrl)
             {
-                settings.Values["DbConnectionString"] = newUrl;
+                AppRuntimeStorage.SetValue("DbConnectionString", newUrl);
 
                 // 3. RESTART LOGIC: Dừng cái cũ, bật cái mới
                 App.Current.StopBackendApi(); // Gọi từ biến Current bạn đã setup

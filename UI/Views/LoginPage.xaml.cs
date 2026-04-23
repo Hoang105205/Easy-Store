@@ -26,9 +26,9 @@ public sealed partial class LoginPage : Page
     public LoginPage()
     {
         InitializeComponent();
-        
-        var version = Windows.ApplicationModel.Package.Current.Id.Version;
-        VersionTextBlock.Text = $"Phiên bản {version.Major}.{version.Minor}.{version.Build}";
+
+        var assemblyVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        VersionTextBlock.Text = $"Phiên bản {assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
     }
 
     private async void SignInButton_Click(object sender, RoutedEventArgs e)

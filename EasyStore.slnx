@@ -1,12 +1,23 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
   <Folder Name="/db/">
     <File Path="seed_data.sql" />
   </Folder>
-  <Project Path="Api.Tests/Api.Tests.csproj" Id="4d25a065-9f45-4b84-abf4-004c00458e09" />
-  <Project Path="Api/Api.csproj" Id="e411af42-1f29-46c3-a576-79033f6e1884" />
-  <Project Path="Core/Core.csproj" />
-  <Project Path="Shared/Shared.csproj" />
+  <Project Path="Api.Tests/Api.Tests.csproj" Id="4d25a065-9f45-4b84-abf4-004c00458e09">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="Api/Api.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Core/Core.csproj">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="UI/UI.csproj">
+    <BuildDependency Project="Api/Api.csproj" />
+    <BuildDependency Project="Core/Core.csproj" />
     <Platform Project="x64" />
     <Deploy />
   </Project>

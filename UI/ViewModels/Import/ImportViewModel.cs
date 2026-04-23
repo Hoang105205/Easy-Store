@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UI.Services.ExcelService;
 using UI.Services.ImportService;
+using UI.Utils;
 using UI.Views.Import;
 using Windows.Storage;
 
@@ -123,8 +124,7 @@ public partial class ImportViewModel : ObservableObject
 
     private async Task LoadImportLogs(string? cursor = null)
     {
-        var localSettings = ApplicationData.Current.LocalSettings;
-        int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
+        int itemsPerPage = AppRuntimeStorage.GetInt("ItemsPerPage", 10);
 
         // === BƯỚC 1: CHUẨN BỊ DỮ LIỆU LỌC TỪ UI ===
         ImportStatus? apiStatus = SelectedStatus switch
