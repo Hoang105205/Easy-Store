@@ -29,6 +29,8 @@ builder.Services.AddPooledDbContextFactory<AppDbContext>(options =>
     {
         options.UseNpgsql(connectionString, npgsqlOptions =>
         {
+            npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+
             // Tự động thử lại nếu Neon bị lag (thời gian chờ 30s)
             npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
         });

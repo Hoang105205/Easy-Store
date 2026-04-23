@@ -44,7 +44,9 @@ namespace UI.Services.ProductService
                 Name = x.Name,
                 Sku = x.Sku,
                 CategoryName = x.Category?.Name ?? "Chưa có danh mục",
-                ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
+                ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath
+                    ?? x.Images?.FirstOrDefault()?.ImagePath
+                    ?? "ms-appx:///Assets/StoreLogo.png",
                 StockQuantity = x.StockQuantity,
                 SalePrice = x.SalePrice,
                 AvailableStockQuantity = x.AvailableStockQuantity,
@@ -55,7 +57,9 @@ namespace UI.Services.ProductService
                         Id = pp.Id,
                         Name = pp.Name,
                         Sku = pp.Sku,
-                        ImagePath = pp.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
+                        ImagePath = pp.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath
+                            ?? pp.Images?.FirstOrDefault()?.ImagePath
+                            ?? "ms-appx:///Assets/StoreLogo.png",
                         StockQuantity = pp.StockQuantity,
                         SalePrice = pp.SalePrice,
                         AvailableStockQuantity = pp.AvailableStockQuantity
@@ -130,7 +134,9 @@ namespace UI.Services.ProductService
                 Name = x.Name,
                 Sku = x.Sku,
                 CategoryName = x.Category?.Name ?? "Chưa có danh mục",
-                ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
+                ImagePath = x.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath
+                    ?? x.Images?.FirstOrDefault()?.ImagePath
+                    ?? "ms-appx:///Assets/StoreLogo.png",
                 StockQuantity = x.StockQuantity,
                 SalePrice = x.SalePrice,
                 AvailableStockQuantity = x.AvailableStockQuantity,
@@ -141,7 +147,9 @@ namespace UI.Services.ProductService
                         Id = pp.Id,
                         Name = pp.Name,
                         Sku = pp.Sku,
-                        ImagePath = pp.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath ?? "ms-appx:///Assets/StoreLogo.png",
+                        ImagePath = pp.Images?.FirstOrDefault(i => i.IsPrimary)?.ImagePath
+                            ?? pp.Images?.FirstOrDefault()?.ImagePath
+                            ?? "ms-appx:///Assets/StoreLogo.png",
                         StockQuantity = pp.StockQuantity,
                         SalePrice = pp.SalePrice,
                         AvailableStockQuantity = pp.AvailableStockQuantity
