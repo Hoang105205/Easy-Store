@@ -23,16 +23,14 @@ if (string.IsNullOrEmpty(connectionString))
 }
 
 // 2. ĐĂNG KÝ SERVICES
-builder.Services.AddPooledDbContextFactory<AppDbContext>(options =>
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
 {
     if (!string.IsNullOrEmpty(connectionString))
     {
         options.UseNpgsql(connectionString, npgsqlOptions =>
         {
             npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-
-            // Tự động thử lại nếu Neon bị lag (thời gian chờ 30s)
-            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
+            // Với Supabase pooler, tránh bật retry strategy ở EF để giảm lỗi connector disposed.
         });
     }
 });
