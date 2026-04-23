@@ -5,6 +5,7 @@
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:AsyncImageConverter x:Key="AsyncImageConverter"/>
     </Page.Resources>
     
     <ScrollViewer Padding="30">
@@ -84,7 +85,7 @@
                     <StackPanel Visibility="{x:Bind ViewModel.ViewVisibility, Mode=OneWay}" Spacing="20" HorizontalAlignment="Center">
 
                         <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Width="400" Height="400">
-                            <Image Source="{x:Bind ViewModel.MainImage, Mode=OneWay}" Stretch="UniformToFill"/>
+                            <Image Source="{x:Bind ViewModel.MainImage, Mode=OneWay, Converter={StaticResource AsyncImageConverter}}" Stretch="UniformToFill"/>
                         </Border>
 
                         <GridView ItemsSource="{x:Bind ViewModel.DisplayImages, Mode=OneWay}" ItemClick="Thumbnail_ItemClick" IsItemClickEnabled="True" SelectionMode="None" HorizontalAlignment="Center">
@@ -96,7 +97,7 @@
                             <GridView.ItemTemplate>
                                 <DataTemplate>
                                     <Border CornerRadius="8" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" Width="80" Height="80">
-                                        <Image Source="{Binding}" Stretch="UniformToFill"/>
+                                        <Image Source="{Binding Converter={StaticResource AsyncImageConverter}}" Stretch="UniformToFill"/>
                                     </Border>
                                 </DataTemplate>
                             </GridView.ItemTemplate>
@@ -115,7 +116,7 @@
                                     <DataTemplate>
                                         <Grid Width="90" Height="90">
                                             <Border CornerRadius="8" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                                                <Image Source="{Binding}" Stretch="UniformToFill"/>
+                                                <Image Source="{Binding Converter={StaticResource AsyncImageConverter}}" Stretch="UniformToFill"/>
                                             </Border>
 
                                             <Button Click="RemoveImage_Click" 

@@ -40,6 +40,7 @@
     <None Remove="Assets\LoginIllustration.jpg" />
     <None Remove="Assets\onboarding2.png" />
     <None Remove="Assets\onboarding3.png" />
+    <None Remove="Dialog\LoadingDialog.xaml" />
     <None Remove="Dialog\NewCategoryDialog.xaml" />
     <None Remove="GraphQL\Auth.graphql" />
     <None Remove="GraphQL\Dashboard.graphql" />
@@ -106,6 +107,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageReference Include="CSharpMarkup.WinUI.LiveChartsCore.SkiaSharpView" Version="3.1.2" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.12" />
+    <PackageReference Include="HotChocolate.Language" Version="15.1.14" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
@@ -281,6 +283,9 @@
     <None Update="appsettings.ui.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Dialog\LoadingDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Profile\ProfilePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

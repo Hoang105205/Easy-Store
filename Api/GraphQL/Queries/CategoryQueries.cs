@@ -11,7 +11,7 @@ namespace Api.GraphQL.Queries;
 public class CategoryQueries
 {
     [UseProjection]
-    public IQueryable<Category> GetCategories([Service] AppDbContext context)
+    public IQueryable<Category> GetCategories(AppDbContext context)
     {
         return context.Categories;
     }

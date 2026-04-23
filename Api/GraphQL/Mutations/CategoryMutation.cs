@@ -15,7 +15,7 @@ public class CategoryMutation
 {
     public async Task<Category> CreateCategory(
         string name,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var category = new Category
         {
@@ -31,7 +31,7 @@ public class CategoryMutation
 
     public async Task<bool> DeleteCategoryAsync(
             Guid id,
-            [Service] AppDbContext context)
+            AppDbContext context)
     {
         var category = await context.Categories.FindAsync(id);
         if (category == null)

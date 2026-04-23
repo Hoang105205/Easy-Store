@@ -20,7 +20,6 @@ namespace UI.Views.Orders
 
             InitializeComponent();
 
-            this.NavigationCacheMode = NavigationCacheMode.Enabled;
             this.Loaded += (s, e) => _isPageReady = true;
 
             this.Unloaded += OrderPage_Unloaded;

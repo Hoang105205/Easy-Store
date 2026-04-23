@@ -10,6 +10,7 @@
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter"/>
         <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        <converters:AsyncImageConverter x:Key="AsyncImageConverter"/>
     </Page.Resources>
 
     <Grid Padding="24">
@@ -217,7 +218,7 @@
 
                                 <Border Width="80" Height="80" CornerRadius="8" HorizontalAlignment="Left">
                                     <Border.Background>
-                                        <ImageBrush ImageSource="{Binding ImagePath}" Stretch="UniformToFill"/>
+                                        <ImageBrush ImageSource="{Binding ImagePath, Converter={StaticResource AsyncImageConverter}}" Stretch="UniformToFill"/>
                                     </Border.Background>
                                 </Border>
 
