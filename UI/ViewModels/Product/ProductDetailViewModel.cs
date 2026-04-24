@@ -117,7 +117,9 @@ public partial class ProductDetailViewModel : ObservableObject
         OriginalImagesCollection.Clear();
         if (data.Images != null)
         {
-            foreach (var img in data.Images)
+            var sortedImages = data.Images.OrderByDescending(img => img.IsPrimary).ToList();
+
+            foreach (var img in sortedImages)
             {
                 DisplayImages.Add(img.ImagePath);
                 EditImages.Add(img.ImagePath);
@@ -199,7 +201,7 @@ public partial class ProductDetailViewModel : ObservableObject
             long salePriceValue = SalePrice ?? 0;
             int minimumStockQuantityValue = MinimumStockQuantity ?? 0;
 
-            List<string> ImagesToAdd = [.. EditImages];
+            List<string> ImagesToAdd = EditImages.Except(FileToAdd.Select(f => f.Path)).ToList();
 
             foreach (var file in FileToAdd)
             {
@@ -209,7 +211,6 @@ public partial class ProductDetailViewModel : ObservableObject
 
                     if (!string.IsNullOrEmpty(uploadedFileName))
                     {
-                        ImagesToAdd.Remove(file.Path);
                         ImagesToAdd.Add(uploadedFileName);
                     }
                     else
