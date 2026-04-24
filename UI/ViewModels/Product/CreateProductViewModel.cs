@@ -7,9 +7,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UI.Services.CategoryService;
+using UI.Services.ImageCacheService;
 using UI.Services.ProductService;
 using Windows.UI.Notifications;
 
@@ -40,6 +42,8 @@ public partial class CreateProductViewModel : ObservableObject
 
     public Action? ShowLoadingAction { get; set; }
     public Action? HideLoadingAction { get; set; }
+
+    public bool IsSavedSuccessfully { get; private set; }
 
     public CreateProductViewModel()
     {
@@ -83,7 +87,7 @@ public partial class CreateProductViewModel : ObservableObject
 
         try
         {
-            string? uploadedFileName = await UI.Services.ImageCacheService.SupabaseUploadService.UploadImageAsync(file);
+            string? uploadedFileName = await SupabaseUploadService.UploadImageAsync(file);
 
             if (!string.IsNullOrEmpty(uploadedFileName))
             {
@@ -127,11 +131,12 @@ public partial class CreateProductViewModel : ObservableObject
                 ProductName,
                 SelectedCategory!.Id,
                 minimumStockQuantity,
-                new List<string>(SelectedImages)
+                [.. SelectedImages]
             );
 
             if (success)
             {
+                IsSavedSuccessfully = true;
                 if (ShowAlertAction != null) await ShowAlertAction("Thành công", "Sản phẩm được tạo mới thành công");
                 GoBackAction?.Invoke();
             }
@@ -148,7 +153,11 @@ public partial class CreateProductViewModel : ObservableObject
         if (ShowConfirmAction != null)
         {
             var result = await ShowConfirmAction("Xác nhận", "Bạn có chắc muốn hủy? Các thông tin đã nhập trước đó sẽ bị xóa.");
-            if (result) GoBackAction?.Invoke();
+            if (result)
+            {
+                _ = CleanupDraftImagesAsync();
+                GoBackAction?.Invoke();
+            }
         }
     }
 
@@ -158,8 +167,42 @@ public partial class CreateProductViewModel : ObservableObject
         if (ShowConfirmAction != null)
         {
             var result = await ShowConfirmAction("Xác nhận", "Bạn có muốn nhập lại? Các thông tin đã nhập trước đó sẽ bị xóa.");
-            if (result) ResetForm();
+            if (result)
+            {
+                await CleanupDraftImagesAsync();
+                ResetForm();
+            }
         }
+    }
+
+    public async Task CleanupDraftImagesAsync(string? filePath = null)
+    {
+        if (IsSavedSuccessfully) return;
+
+        if (filePath != null)
+        {
+            await SupabaseUploadService.DeleteImageAsync(filePath);
+            await ImageCacheService.DeleteImageAsync(filePath);
+
+            return;
+        }
+
+        var draftImages = SelectedImages.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        foreach (var imagePath in draftImages)
+        {
+            try
+            {
+                await SupabaseUploadService.DeleteImageAsync(imagePath);
+                await ImageCacheService.DeleteImageAsync(imagePath);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[CreateProduct] Cleanup draft image failed: {imagePath} - {ex.Message}");
+            }
+        }
+
+        SelectedImages.Clear();
     }
 
     public void ResetForm()
@@ -176,6 +219,7 @@ public partial class CreateProductViewModel : ObservableObject
     {
         if (SelectedImages.Contains(imagePath))
         {
+            _ = CleanupDraftImagesAsync(imagePath);
             SelectedImages.Remove(imagePath);
         }
     }

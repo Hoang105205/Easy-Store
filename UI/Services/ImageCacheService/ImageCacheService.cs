@@ -73,7 +73,7 @@ public class ImageCacheService
 
             if (string.IsNullOrEmpty(supabaseUri) || string.IsNullOrEmpty(supabaseKey)) return null;
 
-            string imgUrl = $"{supabaseUri.TrimEnd('/')}/storage/v1/object/public/avatars/{fileName}";
+            string imgUrl = $"{supabaseUri.TrimEnd('/')}/storage/v1/object/public/images/{fileName}";
 
             using var request = new HttpRequestMessage(HttpMethod.Get, imgUrl);
             request.Headers.Add("apikey", supabaseKey);

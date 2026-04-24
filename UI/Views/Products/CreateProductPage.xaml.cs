@@ -46,12 +46,27 @@ namespace UI.Views.Products
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
+            ViewModel.SelectedImages.CollectionChanged -= SelectedImages_CollectionChanged;
+            ViewModel.SelectedImages.CollectionChanged += SelectedImages_CollectionChanged;
+
             await ViewModel.LoadCategoriesAsync();
+        }
+
+        protected override async void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            ViewModel.SelectedImages.CollectionChanged -= SelectedImages_CollectionChanged;
+
+            if (!ViewModel.IsSavedSuccessfully)
+            {
+                _ = ViewModel.CleanupDraftImagesAsync();
+            }
         }
 
         private void SelectedImages_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            // Nếu số lượng ảnh > 0 thì ẩn Icon đi (Collapsed), ngược lại thì hiện ra (Visible)
             UploadIcon.Visibility = ViewModel.SelectedImages.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
         }
 
@@ -78,15 +93,12 @@ namespace UI.Views.Products
 
         private void ImageDragOver(object sender, DragEventArgs e)
         {
-            // Kiểm tra xem dữ liệu được kéo vào có phải là File hay không
             if (e.DataView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
             {
-                // Hiển thị icon "Copy" (dấu cộng) khi kéo file vào vùng hợp lệ
                 e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
             }
             else
             {
-                // Từ chối nếu kéo text hoặc dữ liệu không phải file
                 e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
             }
         }
