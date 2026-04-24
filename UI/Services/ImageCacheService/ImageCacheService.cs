@@ -104,4 +104,60 @@ public class ImageCacheService
             fileLock.Release();
         }
     }
+
+    public static async Task<bool> DeleteImageAsync(string? imagePathFromDb)
+    {
+        if (string.IsNullOrWhiteSpace(imagePathFromDb)) return false;
+
+        if (imagePathFromDb.StartsWith("ms-appx:", StringComparison.OrdinalIgnoreCase) ||
+            imagePathFromDb.StartsWith("ms-appdata:", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        string targetPath;
+
+        if (Path.IsPathRooted(imagePathFromDb))
+        {
+            var fullCachePath = Path.GetFullPath(_cacheFolderPath);
+            var fullTargetPath = Path.GetFullPath(imagePathFromDb);
+
+            if (!fullTargetPath.StartsWith(fullCachePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            targetPath = fullTargetPath;
+        }
+        else
+        {
+            var fileName = Path.GetFileName(imagePathFromDb);
+            if (string.IsNullOrWhiteSpace(fileName)) return false;
+
+            targetPath = Path.Combine(_cacheFolderPath, fileName);
+        }
+
+        var lockKey = Path.GetFileName(targetPath);
+        if (string.IsNullOrWhiteSpace(lockKey)) return false;
+
+        var fileLock = _locks.GetOrAdd(lockKey, _ => new SemaphoreSlim(1, 1));
+        await fileLock.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            if (!File.Exists(targetPath)) return false;
+
+            File.Delete(targetPath);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ImageCache] Xóa ảnh lỗi: {ex.Message}");
+            return false;
+        }
+        finally
+        {
+            fileLock.Release();
+        }
+    }
 }
