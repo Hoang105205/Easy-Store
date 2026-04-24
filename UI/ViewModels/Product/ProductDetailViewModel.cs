@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using UI.Services.CategoryService;
@@ -44,6 +44,7 @@ public partial class ProductDetailViewModel : ObservableObject
     public ObservableCollection<string> DisplayImages { get; } = new(); 
     public ObservableCollection<string> EditImages { get; } = new();
     public ObservableCollection<string> OriginalImagesCollection { get; } = new();
+    public ObservableCollection<Windows.Storage.StorageFile> FileToAdd { get; } = new();
 
     public ObservableCollection<CategoryModel> Categories { get; } = new();
 
@@ -79,7 +80,7 @@ public partial class ProductDetailViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Lỗi load categories: {ex.Message}");
+            Debug.WriteLine($"Lỗi load categories: {ex.Message}");
         }
     }
 
@@ -96,7 +97,7 @@ public partial class ProductDetailViewModel : ObservableObject
                 });
             }
         }
-        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Lỗi load data: {ex.Message}"); }
+        catch (Exception ex) { Debug.WriteLine($"Lỗi load data: {ex.Message}"); }
     }
 
     private void FillData(IGetProductById_ProductById data)
@@ -151,19 +152,7 @@ public partial class ProductDetailViewModel : ObservableObject
 
             if (newImagesToDiscard.Any())
             {
-                var deleteTasks = newImagesToDiscard.Select(async imgPath =>
-                {
-                    try
-                    {
-                        await ImageCacheService.DeleteImageAsync(imgPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Lỗi khi xóa ảnh nháp {imgPath}: {ex.Message}");
-                    }
-                });
-
-                await Task.WhenAll(deleteTasks);
+                _ = CleanupDraftImagesAsync(newImagesToDiscard);
             }
 
             ExitEditModeUiOnly();
@@ -186,6 +175,8 @@ public partial class ProductDetailViewModel : ObservableObject
         EditVisibility = Visibility.Collapsed;
         IsReadOnly = true;
         IsEditable = false;
+
+        FileToAdd.Clear();
     }
 
     [RelayCommand]
@@ -207,26 +198,43 @@ public partial class ProductDetailViewModel : ObservableObject
 
             long salePriceValue = SalePrice ?? 0;
             int minimumStockQuantityValue = MinimumStockQuantity ?? 0;
-            var success = await _productService.UpdateProductAsync(ProductId, Sku, ProductName, SelectedCategory.Id, salePriceValue, minimumStockQuantityValue, new List<string>(EditImages));
+
+            List<string> ImagesToAdd = [.. EditImages];
+
+            foreach (var file in FileToAdd)
+            {
+                try
+                {
+                    string? uploadedFileName = await SupabaseUploadService.UploadImageAsync(file);
+
+                    if (!string.IsNullOrEmpty(uploadedFileName))
+                    {
+                        ImagesToAdd.Remove(file.Path);
+                        ImagesToAdd.Add(uploadedFileName);
+                    }
+                    else
+                    {
+                        if (ShowAlertAction != null)
+                            await ShowAlertAction("Lỗi tải ảnh", "Không thể tải ảnh lên máy chủ. Vui lòng thử lại.");
+
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (ShowAlertAction != null) await ShowAlertAction("Lỗi", ex.Message);
+                    return;
+                }
+            }
+
+            var success = await _productService.UpdateProductAsync(ProductId, Sku, ProductName, SelectedCategory.Id, salePriceValue, minimumStockQuantityValue, ImagesToAdd);
 
             if (success)
             {
                 var imagesToDelete = OriginalImagesCollection.Except(EditImages, StringComparer.OrdinalIgnoreCase)
                                                              .ToList();
 
-                var deleteTasks = imagesToDelete.Select(async imgPath =>
-                {
-                    try
-                    {
-                        await ImageCacheService.DeleteImageAsync(imgPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Lỗi khi dọn dẹp ảnh {imgPath}: {ex.Message}");
-                    }
-                });
-
-                await Task.WhenAll(deleteTasks);
+                _ = CleanupDraftImagesAsync(imagesToDelete);
 
                 await LoadDataAsync(ProductId);
                 ExitEditModeUiOnly();
@@ -263,19 +271,7 @@ public partial class ProductDetailViewModel : ObservableObject
                                                     .Distinct(StringComparer.OrdinalIgnoreCase)
                                                     .ToList();
 
-            var deleteTasks = allImages.Select(async imgPath =>
-            {
-                try
-                {
-                    await ImageCacheService.DeleteImageAsync(imgPath);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Lỗi khi dọn dẹp ảnh {imgPath}: {ex.Message}");
-                }
-            });
-
-            await Task.WhenAll(deleteTasks);
+            _ = CleanupDraftImagesAsync(allImages);
 
             if (ShowAlertAction != null)
             {
@@ -294,12 +290,38 @@ public partial class ProductDetailViewModel : ObservableObject
         }
     }
 
+    public async Task CleanupDraftImagesAsync(List<string> images)
+    {
+        if (images.Count == 0) return;
+
+        var draftImages = images.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        foreach (var imagePath in draftImages)
+        {
+            try
+            {
+                await SupabaseUploadService.DeleteImageAsync(imagePath);
+                await ImageCacheService.DeleteImageAsync(imagePath);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[CreateProduct] Cleanup draft image failed: {imagePath} - {ex.Message}");
+            }
+        }
+    }
+
     [RelayCommand]
     public void RemoveImage(string imagePath)
     {
         if (EditImages.Contains(imagePath))
         {
             EditImages.Remove(imagePath);
+        }
+
+        var fileToRemove = FileToAdd.FirstOrDefault(f => f.Path == imagePath);
+        if (fileToRemove != null)
+        {
+            FileToAdd.Remove(fileToRemove);
         }
     }
 }

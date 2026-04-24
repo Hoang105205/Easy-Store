@@ -53,7 +53,11 @@ namespace UI.Views.Products
             WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(App.Current.AppMainWindow));
             picker.FileTypeFilter.Add(".jpg"); picker.FileTypeFilter.Add(".png");
             var file = await picker.PickSingleFileAsync();
-            if (file != null) ViewModel.EditImages.Add(file.Path);
+            if (file != null)
+            {
+                ViewModel.EditImages.Add(file.Path);
+                ViewModel.FileToAdd.Add(file);
+            }
         }
 
         private void ImageDragOver(object sender, DragEventArgs e) => e.AcceptedOperation = e.DataView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems) ? Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy : Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
@@ -67,7 +71,10 @@ namespace UI.Views.Products
                 {
                     if (ViewModel.EditImages.Count >= 3) break;
                     if (item is Windows.Storage.StorageFile file && (file.FileType.ToLower() == ".jpg" || file.FileType.ToLower() == ".png"))
+                    {
                         ViewModel.EditImages.Add(file.Path);
+                        ViewModel.FileToAdd.Add(file);
+                    }
                 }
             }
         }
