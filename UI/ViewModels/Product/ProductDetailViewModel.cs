@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using UI.Services.CategoryService;
+using UI.Services.ImageCacheService;
 using UI.Services.ProductService;
 
 namespace UI.ViewModels;
@@ -25,6 +26,7 @@ public partial class ProductDetailViewModel : ObservableObject
     [ObservableProperty] private Visibility editVisibility = Visibility.Collapsed;
     [ObservableProperty] private bool isReadOnly = true;  // Dùng cho TextBox
     [ObservableProperty] private bool isEditable = false; // Dùng cho ComboBox
+    [ObservableProperty] private bool isBusy;
 
     // dữ liệu cơ bản
     [ObservableProperty] private Guid productId;
@@ -40,7 +42,9 @@ public partial class ProductDetailViewModel : ObservableObject
     // ảnh
     [ObservableProperty] private string? mainImage = "ms-appx:///Assets/StoreLogo.png"; // Vì ảnh load lâu nên tạm thời set ảnh mặc định, sau khi load xong sẽ update lại
     public ObservableCollection<string> DisplayImages { get; } = new(); 
-    public ObservableCollection<string> EditImages { get; } = new();    
+    public ObservableCollection<string> EditImages { get; } = new();
+    public ObservableCollection<string> OriginalImagesCollection { get; } = new();
+
     public ObservableCollection<CategoryModel> Categories { get; } = new();
 
     public Action? GoBackAction { get; set; }
@@ -60,17 +64,23 @@ public partial class ProductDetailViewModel : ObservableObject
 
     public async Task LoadCategoriesAsync()
     {
-        var apiCategories = await _categoryService.GetCategoriesAsync();
-
-        _dispatcherQueue.TryEnqueue(() =>
+        try
         {
-            Categories.Clear();
+            var apiCategories = await _categoryService.GetCategoriesAsync();
 
-            foreach (var cat in apiCategories)
+            _dispatcherQueue.TryEnqueue(() =>
             {
-                Categories.Add(cat);
-            }
-        });
+                Categories.Clear();
+                foreach (var cat in apiCategories)
+                {
+                    Categories.Add(cat);
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Lỗi load categories: {ex.Message}");
+        }
     }
 
     public async Task LoadDataAsync(Guid id)
@@ -103,12 +113,14 @@ public partial class ProductDetailViewModel : ObservableObject
 
         DisplayImages.Clear();
         EditImages.Clear();
+        OriginalImagesCollection.Clear();
         if (data.Images != null)
         {
             foreach (var img in data.Images)
             {
                 DisplayImages.Add(img.ImagePath);
                 EditImages.Add(img.ImagePath);
+                OriginalImagesCollection.Add(img.ImagePath);
             }
         }
 
@@ -126,30 +138,70 @@ public partial class ProductDetailViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void CancelEditMode()
+    public async Task CancelEditMode()
+    {
+        if (IsBusy) return;
+        IsBusy = true;
+
+        try
+        {
+            var newImagesToDiscard = EditImages
+            .Except(OriginalImagesCollection, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+            if (newImagesToDiscard.Any())
+            {
+                var deleteTasks = newImagesToDiscard.Select(async imgPath =>
+                {
+                    try
+                    {
+                        await ImageCacheService.DeleteImageAsync(imgPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Lỗi khi xóa ảnh nháp {imgPath}: {ex.Message}");
+                    }
+                });
+
+                await Task.WhenAll(deleteTasks);
+            }
+
+            ExitEditModeUiOnly();
+
+            if (_originalData != null)
+            {
+                _dispatcherQueue.TryEnqueue(() => FillData(_originalData));
+            }
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void ExitEditModeUiOnly()
     {
         PageTitle = "Chi tiết sản phẩm";
         ViewVisibility = Visibility.Visible;
         EditVisibility = Visibility.Collapsed;
         IsReadOnly = true;
         IsEditable = false;
-        if (_originalData != null)
-        {
-            _dispatcherQueue.TryEnqueue(() => FillData(_originalData));
-        }
     }
 
     [RelayCommand]
     public async Task SaveChanges()
     {
-        if (ShowConfirmAction != null)
-        {
-            bool isConfirmed = await ShowConfirmAction("Xác nhận", "Bạn có chắc chắn muốn lưu các thay đổi này?", "Có", "Không");
-            if (!isConfirmed) return;
-        }
+        if (IsBusy) return;
+        IsBusy = true;
 
         try
         {
+            if (ShowConfirmAction != null)
+            {
+                bool isConfirmed = await ShowConfirmAction("Xác nhận", "Bạn có chắc chắn muốn lưu các thay đổi này?", "Có", "Không");
+                if (!isConfirmed) return;
+            }
+
             if (string.IsNullOrWhiteSpace(ProductName) || SelectedCategory == null)
                 throw new Exception("Tên và Danh mục không được để trống!");
 
@@ -159,8 +211,25 @@ public partial class ProductDetailViewModel : ObservableObject
 
             if (success)
             {
+                var imagesToDelete = OriginalImagesCollection.Except(EditImages, StringComparer.OrdinalIgnoreCase)
+                                                             .ToList();
+
+                var deleteTasks = imagesToDelete.Select(async imgPath =>
+                {
+                    try
+                    {
+                        await ImageCacheService.DeleteImageAsync(imgPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Lỗi khi dọn dẹp ảnh {imgPath}: {ex.Message}");
+                    }
+                });
+
+                await Task.WhenAll(deleteTasks);
+
                 await LoadDataAsync(ProductId);
-                CancelEditMode(); // Thoát chế độ sửa
+                ExitEditModeUiOnly();
                 if (ShowAlertAction != null) await ShowAlertAction("Thành công", "Đã cập nhật sản phẩm thành công!");
             }
         }
@@ -168,27 +237,60 @@ public partial class ProductDetailViewModel : ObservableObject
         {
             if (ShowAlertAction != null) await ShowAlertAction("Lỗi", ex.Message);
         }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     [RelayCommand]
     public async Task Delete()
     {
-        if (ShowConfirmAction != null)
-        {
-            bool isConfirmed = await ShowConfirmAction("Cảnh báo nguy hiểm", $"Bạn có chắc chắn muốn xóa sản phẩm '{ProductName}' không? Hành động này không thể hoàn tác.", "Xóa", "Hủy");
-            if (!isConfirmed) return;
-        }
+        if (IsBusy) return;
+        IsBusy = true;
 
         try
         {
+            if (ShowConfirmAction != null)
+            {
+                bool isConfirmed = await ShowConfirmAction("Cảnh báo nguy hiểm", $"Bạn có chắc chắn muốn xóa sản phẩm '{ProductName}' không? Hành động này không thể hoàn tác.", "Xóa", "Hủy");
+                if (!isConfirmed) return;
+            }
+
             await _productService.DeleteProductAsync(ProductId);
-            if (ShowAlertAction != null) await ShowAlertAction("Thành công", "Sản phẩm đã bị xóa.");
+
+            var allImages = OriginalImagesCollection.Concat(EditImages)
+                                                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                                                    .ToList();
+
+            var deleteTasks = allImages.Select(async imgPath =>
+            {
+                try
+                {
+                    await ImageCacheService.DeleteImageAsync(imgPath);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Lỗi khi dọn dẹp ảnh {imgPath}: {ex.Message}");
+                }
+            });
+
+            await Task.WhenAll(deleteTasks);
+
+            if (ShowAlertAction != null)
+            {
+                await ShowAlertAction("Thành công", "Sản phẩm đã bị xóa.");
+            }
 
             GoBackAction?.Invoke();
         }
         catch (Exception ex)
         {
             if (ShowAlertAction != null) await ShowAlertAction("Không thể xóa", ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 
