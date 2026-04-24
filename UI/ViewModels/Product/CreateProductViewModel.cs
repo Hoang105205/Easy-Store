@@ -201,8 +201,6 @@ public partial class CreateProductViewModel : ObservableObject
                 Debug.WriteLine($"[CreateProduct] Cleanup draft image failed: {imagePath} - {ex.Message}");
             }
         }
-
-        SelectedImages.Clear();
     }
 
     public void ResetForm()
