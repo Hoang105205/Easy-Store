@@ -19,10 +19,26 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Obfuscar" Version="2.2.50">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Update="obfuscar_api.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</None>
+	</ItemGroup>
+
+	<Target Name="ObfuscarTask" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+		<MakeDir Directories="$(TargetDir)Obfuscated" />
+		<Exec Command="&quot;$(Obfuscar)&quot; obfuscar_api.xml" WorkingDirectory="$(TargetDir)" />
+	</Target>
 
 </Project>

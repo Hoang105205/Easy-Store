@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Obfuscator>
+	<Var name="InPath" value="." />
+	<Var name="OutPath" value=".\Obfuscated" />
+
+	<Var name="KeepPublicApi" value="true" />
+	<Var name="HidePrivateApi" value="true" />
+	<Var name="HideStrings" value="true" />
+	<Var name="SuppressIldasm" value="true" />
+
+	<Module file="$(InPath)\UI.dll">
+		<SkipNamespace name="UI" />
+		<SkipNamespace name="EasyStoreClient" />
+		<SkipNamespace name="EasyStoreClient.State" />
+		<SkipNamespace name="UI.GraphQL" />
+
+		<SkipNamespace name="UI.Views" />
+		<SkipNamespace name="UI.Views.Dashboard" />
+		<SkipNamespace name="UI.Views.Import" />
+		<SkipNamespace name="UI.Views.Orders" />
+		<SkipNamespace name="UI.Views.Products" />
+		<SkipNamespace name="UI.Views.Profile" />
+		<SkipNamespace name="UI.Views.Settings" />
+		<SkipNamespace name="UI.Views.Statistics" />
+		<SkipNamespace name="UI.Dialog" />
+
+		<SkipNamespace name="UI.ViewModels" />
+		<SkipNamespace name="UI.ViewModels.Dashboard" />
+		<SkipNamespace name="UI.ViewModels.Import" />
+		<SkipNamespace name="UI.ViewModels.Orders" />
+		<SkipNamespace name="UI.ViewModels.Product" />
+		<SkipNamespace name="UI.ViewModels.Profile" />
+		<SkipNamespace name="UI.ViewModels.Statistics" />
+
+		<SkipNamespace name="UI.Utils.Converters" />
+		<SkipNamespace name="UI.Messages" />
+	</Module>
+</Obfuscator>
