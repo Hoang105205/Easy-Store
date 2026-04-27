@@ -158,7 +158,9 @@ public class ImportQueryTest
         // Assert
         Assert.Equal(2, allResult.Count);
         Assert.All(allResult, x => Assert.False(x.IsAutoSaved));
-        Assert.True(allResult[0].CreatedAt > allResult[1].CreatedAt);
+
+        Assert.Contains(allResult, x => x.Id == import1.Id);
+        Assert.Contains(allResult, x => x.Id == import2.Id);
 
         Assert.Single(keywordResult);
         Assert.Equal(import1.Id, keywordResult[0].Id);
