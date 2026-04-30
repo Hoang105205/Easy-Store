@@ -331,5 +331,39 @@
 
 		<Exec Command="copy /Y &quot;$(TargetDir)Obfuscated\UI.dll&quot; &quot;$(TargetDir)UI.dll&quot;" />
 	</Target>
-	
+
+	<Target Name="SecurePublishDir" AfterTargets="ComputeFilesToPublish" Condition="'$(Configuration)' == 'Release'">
+		<Message Text="[SECURITY] Dang trao doi cac file DLL goc bang file Obfuscated vao pipeline Publish..." Importance="high" />
+
+		<ItemGroup>
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(FileName)' == 'UI' and '%(Extension)' == '.dll'" />
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(FileName)' == 'Core' and '%(Extension)' == '.dll'" />
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(FileName)' == 'Api' and '%(Extension)' == '.dll'" />
+
+			<ResolvedFileToPublish Include="$(TargetDir)Obfuscated\UI.dll">
+				<RelativePath>UI.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+
+			<ResolvedFileToPublish Include="$(SolutionDir)Core\bin\x64\Release\net10.0\win-x64\Obfuscated\Core.dll">
+				<RelativePath>Core.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+
+			<ResolvedFileToPublish Include="$(SolutionDir)Core\bin\x64\Release\net10.0\win-x64\Obfuscated\Core.dll">
+				<RelativePath>Backend\Core.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+
+			<ResolvedFileToPublish Include="$(SolutionDir)Api\bin\x64\Release\net10.0\win-x64\Obfuscated\Api.dll">
+				<RelativePath>Api.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+
+			<ResolvedFileToPublish Include="$(SolutionDir)Api\bin\x64\Release\net10.0\win-x64\Obfuscated\Api.dll">
+				<RelativePath>Backend\Api.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+		</ItemGroup>
+	</Target>
 </Project>
