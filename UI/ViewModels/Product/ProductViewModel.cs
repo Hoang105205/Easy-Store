@@ -99,7 +99,7 @@ namespace UI.ViewModels.Product
             });
 
             ActiveSortColumn = "SKU";
-            IsAscending = false;
+            IsAscending = true;
         }
 
         [RelayCommand]
