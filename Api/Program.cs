@@ -1,7 +1,6 @@
 using Api.GraphQL;
 using Api.GraphQL.Mutations;
 using Api.GraphQL.Queries;
-using Api.GraphQL.Resolvers;
 using Core.Data;
 using HotChocolate.Data;
 using Microsoft.EntityFrameworkCore;
@@ -23,35 +22,35 @@ if (string.IsNullOrEmpty(connectionString))
 }
 
 // 2. ĐĂNG KÝ SERVICES
-builder.Services.AddPooledDbContextFactory<AppDbContext>(options =>
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
 {
     if (!string.IsNullOrEmpty(connectionString))
     {
         options.UseNpgsql(connectionString, npgsqlOptions =>
         {
-            // Tự động thử lại nếu Neon bị lag (thời gian chờ 30s)
-            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
+            npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            // Với Supabase pooler, tránh bật retry strategy ở EF để giảm lỗi connector disposed.
         });
     }
 });
 
 builder.Services
     .AddGraphQLServer()
+    .RegisterDbContextFactory<AppDbContext>()
     .AddQueryType<Query>()
-    .AddTypeExtension<UserQueries>()
     .AddTypeExtension<ProductQueries>()
     .AddTypeExtension<CategoryQueries>()
     .AddTypeExtension<ImportQueries>()
     .AddTypeExtension<OrderQueries>()
     .AddTypeExtension<DashboardQueries>()
     .AddTypeExtension<StatisticsQuery>()
-    .AddTypeExtension<StoreStatisticsResolvers>()
     .AddMutationType<Mutation>()
     .AddTypeExtension<AuthMutation>()
     .AddTypeExtension<ProductMutation>()
     .AddTypeExtension<CategoryMutation>()
     .AddTypeExtension<ImportMutation>()
     .AddTypeExtension<OrderMutation>()
+    .AddTypeExtension<UserMutation>()
     .AddProjections()
     .AddFiltering()
     .AddSorting()

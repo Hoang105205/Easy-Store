@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Obfuscator>
+	<Var name="InPath" value="." />
+	<Var name="OutPath" value=".\Obfuscated" />
+
+	<Var name="KeepPublicApi" value="true" />
+	<Var name="HidePrivateApi" value="true" />
+	<Var name="HideStrings" value="true" />
+	<Var name="OptimizeMethods" value="true" />
+	<Var name="SuppressIldasm" value="true" />
+
+	<Module file="$(InPath)\Core.dll"></Module>
+	<!--
+	<Module file="$(InPath)\Core.dll">
+		<SkipNamespace name="Core.Models" />
+		<SkipNamespace name="Core.Data" />
+		<SkipNamespace name="Core.Migrations" />
+		<SkipNamespace name="Core.Dtos" />
+	</Module>
+	-->
+</Obfuscator>

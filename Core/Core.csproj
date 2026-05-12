@@ -3,16 +3,38 @@
     <TargetFramework>net10.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>Core</RootNamespace>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<Platforms>x64</Platforms>
     <WinUISDKReferences>false</WinUISDKReferences>
+	<AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
+	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.12" />
+    <PackageReference Include="HotChocolate.Language" Version="15.1.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageReference Include="Obfuscar" Version="2.2.50">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.15" />
   </ItemGroup>
+
+	 <ItemGroup>
+		 <None Update="obfuscar_core.xml">
+			 <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			 <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		 </None>
+	 </ItemGroup>
+
+	 <Target Name="ObfuscarTask" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+		 <MakeDir Directories="$(TargetDir)Obfuscated" />
+
+		 <Exec Command="&quot;$(Obfuscar)&quot; obfuscar_core.xml" WorkingDirectory="$(TargetDir)" />
+	 </Target>
   
 </Project>

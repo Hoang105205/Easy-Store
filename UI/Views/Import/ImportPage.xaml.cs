@@ -31,9 +31,9 @@ public sealed partial class ImportPage : Page
 
     public ImportPage()
     {
-        InitializeComponent();
-
         ViewModel = (App.Current as App)!.Services!.GetService<ImportViewModel>()!;
+
+        InitializeComponent();
 
         ViewModel.NavigateToCreateImportAction = (excelFile) =>
         {
@@ -62,6 +62,28 @@ public sealed partial class ImportPage : Page
         if (selectedItem != null)
         {
             Frame.Navigate(typeof(ImportEditorPage), selectedItem.Id);
+        }
+    }
+
+    private void ImportHistoryGrid_Sorting(object sender, CommunityToolkit.WinUI.UI.Controls.DataGridColumnEventArgs e)
+    {
+        string columnName = e.Column.Tag?.ToString();
+        if (string.IsNullOrEmpty(columnName)) return;
+
+        ViewModel.SortCommand.Execute(columnName);
+
+        foreach (var col in ImportHistoryGrid.Columns)
+        {
+            if (col.Tag?.ToString() == ViewModel.ActiveSortColumn)
+            {
+                col.SortDirection = ViewModel.IsAscending
+                    ? CommunityToolkit.WinUI.UI.Controls.DataGridSortDirection.Ascending
+                    : CommunityToolkit.WinUI.UI.Controls.DataGridSortDirection.Descending;
+            }
+            else
+            {
+                col.SortDirection = null;
+            }
         }
     }
 }

@@ -1,15 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using UI.Services.CategoryService;
+using UI.Services.ImageCacheService;
 using UI.Services.ProductService;
 
 namespace UI.ViewModels;
@@ -25,6 +26,7 @@ public partial class ProductDetailViewModel : ObservableObject
     [ObservableProperty] private Visibility editVisibility = Visibility.Collapsed;
     [ObservableProperty] private bool isReadOnly = true;  // Dùng cho TextBox
     [ObservableProperty] private bool isEditable = false; // Dùng cho ComboBox
+    [ObservableProperty] private bool isBusy;
 
     // dữ liệu cơ bản
     [ObservableProperty] private Guid productId;
@@ -40,7 +42,10 @@ public partial class ProductDetailViewModel : ObservableObject
     // ảnh
     [ObservableProperty] private string? mainImage = "ms-appx:///Assets/StoreLogo.png"; // Vì ảnh load lâu nên tạm thời set ảnh mặc định, sau khi load xong sẽ update lại
     public ObservableCollection<string> DisplayImages { get; } = new(); 
-    public ObservableCollection<string> EditImages { get; } = new();    
+    public ObservableCollection<string> EditImages { get; } = new();
+    public ObservableCollection<string> OriginalImagesCollection { get; } = new();
+    public ObservableCollection<Windows.Storage.StorageFile> FileToAdd { get; } = new();
+
     public ObservableCollection<CategoryModel> Categories { get; } = new();
 
     public Action? GoBackAction { get; set; }
@@ -60,17 +65,23 @@ public partial class ProductDetailViewModel : ObservableObject
 
     public async Task LoadCategoriesAsync()
     {
-        var apiCategories = await _categoryService.GetCategoriesAsync();
-
-        _dispatcherQueue.TryEnqueue(() =>
+        try
         {
-            Categories.Clear();
+            var apiCategories = await _categoryService.GetCategoriesAsync();
 
-            foreach (var cat in apiCategories)
+            _dispatcherQueue.TryEnqueue(() =>
             {
-                Categories.Add(cat);
-            }
-        });
+                Categories.Clear();
+                foreach (var cat in apiCategories)
+                {
+                    Categories.Add(cat);
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Lỗi load categories: {ex.Message}");
+        }
     }
 
     public async Task LoadDataAsync(Guid id)
@@ -86,7 +97,7 @@ public partial class ProductDetailViewModel : ObservableObject
                 });
             }
         }
-        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Lỗi load data: {ex.Message}"); }
+        catch (Exception ex) { Debug.WriteLine($"Lỗi load data: {ex.Message}"); }
     }
 
     private void FillData(IGetProductById_ProductById data)
@@ -103,12 +114,16 @@ public partial class ProductDetailViewModel : ObservableObject
 
         DisplayImages.Clear();
         EditImages.Clear();
+        OriginalImagesCollection.Clear();
         if (data.Images != null)
         {
-            foreach (var img in data.Images)
+            var sortedImages = data.Images.OrderByDescending(img => img.IsPrimary).ToList();
+
+            foreach (var img in sortedImages)
             {
                 DisplayImages.Add(img.ImagePath);
                 EditImages.Add(img.ImagePath);
+                OriginalImagesCollection.Add(img.ImagePath);
             }
         }
 
@@ -126,41 +141,104 @@ public partial class ProductDetailViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void CancelEditMode()
+    public async Task CancelEditMode()
+    {
+        if (IsBusy) return;
+        IsBusy = true;
+
+        try
+        {
+            var newImagesToDiscard = EditImages
+            .Except(OriginalImagesCollection, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+            if (newImagesToDiscard.Any())
+            {
+                _ = CleanupDraftImagesAsync(newImagesToDiscard);
+            }
+
+            ExitEditModeUiOnly();
+
+            if (_originalData != null)
+            {
+                _dispatcherQueue.TryEnqueue(() => FillData(_originalData));
+            }
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void ExitEditModeUiOnly()
     {
         PageTitle = "Chi tiết sản phẩm";
         ViewVisibility = Visibility.Visible;
         EditVisibility = Visibility.Collapsed;
         IsReadOnly = true;
         IsEditable = false;
-        if (_originalData != null)
-        {
-            _dispatcherQueue.TryEnqueue(() => FillData(_originalData));
-        }
+
+        FileToAdd.Clear();
     }
 
     [RelayCommand]
     public async Task SaveChanges()
     {
-        if (ShowConfirmAction != null)
-        {
-            bool isConfirmed = await ShowConfirmAction("Xác nhận", "Bạn có chắc chắn muốn lưu các thay đổi này?", "Có", "Không");
-            if (!isConfirmed) return;
-        }
+        if (IsBusy) return;
+        IsBusy = true;
 
         try
         {
+            if (ShowConfirmAction != null)
+            {
+                bool isConfirmed = await ShowConfirmAction("Xác nhận", "Bạn có chắc chắn muốn lưu các thay đổi này?", "Có", "Không");
+                if (!isConfirmed) return;
+            }
+
             if (string.IsNullOrWhiteSpace(ProductName) || SelectedCategory == null)
                 throw new Exception("Tên và Danh mục không được để trống!");
 
             long salePriceValue = SalePrice ?? 0;
             int minimumStockQuantityValue = MinimumStockQuantity ?? 0;
-            var success = await _productService.UpdateProductAsync(ProductId, Sku, ProductName, SelectedCategory.Id, salePriceValue, minimumStockQuantityValue, new List<string>(EditImages));
+
+            List<string> ImagesToAdd = EditImages.Except(FileToAdd.Select(f => f.Path)).ToList();
+
+            foreach (var file in FileToAdd)
+            {
+                try
+                {
+                    string? uploadedFileName = await SupabaseUploadService.UploadImageAsync(file);
+
+                    if (!string.IsNullOrEmpty(uploadedFileName))
+                    {
+                        ImagesToAdd.Add(uploadedFileName);
+                    }
+                    else
+                    {
+                        if (ShowAlertAction != null)
+                            await ShowAlertAction("Lỗi tải ảnh", "Không thể tải ảnh lên máy chủ. Vui lòng thử lại.");
+
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (ShowAlertAction != null) await ShowAlertAction("Lỗi", ex.Message);
+                    return;
+                }
+            }
+
+            var success = await _productService.UpdateProductAsync(ProductId, Sku, ProductName, SelectedCategory.Id, salePriceValue, minimumStockQuantityValue, ImagesToAdd);
 
             if (success)
             {
+                var imagesToDelete = OriginalImagesCollection.Except(EditImages, StringComparer.OrdinalIgnoreCase)
+                                                             .ToList();
+
+                _ = CleanupDraftImagesAsync(imagesToDelete);
+
                 await LoadDataAsync(ProductId);
-                CancelEditMode(); // Thoát chế độ sửa
+                ExitEditModeUiOnly();
                 if (ShowAlertAction != null) await ShowAlertAction("Thành công", "Đã cập nhật sản phẩm thành công!");
             }
         }
@@ -168,27 +246,68 @@ public partial class ProductDetailViewModel : ObservableObject
         {
             if (ShowAlertAction != null) await ShowAlertAction("Lỗi", ex.Message);
         }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     [RelayCommand]
     public async Task Delete()
     {
-        if (ShowConfirmAction != null)
-        {
-            bool isConfirmed = await ShowConfirmAction("Cảnh báo nguy hiểm", $"Bạn có chắc chắn muốn xóa sản phẩm '{ProductName}' không? Hành động này không thể hoàn tác.", "Xóa", "Hủy");
-            if (!isConfirmed) return;
-        }
+        if (IsBusy) return;
+        IsBusy = true;
 
         try
         {
+            if (ShowConfirmAction != null)
+            {
+                bool isConfirmed = await ShowConfirmAction("Cảnh báo nguy hiểm", $"Bạn có chắc chắn muốn xóa sản phẩm '{ProductName}' không? Hành động này không thể hoàn tác.", "Xóa", "Hủy");
+                if (!isConfirmed) return;
+            }
+
             await _productService.DeleteProductAsync(ProductId);
-            if (ShowAlertAction != null) await ShowAlertAction("Thành công", "Sản phẩm đã bị xóa.");
+
+            var allImages = OriginalImagesCollection.Concat(EditImages)
+                                                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                                                    .ToList();
+
+            _ = CleanupDraftImagesAsync(allImages);
+
+            if (ShowAlertAction != null)
+            {
+                await ShowAlertAction("Thành công", "Sản phẩm đã bị xóa.");
+            }
 
             GoBackAction?.Invoke();
         }
         catch (Exception ex)
         {
             if (ShowAlertAction != null) await ShowAlertAction("Không thể xóa", ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task CleanupDraftImagesAsync(List<string> images)
+    {
+        if (images.Count == 0) return;
+
+        var draftImages = images.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        foreach (var imagePath in draftImages)
+        {
+            try
+            {
+                await SupabaseUploadService.DeleteImageAsync(imagePath);
+                await ImageCacheService.DeleteImageAsync(imagePath);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[CreateProduct] Cleanup draft image failed: {imagePath} - {ex.Message}");
+            }
         }
     }
 
@@ -198,6 +317,12 @@ public partial class ProductDetailViewModel : ObservableObject
         if (EditImages.Contains(imagePath))
         {
             EditImages.Remove(imagePath);
+        }
+
+        var fileToRemove = FileToAdd.FirstOrDefault(f => f.Path == imagePath);
+        if (fileToRemove != null)
+        {
+            FileToAdd.Remove(fileToRemove);
         }
     }
 }

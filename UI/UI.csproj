@@ -10,8 +10,11 @@
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
-    <EnableMsixTooling>true</EnableMsixTooling>
+	<WindowsPackageType>None</WindowsPackageType>
+	<EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	<WindowsAppSDKDeploymentManagerAutoInitialize>true</WindowsAppSDKDeploymentManagerAutoInitialize>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Dialog\CommonDialog\**" />
@@ -37,11 +40,13 @@
     <None Remove="Assets\LoginIllustration.jpg" />
     <None Remove="Assets\onboarding2.png" />
     <None Remove="Assets\onboarding3.png" />
+    <None Remove="Dialog\LoadingDialog.xaml" />
     <None Remove="Dialog\NewCategoryDialog.xaml" />
     <None Remove="GraphQL\Auth.graphql" />
     <None Remove="GraphQL\Dashboard.graphql" />
     <None Remove="GraphQL\Import.graphql" />
     <None Remove="GraphQL\Order.graphql" />
+    <None Remove="GraphQL\User.graphql" />
     <None Remove="Views\ConfigDialog.xaml" />
     <None Remove="Views\Dashboard\DashboardPage.xaml" />
     <None Remove="Views\Import\CreateImportPage.xaml" />
@@ -52,19 +57,34 @@
     <None Remove="Views\Orders\OrderDetailPage.xaml" />
     <None Remove="Views\Products\CreateProductPage.xaml" />
     <None Remove="Views\Products\ProductDetailPage.xaml" />
+    <None Remove="Views\Profile\ProfilePage.xaml" />
     <None Remove="Views\Settings\SettingsPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
     <None Remove="Views\Statistics\StatisticsPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\SplashScreen.scale-200.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\LockScreenLogo.scale-200.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Square150x150Logo.scale-200.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Square44x44Logo.scale-200.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\StoreLogo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Wide310x150Logo.scale-200.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -87,6 +107,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageReference Include="CSharpMarkup.WinUI.LiveChartsCore.SkiaSharpView" Version="3.1.2" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.12" />
+    <PackageReference Include="HotChocolate.Language" Version="15.1.14" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
@@ -95,17 +116,20 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageReference Include="Obfuscar" Version="2.2.50">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="QuestPDF" Version="2026.2.4" />
     <PackageReference Include="StrawberryShake" Version="15.1.12" />
     <PackageReference Include="StrawberryShake.Server" Version="15.1.12" />
     <PackageReference Include="StrawberryShake.Transport.Http" Version="15.1.12" />
   </ItemGroup>
   <ItemGroup>
-	  <ProjectReference Include="..\Api\Api.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
-    <ProjectReference Include="..\Core\Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Update="Assets\EasyStoreIcon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\EasyStoreLogo.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\Images\chocopie.jpg">
@@ -121,6 +145,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\Images\muoi.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\LoginIllustration.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\onboarding1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\onboarding2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\onboarding3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -213,23 +249,121 @@
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
+    
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+
+    <TrimMode Condition="'$(Configuration)' != 'Debug'">partial</TrimMode>
+    <MwaKeepMetadata Condition="'$(Configuration)' != 'Debug'">true</MwaKeepMetadata>
+    <StackTraceSupport Condition="'$(Configuration)' != 'Debug'">true</StackTraceSupport>
   </PropertyGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if not exist &quot;$(TargetDir)AppX&quot; mkdir &quot;$(TargetDir)AppX&quot;&#xA;C:\Windows\System32\xcopy.exe /y /s /e /i /h /r &quot;$(SolutionDir)Api\bin\$(Configuration)\net10.0\win-x64\*&quot; &quot;$(TargetDir)AppX\&quot;" />
-  </Target>
+	<Target Name="PostBuildSyncBackend" AfterTargets="Build">
+	<PropertyGroup>
+		<ApiSrcDir Condition="Exists('$(SolutionDir)Api\bin\x64\$(Configuration)\net10.0\win-x64\')">$(SolutionDir)Api\bin\x64\$(Configuration)\net10.0\win-x64\</ApiSrcDir>
+		<ApiSrcDir Condition="'$(ApiSrcDir)' == ''">$(SolutionDir)Api\bin\$(Configuration)\net10.0\win-x64\</ApiSrcDir>
+	</PropertyGroup>
+
+	<Message Importance="high" Text="---- [DEBUG] Dang dong bo Backend tu: $(ApiSrcDir) ----" />
+	
+	<Exec Command="if not exist &quot;$(TargetDir)Backend&quot; mkdir &quot;$(TargetDir)Backend&quot;" />
+	<Exec Command="xcopy /y /s /e /i /h /r &quot;$(ApiSrcDir)*&quot; &quot;$(TargetDir)Backend\&quot;" IgnoreExitCode="true" />
+	
+	<Message Importance="high" Text="---- [DEBUG] Da dong bo Backend vao bin ----" />
+</Target>
+
+<Target Name="CopyBackendOnPublish" AfterTargets="Publish">
+	<PropertyGroup>
+		<ApiSrcDir Condition="Exists('$(SolutionDir)Api\bin\x64\$(Configuration)\net10.0\win-x64\')">$(SolutionDir)Api\bin\x64\$(Configuration)\net10.0\win-x64\</ApiSrcDir>
+		<ApiSrcDir Condition="'$(ApiSrcDir)' == ''">$(SolutionDir)Api\bin\$(Configuration)\net10.0\win-x64\</ApiSrcDir>
+		<PublishBackendDir>$(PublishDir)Backend\</PublishBackendDir>
+	</PropertyGroup>
+
+	<Message Importance="high" Text="---- [PUBLISH] DANG DONG GOI BACKEND TU: $(ApiSrcDir) ----" />
+	
+	<Exec Command="if not exist &quot;$(PublishBackendDir)&quot; mkdir &quot;$(PublishBackendDir)&quot;" />
+	<Exec Command="xcopy /y /s /e /i /h /r &quot;$(ApiSrcDir)*&quot; &quot;$(PublishBackendDir)&quot;" IgnoreExitCode="true" />
+	
+	<Message Importance="high" Text="---- [PUBLISH] HOAN TAT ----" />
+</Target>
   <ItemGroup>
     <PRIResource Remove="Dialog\CommonDialog\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <TrimmerRootAssembly Include="Core" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.ui.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Dialog\LoadingDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Profile\ProfilePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Statistics\StatisticsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+<Target Name="CleanPublishFolder" BeforeTargets="BeforePublish">
+	<Message Importance="high" Text="---- ĐANG DỌN RÁC FOLDER PUBLISH TRƯỚC KHI XUẤT BẢN ----" />
+	<RemoveDir Directories="$(PublishDir)" />
+</Target>
+
+	<ItemGroup>
+		<None Update="obfuscar_ui.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</None>
+	</ItemGroup>
+
+	<Target Name="ObfuscarAndCopyDlls" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+		<Message Text="[DEBUG] Dang chep de Core.dll va Api.dll..." Importance="high" />
+		<Exec Command="copy /Y &quot;$(SolutionDir)Core\bin\x64\Release\net10.0\win-x64\Obfuscated\Core.dll&quot; &quot;$(TargetDir)Core.dll&quot;" />
+		<Exec Command="copy /Y &quot;$(SolutionDir)Api\bin\x64\Release\net10.0\win-x64\Obfuscated\Api.dll&quot; &quot;$(TargetDir)Api.dll&quot;" />
+
+		<Message Text="[DEBUG] Dang tien hanh Obfuscate UI.dll..." Importance="high" />
+		<MakeDir Directories="$(TargetDir)Obfuscated" />
+		<Exec Command="&quot;$(Obfuscar)&quot; obfuscar_ui.xml" WorkingDirectory="$(TargetDir)" />
+
+		<Exec Command="copy /Y &quot;$(TargetDir)Obfuscated\UI.dll&quot; &quot;$(TargetDir)UI.dll&quot;" />
+	</Target>
+
+	<Target Name="SecurePublishDir" AfterTargets="ComputeFilesToPublish" Condition="'$(Configuration)' == 'Release'">
+		<Message Text="[SECURITY] Dang trao doi cac file DLL goc bang file Obfuscated vao pipeline Publish..." Importance="high" />
+
+		<ItemGroup>
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(FileName)' == 'UI' and '%(Extension)' == '.dll'" />
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(FileName)' == 'Core' and '%(Extension)' == '.dll'" />
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(FileName)' == 'Api' and '%(Extension)' == '.dll'" />
+
+			<ResolvedFileToPublish Include="$(TargetDir)Obfuscated\UI.dll">
+				<RelativePath>UI.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+
+			<ResolvedFileToPublish Include="$(SolutionDir)Core\bin\x64\Release\net10.0\win-x64\Obfuscated\Core.dll">
+				<RelativePath>Core.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+
+			<ResolvedFileToPublish Include="$(SolutionDir)Core\bin\x64\Release\net10.0\win-x64\Obfuscated\Core.dll">
+				<RelativePath>Backend\Core.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+
+			<ResolvedFileToPublish Include="$(SolutionDir)Api\bin\x64\Release\net10.0\win-x64\Obfuscated\Api.dll">
+				<RelativePath>Api.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+
+			<ResolvedFileToPublish Include="$(SolutionDir)Api\bin\x64\Release\net10.0\win-x64\Obfuscated\Api.dll">
+				<RelativePath>Backend\Api.dll</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+		</ItemGroup>
+	</Target>
 </Project>

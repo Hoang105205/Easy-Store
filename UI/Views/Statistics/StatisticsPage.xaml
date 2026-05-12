@@ -52,8 +52,8 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Margin="0,0,0,24">
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="Báo cáo &amp; Thống kê" Style="{StaticResource TitleTextBlockStyle}" FontWeight="Bold"/>
+            <StackPanel Spacing="5" VerticalAlignment="Center">
+                <TextBlock Text="Báo cáo &amp; Thống kê" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Style="{StaticResource TitleTextBlockStyle}"/>
                 <TextBlock Text="Theo dõi hiệu suất kinh doanh của cửa hàng" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
 

@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using UI.Services.StatisticsService;
+using UI.Utils;
 
 namespace UI.ViewModels.Statistics;
 
@@ -174,12 +175,7 @@ public partial class StatisticsViewModel : ObservableObject
 
     private bool GetCurrentTheme()
     {
-        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-        if (localSettings.Values["IsDarkMode"] is bool isUserPref)
-        {
-            return isUserPref;
-        }
-        return App.Current.RequestedTheme == ApplicationTheme.Dark;
+        return AppRuntimeStorage.GetBool("IsDarkMode", App.Current.RequestedTheme == ApplicationTheme.Dark);
     }
 
     // Record hoặc Tuple để quản lý bảng màu cho gọn

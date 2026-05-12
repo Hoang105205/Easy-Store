@@ -1,30 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Windows.Storage;
+using UI.Utils;
 
 namespace UI.Services.AuthService;
 
 public class AuthService
 {
     private const string SessionKey = "UserSessionToken";
-    private readonly ApplicationDataContainer _localSettings;
-
-    public AuthService()
-    {
-        _localSettings = ApplicationData.Current.LocalSettings;
-    }
 
     // Lưu trạng thái đăng nhập
     public void SaveSession(string token)
     {
-        _localSettings.Values[SessionKey] = token;
+        AppRuntimeStorage.SetValue(SessionKey, token);
     }
 
     // Lấy thông tin phiên làm việc
     public string? GetSession()
     {
-        return _localSettings.Values[SessionKey] as string;
+        return AppRuntimeStorage.GetString(SessionKey);
     }
 
     // Kiểm tra đã đăng nhập chưa
@@ -36,6 +30,6 @@ public class AuthService
     // Đăng xuất
     public void ClearSession()
     {
-        _localSettings.Values.Remove(SessionKey);
+        AppRuntimeStorage.RemoveValue(SessionKey);
     }
 }

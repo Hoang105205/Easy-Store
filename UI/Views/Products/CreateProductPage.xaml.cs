@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using UI.Dialog;
 using UI.ViewModels;
 using UI.ViewModels.Import;
 
@@ -13,12 +14,26 @@ namespace UI.Views.Products
     public sealed partial class CreateProductPage : Page
     {
         public CreateProductViewModel ViewModel { get; }
+        private LoadingDialog loadingDialog;
 
         public CreateProductPage()
         {
-            this.InitializeComponent();
+            ViewModel = (App.Current as App)!.Services.GetRequiredService<CreateProductViewModel>();
 
-            ViewModel = (App.Current as App)!.Services.GetService<CreateProductViewModel>();
+            InitializeComponent();
+
+            loadingDialog = new LoadingDialog();
+
+            ViewModel.ShowLoadingAction = async () =>
+            {
+                loadingDialog.XamlRoot = this.XamlRoot;
+                await loadingDialog.ShowAsync();
+            };
+
+            ViewModel.HideLoadingAction = () =>
+            {
+                loadingDialog.Hide();
+            };
 
             // Đăng ký sự kiện: Cứ mỗi khi danh sách ảnh thay đổi (thêm, xóa, reset), hàm bên dưới sẽ chạy
             ViewModel.SelectedImages.CollectionChanged += SelectedImages_CollectionChanged;
@@ -31,12 +46,27 @@ namespace UI.Views.Products
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
+            ViewModel.SelectedImages.CollectionChanged -= SelectedImages_CollectionChanged;
+            ViewModel.SelectedImages.CollectionChanged += SelectedImages_CollectionChanged;
+
             await ViewModel.LoadCategoriesAsync();
+        }
+
+        protected override async void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            ViewModel.SelectedImages.CollectionChanged -= SelectedImages_CollectionChanged;
+
+            if (!ViewModel.IsSavedSuccessfully)
+            {
+                _ = ViewModel.CleanupDraftImagesAsync();
+            }
         }
 
         private void SelectedImages_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            // Nếu số lượng ảnh > 0 thì ẩn Icon đi (Collapsed), ngược lại thì hiện ra (Visible)
             UploadIcon.Visibility = ViewModel.SelectedImages.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
         }
 
@@ -48,7 +78,6 @@ namespace UI.Views.Products
                 return;
             }
 
-            // Gọi FilePicker của Windows
             var picker = new Windows.Storage.Pickers.FileOpenPicker();
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.Current.AppMainWindow);
             WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
@@ -58,48 +87,41 @@ namespace UI.Views.Products
             var file = await picker.PickSingleFileAsync();
             if (file != null)
             {
-                ViewModel.SelectedImages.Add(file.Path); // Tạm lưu path cục bộ
+                await ViewModel.UploadAndAddImageAsync(file);
             }
         }
 
         private void ImageDragOver(object sender, DragEventArgs e)
         {
-            // Kiểm tra xem dữ liệu được kéo vào có phải là File hay không
             if (e.DataView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
             {
-                // Hiển thị icon "Copy" (dấu cộng) khi kéo file vào vùng hợp lệ
                 e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
             }
             else
             {
-                // Từ chối nếu kéo text hoặc dữ liệu không phải file
                 e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
             }
         }
         private async void ImageDrop(object sender, DragEventArgs e)
         {
-            // Lấy danh sách các file được thả vào
             if (e.DataView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
             {
                 var items = await e.DataView.GetStorageItemsAsync();
 
                 foreach (var item in items)
                 {
-                    // Kiểm tra số lượng ảnh tối đa
                     if (ViewModel.SelectedImages.Count >= 3)
                     {
                         await ShowDialog("Thông báo", "Chỉ được chọn tối đa 3 ảnh.");
                         break;
                     }
 
-                    // Chỉ xử lý nếu item là File (không phải Folder)
                     if (item is Windows.Storage.StorageFile file)
                     {
                         string ext = file.FileType.ToLower();
-                        // Validate định dạng hình ảnh
                         if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
                         {
-                            ViewModel.SelectedImages.Add(file.Path); // Thêm path vào danh sách để UI tự update
+                            await ViewModel.UploadAndAddImageAsync(file);
                         }
                         else
                         {

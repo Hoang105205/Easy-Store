@@ -40,15 +40,17 @@ query GetProductsPagination(
   $searchTerm: String, 
   $categoryId: UUID,
   $minPrice: Long,
-  $maxPrice: Long
+  $maxPrice: Long,
+  $order: [ProductSortInput!]
 ) {
   productsPagination(
     first: $first, 
     after: $after, 
     searchTerm: $searchTerm, 
-    categoryId: $categoryId
-    minPrice: $minPrice
-    maxPrice: $maxPrice
+    categoryId: $categoryId,
+    minPrice: $minPrice,
+    maxPrice: $maxPrice,
+    order: $order
   ) {
     pageInfo {
       hasNextPage
@@ -63,6 +65,7 @@ query GetProductsPagination(
       salePrice
       stockQuantity
       availableStockQuantity
+      createdAt
       category {
         name
       }

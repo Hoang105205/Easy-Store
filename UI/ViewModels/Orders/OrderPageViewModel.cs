@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using UI.Services.OrderService;
+using UI.Utils;
 
 namespace UI.ViewModels.Orders
 {
@@ -62,10 +63,18 @@ namespace UI.ViewModels.Orders
         private CancellationTokenSource? _loadCts;
         private readonly int _debounceDelay = 500;
 
+        [ObservableProperty] private string activeSortColumn;
+
+        [ObservableProperty]
+        private bool isAscending = true;
+
         public OrderPageViewModel()
         {
             _orderService = App.Current.Services.GetRequiredService<OrderService>();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+            ActiveSortColumn = "OrderDate";
+            IsAscending = false;
         }
 
         // Kích hoạt Debounce mỗi khi các thuộc tính tìm kiếm thay đổi
@@ -104,8 +113,7 @@ namespace UI.ViewModels.Orders
             var currentToken = _loadCts.Token;
 
             IsLoading = true;
-            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-            int itemsPerPage = localSettings.Values["ItemsPerPage"] as int? ?? 10;
+            int itemsPerPage = AppRuntimeStorage.GetInt("ItemsPerPage", 10);
 
             if (!pressedButton)
             {
@@ -126,7 +134,10 @@ namespace UI.ViewModels.Orders
                     afterCursor,
                     SearchReceiptNumber,
                     StartDate,
-                    EndDate);
+                    EndDate,
+                    ActiveSortColumn,
+                    IsAscending
+                );
 
                 var drafts = await _orderService.GetDraftOrdersAsync();
 
@@ -219,6 +230,26 @@ namespace UI.ViewModels.Orders
                 string? cursorToLoad = previousCursors.Count > 0 ? previousCursors.Peek() : null;
                 await LoadOrdersAsync(afterCursor: cursorToLoad);
             }
+        }
+
+        [RelayCommand]
+        private async Task SortAsync(string columnName)
+        {
+            if (string.IsNullOrEmpty(columnName)) return;
+
+            if (ActiveSortColumn == columnName)
+            {
+                IsAscending = !IsAscending;
+            }
+            else
+            {
+                ActiveSortColumn = columnName;
+                IsAscending = true;
+            }
+
+            pressedButton = false;
+
+            await LoadOrdersAsync();
         }
 
         public void CancelOperations()

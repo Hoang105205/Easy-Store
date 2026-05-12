@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Windows.Storage;
+using UI.Utils;
 
 namespace UI.Views
 {
@@ -116,8 +116,7 @@ namespace UI.Views
 
         private void BtnGetStarted_Click(object sender, RoutedEventArgs e)
         {
-            var localSettings = ApplicationData.Current.LocalSettings;
-            localSettings.Values["IsFirstTime"] = false;
+            AppRuntimeStorage.SetValue("IsFirstTime", false);
 
             this.Frame.Navigate(typeof(LoginPage));
 

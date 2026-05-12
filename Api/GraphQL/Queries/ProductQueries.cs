@@ -14,7 +14,7 @@ public class ProductQueries
     [UseProjection]
     [UseSorting]
     public IQueryable<Product> GetProducts(
-        [Service] AppDbContext context,
+        AppDbContext context,
         string? searchTerm = null,
         Guid? categoryId = null
     )
@@ -53,7 +53,7 @@ public class ProductQueries
     [UseProjection]
     [UseSorting]
     public IQueryable<Product> GetProductsPagination(
-            [Service] AppDbContext context,
+            AppDbContext context,
             string? searchTerm = null,
             Guid? categoryId = null,
             long? minPrice = null,
@@ -94,22 +94,20 @@ public class ProductQueries
             }
         }
 
-        query = query.OrderByDescending(p => p.CreatedAt).ThenBy(p => p.Id);
-
         // Return IQueryable
         return query;
     }
 
     [UseSingleOrDefault]
     [UseProjection]
-    public IQueryable<Product> GetProductById(Guid id, [Service] AppDbContext dbContext)
+    public IQueryable<Product> GetProductById(Guid id, AppDbContext dbContext)
     {
         return dbContext.Products.Where(p => p.Id == id);
     }
 
     [UseFirstOrDefault] 
     [UseProjection]     
-    public IQueryable<Product> GetProductBySku(string sku, [Service] AppDbContext context)
+    public IQueryable<Product> GetProductBySku(string sku, AppDbContext context)
     {
         return context.Products.Where(p => p.SKU == sku);
     }

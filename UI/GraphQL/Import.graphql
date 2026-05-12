@@ -27,8 +27,8 @@ query GetActiveAutoSave {
 }
 
 # 3. Query lấy danh sách lịch sử nhập hàng
-query GetImportHistory($first: Int, $after: String, $searchKeyword: String, $fromDate: DateTime, $toDate: DateTime, $status: ImportStatus) {
-  importHistory(first: $first, after: $after, searchKeyword: $searchKeyword, fromDate: $fromDate, toDate: $toDate, status: $status) {
+query GetImportHistory($first: Int, $after: String, $searchKeyword: String, $fromDate: DateTime, $toDate: DateTime, $status: ImportStatus, $order: [ImportLogSortInput!]) {
+  importHistory(first: $first, after: $after, searchKeyword: $searchKeyword, fromDate: $fromDate, toDate: $toDate, status: $status, order: $order) {
     totalCount
     pageInfo {
       hasNextPage

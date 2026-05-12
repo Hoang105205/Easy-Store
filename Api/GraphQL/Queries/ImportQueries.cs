@@ -16,7 +16,7 @@ public class ImportSummary
 public class ImportQueries
 {
     public async Task<ImportLog?> GetActiveAutoSaveAsync(
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         var autoSaveLog = await context.ImportLogs
             .Include(i => i.Details)
@@ -27,8 +27,9 @@ public class ImportQueries
     }
 
     [UsePaging(IncludeTotalCount = true, DefaultPageSize = 20, MaxPageSize = 20)]
+    [UseSorting]
     public IQueryable<ImportLog> GetImportHistory(
-        [Service] AppDbContext context,
+        AppDbContext context,
         string? searchKeyword,
         DateTime? fromDate,
         DateTime? toDate,
@@ -72,12 +73,12 @@ public class ImportQueries
             query = query.Where(i => i.Status == status.Value);
         }
 
-        return query.OrderByDescending(i => i.CreatedAt);
+        return query;
     }
 
     public async Task<ImportLog?> GetImportByIdAsync(
         Guid id,
-        [Service] AppDbContext context)
+        AppDbContext context)
     {
         return await context.ImportLogs
             .Include(i => i.Details)
@@ -86,7 +87,7 @@ public class ImportQueries
             .FirstOrDefaultAsync(i => i.Id == id);
     }
 
-    public async Task<ImportSummary> GetImportSummaryAsync([Service] AppDbContext context)
+    public async Task<ImportSummary> GetImportSummaryAsync(AppDbContext context)
     {
         // Lọc bỏ những phiếu AutoSave ngầm định
         var query = context.ImportLogs.Where(x => x.IsAutoSaved == false);

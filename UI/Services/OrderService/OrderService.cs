@@ -21,14 +21,43 @@ namespace UI.Services.OrderService
             string? afterCursor,
             string? receiptNumber = null,
             DateTimeOffset? startDate = null,
-            DateTimeOffset? endDate = null)
+            DateTimeOffset? endDate = null,
+            string? sortColumn = "OrderDate",
+            bool isAscending = false
+        )
         {
+            var sortInput = new OrderSortInput();
+            var sortDirection = isAscending ? SortEnumType.Asc : SortEnumType.Desc;
+
+            switch (sortColumn)
+            {
+                case "Status":
+                    sortInput.Status = sortDirection;
+                    break;
+                case "TotalAmount":
+                    sortInput.TotalAmount = sortDirection;
+                    break;
+                case "TotalProfit":
+                    sortInput.TotalProfit = sortDirection;
+                    break;
+                case "ReceiptNumber":
+                    sortInput.ReceiptNumber = sortDirection;
+                    break;
+                case "OrderDate":
+                default:
+                    sortInput.OrderDate = sortDirection;
+                    break;
+            }
+
+            var orderList = new List<OrderSortInput> { sortInput };
+
             var result = await _client.GetOrdersPagination.ExecuteAsync(
                 first: itemsPerPage,
                 after: afterCursor,
                 receiptNumber: receiptNumber,
                 startDate: startDate,
-                endDate: endDate
+                endDate: endDate,
+                order: orderList
             );
 
             if (result.Errors?.Count > 0)
@@ -90,6 +119,10 @@ namespace UI.Services.OrderService
                     long calcTotalPrice = item.Quantity * currentPrice;
                     totalImport += item.Quantity * (item.UnitImportPrice ?? 0);
 
+                    var images = item.Product?.Images;
+                    var targetImage = images?.FirstOrDefault(img => img.IsPrimary) ?? images?.FirstOrDefault();
+                    string finalImageUrl = targetImage?.ImagePath ?? string.Empty;
+
                     items.Add(new OrderItemDetailModel
                     {
                         STT = sttCounter++,
@@ -99,6 +132,7 @@ namespace UI.Services.OrderService
                         UnitImportPrice = item.UnitImportPrice ?? 0,
                         TotalPrice = calcTotalPrice,
                         ProductName = item.Product?.Name ?? "Không rõ",
+                        ImageUrl = finalImageUrl,
                         ProductSku = item.Product?.Sku ?? string.Empty,
                         CategoryName = item.Product?.Category?.Name ?? "Không rõ danh mục",
                         AvailableStockQuantity = item.Product?.AvailableStockQuantity ?? 0,
